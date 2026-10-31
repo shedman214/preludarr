@@ -1,0 +1,436 @@
+[
+ {
+  "path": "/anime/A Misanthrope Teaches a Class for Demi-Humans (2026)",
+  "library": "Anime TV",
+  "name": "A Misanthrope Teaches a Class for Demi-Humans (2026)",
+  "state": "installed",
+  "category": "tv-installed"
+ },
+ {
+  "path": "/anime/Agents of the Four Seasons Dance of Spring (2026)",
+  "library": "Anime TV",
+  "name": "Agents of the Four Seasons Dance of Spring (2026)",
+  "state": "installed",
+  "category": "tv-installed"
+ },
+ {
+  "path": "/anime/Ahiru no Sora",
+  "library": "Anime TV",
+  "name": "Ahiru no Sora",
+  "state": "installed",
+  "category": "no-year"
+ },
+ {
+  "path": "/anime/Akame ga Kill! (2014)",
+  "library": "Anime TV",
+  "name": "Akame ga Kill! (2014)",
+  "state": "installed",
+  "category": "romaji-title"
+ },
+ {
+  "path": "/anime/Alma-chan Wants to Be a Family! (2025)",
+  "library": "Anime TV",
+  "name": "Alma-chan Wants to Be a Family! (2025)",
+  "state": "installed",
+  "category": "romaji-title"
+ },
+ {
+  "path": "/anime/BAKI-DOU The Invincible Samurai (2026)",
+  "library": "Anime TV",
+  "name": "BAKI-DOU The Invincible Samurai (2026)",
+  "state": "missing",
+  "category": "tv-missing"
+ },
+ {
+  "path": "/movies/Bleach the Movie - The DiamondDust Rebellion (2007)",
+  "library": "Anime Movies",
+  "name": "Bleach the Movie - The DiamondDust Rebellion (2007)",
+  "state": "missing",
+  "category": "movie-missing"
+ },
+ {
+  "path": "/anime/Blood Lad (2013)",
+  "library": "Anime TV",
+  "name": "Blood Lad (2013)",
+  "state": "installed",
+  "category": "similar-names"
+ },
+ {
+  "path": "/anime/Blood Reign Curse of the Yoma (1989)",
+  "library": "Anime TV",
+  "name": "Blood Reign Curse of the Yoma (1989)",
+  "state": "installed",
+  "category": "similar-names"
+ },
+ {
+  "path": "/anime/Blood+ (2005)",
+  "library": "Anime TV",
+  "name": "Blood+ (2005)",
+  "state": "installed",
+  "category": "similar-names"
+ },
+ {
+  "path": "/anime/Code Geass Rozé of the Recapture (2024)",
+  "library": "Anime TV",
+  "name": "Code Geass Rozé of the Recapture (2024)",
+  "state": "missing",
+  "category": "tv-missing"
+ },
+ {
+  "path": "/movies/Crayon Shin-chan - Burst Serving! Kung Fu Boys ~Ramen Rebellion~ (2018)",
+  "library": "Anime Movies",
+  "name": "Crayon Shin-chan - Burst Serving! Kung Fu Boys ~Ramen Rebellion~ (2018)",
+  "state": "missing",
+  "category": "romaji-title"
+ },
+ {
+  "path": "/movies/Demon City Shinjuku (1988)",
+  "library": "Anime Movies",
+  "name": "Demon City Shinjuku (1988)",
+  "state": "missing",
+  "category": "movie-missing"
+ },
+ {
+  "path": "/movies/Demon Slayer - Kimetsu no Yaiba Infinity Castle (2025)",
+  "library": "Anime Movies",
+  "name": "Demon Slayer - Kimetsu no Yaiba Infinity Castle (2025)",
+  "state": "missing",
+  "category": "movie-missing"
+ },
+ {
+  "path": "/movies/Digimon Adventure tri. Part 1 - Reunion (2015)",
+  "library": "Anime Movies",
+  "name": "Digimon Adventure tri. Part 1 - Reunion (2015)",
+  "state": "missing",
+  "category": "multi-season/sequel"
+ },
+ {
+  "path": "/movies/Digimon Adventure tri. Part 2 - Determination (2016)",
+  "library": "Anime Movies",
+  "name": "Digimon Adventure tri. Part 2 - Determination (2016)",
+  "state": "missing",
+  "category": "multi-season/sequel"
+ },
+ {
+  "path": "/anime/Digimon Tamers (2001)",
+  "library": "Anime TV",
+  "name": "Digimon Tamers (2001)",
+  "state": "installed",
+  "category": "tv-installed"
+ },
+ {
+  "path": "/anime/El Hazard The Magnificent World (1995)",
+  "library": "Anime TV",
+  "name": "El Hazard The Magnificent World (1995)",
+  "state": "missing",
+  "category": "tv-missing"
+ },
+ {
+  "path": "/anime/Firefly Wedding (2026)",
+  "library": "Anime TV",
+  "name": "Firefly Wedding (2026)",
+  "state": "installed",
+  "category": "tv-installed"
+ },
+ {
+  "path": "/movies/Fragtime (2019) - imdb-tt11343974",
+  "library": "Anime Movies",
+  "name": "Fragtime (2019) - imdb-tt11343974",
+  "state": "installed",
+  "category": "movie-installed"
+ },
+ {
+  "path": "/anime/Ghost in the Shell Arise - Alternative Architecture (2015)",
+  "library": "Anime TV",
+  "name": "Ghost in the Shell Arise - Alternative Architecture (2015)",
+  "state": "missing",
+  "category": "tv-missing"
+ },
+ {
+  "path": "/anime/Haganai I Don't Have Many Friends (2011)",
+  "library": "Anime TV",
+  "name": "Haganai I Don't Have Many Friends (2011)",
+  "state": "missing",
+  "category": "tv-missing"
+ },
+ {
+  "path": "/movies/Hal (2013)",
+  "library": "Anime Movies",
+  "name": "Hal (2013)",
+  "state": "installed",
+  "category": "movie-installed"
+ },
+ {
+  "path": "/anime/Hanaukyo Maid Team (2001)",
+  "library": "Anime TV",
+  "name": "Hanaukyo Maid Team (2001)",
+  "state": "installed",
+  "category": "tv-installed"
+ },
+ {
+  "path": "/anime/High School D×D",
+  "library": "Anime TV",
+  "name": "High School D×D",
+  "state": "missing",
+  "category": "tv-missing"
+ },
+ {
+  "path": "/anime/Inukami! (2006)",
+  "library": "Anime TV",
+  "name": "Inukami! (2006)",
+  "state": "installed",
+  "category": "tv-installed"
+ },
+ {
+  "path": "/anime/Kaiju Girl Caramelise",
+  "library": "Anime TV",
+  "name": "Kaiju Girl Caramelise",
+  "state": "missing",
+  "category": "no-year"
+ },
+ {
+  "path": "/anime/KissXSis (2010)",
+  "library": "Anime TV",
+  "name": "KissXSis (2010)",
+  "state": "missing",
+  "category": "tv-missing"
+ },
+ {
+  "path": "/movies/Kizumonogatari Part 3 - Reiketsu (2017)",
+  "library": "Anime Movies",
+  "name": "Kizumonogatari Part 3 - Reiketsu (2017)",
+  "state": "installed",
+  "category": "multi-season/sequel"
+ },
+ {
+  "path": "/movies/LUPIN THE 3rd vs. CAT'S EYE (2023)",
+  "library": "Anime Movies",
+  "name": "LUPIN THE 3rd vs. CAT'S EYE (2023)",
+  "state": "missing",
+  "category": "multi-season/sequel"
+ },
+ {
+  "path": "/anime/Lapis ReLiGHTs (2020)",
+  "library": "Anime TV",
+  "name": "Lapis ReLiGHTs (2020)",
+  "state": "missing",
+  "category": "tv-missing"
+ },
+ {
+  "path": "/anime/Love is Like a Cocktail (2017)",
+  "library": "Anime TV",
+  "name": "Love is Like a Cocktail (2017)",
+  "state": "installed",
+  "category": "tv-installed"
+ },
+ {
+  "path": "/anime/Maid Sama! (2010)",
+  "library": "Anime TV",
+  "name": "Maid Sama! (2010)",
+  "state": "installed",
+  "category": "romaji-title"
+ },
+ {
+  "path": "/movies/Mardock Scramble - The Second Combustion (2011)",
+  "library": "Anime Movies",
+  "name": "Mardock Scramble - The Second Combustion (2011)",
+  "state": "missing",
+  "category": "movie-missing"
+ },
+ {
+  "path": "/anime/Miyuki-chan In Wonderland (1995)",
+  "library": "Anime TV",
+  "name": "Miyuki-chan In Wonderland (1995)",
+  "state": "missing",
+  "category": "romaji-title"
+ },
+ {
+  "path": "/movies/Mononoke the Movie - Chapter II - The Ashes of Rage (2025)",
+  "library": "Anime Movies",
+  "name": "Mononoke the Movie - Chapter II - The Ashes of Rage (2025)",
+  "state": "missing",
+  "category": "multi-season/sequel"
+ },
+ {
+  "path": "/anime/My Hero Academia",
+  "library": "Anime TV",
+  "name": "My Hero Academia",
+  "state": "installed",
+  "category": "no-year"
+ },
+ {
+  "path": "/movies/My Hero Academia - Heroes Rising (2019) - imdb-tt11107074",
+  "library": "Anime Movies",
+  "name": "My Hero Academia - Heroes Rising (2019) - imdb-tt11107074",
+  "state": "missing",
+  "category": "movie-missing"
+ },
+ {
+  "path": "/anime/My Love Story With Yamada-kun at Lv999",
+  "library": "Anime TV",
+  "name": "My Love Story With Yamada-kun at Lv999",
+  "state": "installed",
+  "category": "romaji-title"
+ },
+ {
+  "path": "/anime/My Sister, My Writer (2018)",
+  "library": "Anime TV",
+  "name": "My Sister, My Writer (2018)",
+  "state": "installed",
+  "category": "tv-installed"
+ },
+ {
+  "path": "/movies/Night Is Short, Walk On Girl (2017)",
+  "library": "Anime Movies",
+  "name": "Night Is Short, Walk On Girl (2017)",
+  "state": "installed",
+  "category": "movie-installed"
+ },
+ {
+  "path": "/anime/Overgeared",
+  "library": "Anime TV",
+  "name": "Overgeared",
+  "state": "installed",
+  "category": "tv-installed"
+ },
+ {
+  "path": "/movies/Promare (2019)",
+  "library": "Anime Movies",
+  "name": "Promare (2019)",
+  "state": "installed",
+  "category": "movie-installed"
+ },
+ {
+  "path": "/movies/Puella Magi Madoka Magica the Movie Part I - Beginnings (2012)",
+  "library": "Anime Movies",
+  "name": "Puella Magi Madoka Magica the Movie Part I - Beginnings (2012)",
+  "state": "missing",
+  "category": "multi-season/sequel"
+ },
+ {
+  "path": "/movies/Puella Magi Madoka Magica the Movie Part II - Eternal (2012)",
+  "library": "Anime Movies",
+  "name": "Puella Magi Madoka Magica the Movie Part II - Eternal (2012)",
+  "state": "missing",
+  "category": "multi-season/sequel"
+ },
+ {
+  "path": "/anime/Ray the Animation (2006)",
+  "library": "Anime TV",
+  "name": "Ray the Animation (2006)",
+  "state": "missing",
+  "category": "tv-missing"
+ },
+ {
+  "path": "/movies/Redline (2009) - imdb-tt1483797",
+  "library": "Anime Movies",
+  "name": "Redline (2009) - imdb-tt1483797",
+  "state": "installed",
+  "category": "movie-installed"
+ },
+ {
+  "path": "/anime/Romelia War Chronicle",
+  "library": "Anime TV",
+  "name": "Romelia War Chronicle",
+  "state": "missing",
+  "category": "no-year"
+ },
+ {
+  "path": "/movies/Rurouni Kenshin Part II - Kyoto Inferno (2014) - imdb-tt3029558",
+  "library": "Anime Movies",
+  "name": "Rurouni Kenshin Part II - Kyoto Inferno (2014) - imdb-tt3029558",
+  "state": "missing",
+  "category": "multi-season/sequel"
+ },
+ {
+  "path": "/anime/Samurai - Hunt For The Sword (1999)",
+  "library": "Anime TV",
+  "name": "Samurai - Hunt For The Sword (1999)",
+  "state": "missing",
+  "category": "similar-names"
+ },
+ {
+  "path": "/anime/Samurai Girl Real Bout High School (2001)",
+  "library": "Anime TV",
+  "name": "Samurai Girl Real Bout High School (2001)",
+  "state": "missing",
+  "category": "similar-names"
+ },
+ {
+  "path": "/anime/Samurai Girls (2010)",
+  "library": "Anime TV",
+  "name": "Samurai Girls (2010)",
+  "state": "installed",
+  "category": "similar-names"
+ },
+ {
+  "path": "/anime/Shigurui Death Frenzy (2007)",
+  "library": "Anime TV",
+  "name": "Shigurui Death Frenzy (2007)",
+  "state": "installed",
+  "category": "tv-installed"
+ },
+ {
+  "path": "/movies/Street Fighter II - The Animated Movie (1994)",
+  "library": "Anime Movies",
+  "name": "Street Fighter II - The Animated Movie (1994)",
+  "state": "missing",
+  "category": "multi-season/sequel"
+ },
+ {
+  "path": "/anime/Street Fighter II V (1995)",
+  "library": "Anime TV",
+  "name": "Street Fighter II V (1995)",
+  "state": "installed",
+  "category": "multi-season/sequel"
+ },
+ {
+  "path": "/anime/The Kingdoms of Ruin",
+  "library": "Anime TV",
+  "name": "The Kingdoms of Ruin",
+  "state": "installed",
+  "category": "no-year"
+ },
+ {
+  "path": "/anime/The Melancholy of Haruhi-chan Suzumiya (2009)",
+  "library": "Anime TV",
+  "name": "The Melancholy of Haruhi-chan Suzumiya (2009)",
+  "state": "installed",
+  "category": "romaji-title"
+ },
+ {
+  "path": "/movies/The Secret World of Arrietty (2010)",
+  "library": "Anime Movies",
+  "name": "The Secret World of Arrietty (2010)",
+  "state": "missing",
+  "category": "movie-missing"
+ },
+ {
+  "path": "/anime/The Seven Heavenly Virtues",
+  "library": "Anime TV",
+  "name": "The Seven Heavenly Virtues",
+  "state": "installed",
+  "category": "no-year"
+ },
+ {
+  "path": "/movies/The Wind Rises (2013)",
+  "library": "Anime Movies",
+  "name": "The Wind Rises (2013)",
+  "state": "installed",
+  "category": "movie-installed"
+ },
+ {
+  "path": "/anime/Yatogame-chan Kansatsu Nikki (2019)",
+  "library": "Anime TV",
+  "name": "Yatogame-chan Kansatsu Nikki (2019)",
+  "state": "installed",
+  "category": "romaji-title"
+ },
+ {
+  "path": "/anime/Yuuki Yuuna Is a Hero (2014)",
+  "library": "Anime TV",
+  "name": "Yuuki Yuuna Is a Hero (2014)",
+  "state": "missing",
+  "category": "tv-missing"
+ }
+]

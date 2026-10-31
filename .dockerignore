@@ -1,0 +1,8 @@
+# Only what the Dockerfile copies goes into the build context.
+*
+!LICENSE
+!NOTICE.md
+!CHANGELOG.md
+!docker/
+!preludarr/
+**/__pycache__

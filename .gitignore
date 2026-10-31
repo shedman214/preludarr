@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+# local-only: screenshot scripts, internal notes, test output
+tests/*.js
+docs/
+*.out
+.env

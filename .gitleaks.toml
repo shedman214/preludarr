@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# gitleaks configuration: the default rules, plus documented false positives only.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Dummy key 0123456789abcdef0123456789abcdef in tests/v1914_tests.py (checks that logs hide API keys); not a real credential"
+regexes = ['''0123456789abcdef0123456789abcdef''']
+paths = ['''tests/v1914_tests\.py''']
+
+[[allowlists]]
+description = "Dummy Quick Connect secret qcsecret0123456789 used only by the fake Jellyfin in tests (1.12); not a real credential"
+regexes = ['''qcsecret0123456789''']
+paths = ['''tests/fake_media_server\.py''', '''tests/jellyfin_qc_tests\.py''']

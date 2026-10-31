@@ -1,0 +1,143 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Build and test on every push and pull request. Publish to ghcr.io ONLY when a version tag (v1.2.3, v1.2.3-beta.1) is pushed.
+name: Docker image
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+env:
+  IMAGE: ghcr.io/shedman214/preludarr
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build image (amd64)
+        run: docker build --build-arg VERSION=ci --build-arg REVISION="${GITHUB_SHA}" -t preludarr:ci .
+
+      - name: Test suites + anime matching regression
+        run: sh tools/run_tests.sh preludarr:ci
+
+      - name: Fresh-install smoke test
+        run: sh tools/smoke_test.sh preludarr:ci
+
+      - name: End-to-end (fresh install, non-root, setup code, writes, upload, API, streaming, slow client)
+        run: sh tools/e2e_test.sh preludarr:ci   # the upgrade part runs locally with an older image (none is published yet)
+
+  release-dry-run:
+    name: Release dry run (amd64 + arm64, nothing pushed)
+    needs: test
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Version is readable
+        run: |
+          app=$(sed -n "s/^APP_VERSION *= *'\([^']*\)'.*/\1/p" preludarr/login.py)
+          [ -n "$app" ] || { echo "::error::APP_VERSION not found in preludarr/login.py"; exit 1; }
+          echo "APP_VERSION=$app"
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1  # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
+      - name: Build amd64 + arm64 (not pushed)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false
+          build-args: |
+            VERSION=dry-run
+            REVISION=${{ github.sha }}
+
+  publish:
+    name: Publish to ghcr.io
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Tag must match the app version
+        id: version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          app=$(sed -n "s/^APP_VERSION *= *'\([^']*\)'.*/\1/p" preludarr/login.py)
+          echo "tag=$tag app=$app"
+          [ -n "$app" ] || { echo "::error::APP_VERSION not found in preludarr/login.py"; exit 1; }
+          [ "$tag" = "$app" ] || { echo "::error::Tag v$tag does not match APP_VERSION $app in preludarr/login.py"; exit 1; }
+          echo "$tag" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-(beta|rc)\.[0-9]+)?$' || { echo "::error::Version $tag is not X.Y.Z or X.Y.Z-beta.N / -rc.N (development versions are never published)"; exit 1; }
+          case "$tag" in *-*) echo "prerelease=true" >> "$GITHUB_OUTPUT";; *) echo "prerelease=false" >> "$GITHUB_OUTPUT";; esac
+
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1  # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
+
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6  # v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302  # v6.2.0
+        with:
+          images: ${{ env.IMAGE }}
+          flavor: latest=false
+          # Stable 1.12.0 → 1.12.0, 1.12, latest. Pre-release 1.12.0-beta.1 → 1.12.0-beta.1, beta (never latest).
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ steps.version.outputs.prerelease == 'false' }}
+            type=raw,value=latest,enable=${{ steps.version.outputs.prerelease == 'false' }}
+            type=raw,value=beta,enable=${{ steps.version.outputs.prerelease == 'true' }}
+
+      - name: Build and push (amd64 + arm64, SBOM + provenance)
+        id: push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            REVISION=${{ github.sha }}
+            CREATED=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+          provenance: mode=max
+          sbom: true
+
+      - name: Verify the published image
+        run: |
+          ref="${IMAGE}:${{ steps.meta.outputs.version }}"
+          docker buildx imagetools inspect "$ref" --format '{{json .Manifest}}' > manifest.json
+          for arch in amd64 arm64; do grep -q "\"architecture\":\"$arch\"" manifest.json || { echo "::error::$arch missing"; exit 1; }; done
+          docker buildx imagetools inspect "$ref" --format '{{json .Provenance}}' | grep -q . || { echo "::error::no provenance"; exit 1; }
+          docker buildx imagetools inspect "$ref" --format '{{json .SBOM}}' | grep -q . || { echo "::error::no SBOM"; exit 1; }
+          docker pull -q --platform linux/amd64 "$ref"
+          ver=$(docker inspect "$ref" --format '{{index .Config.Labels "org.opencontainers.image.version"}}')
+          [ "$ver" = "${{ steps.meta.outputs.version }}" ] || { echo "::error::image label version $ver"; exit 1; }
+          echo "Published $ref (amd64 + arm64, provenance + SBOM, version label $ver)"

@@ -1,0 +1,86 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Security checks. Failure criteria:
+#   secrets       any gitleaks finding in the files or the full Git history (values are redacted; .gitleaks.toml lists exceptions)
+#   python-deps   any known vulnerability in docker/requirements.txt (pip-audit, hashes required)
+#   image         any HIGH or CRITICAL vulnerability with a fix available in the built image (Trivy); all others are reported
+#   static        any new Bandit finding of medium+ severity and medium+ confidence (.github/security/bandit-baseline.json)
+# Exceptions are documented in .github/security/TRIAGE.md.
+name: Security checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 5 * * 1'   # weekly: new vulnerabilities appear without code changes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GITLEAKS: ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f   # v8.30.1
+  TRIVY: aquasec/trivy@sha256:2416d1f74045b57274df1a340eee6b510cacd73c66a6ccb8da092b117eb7d222                 # 0.76.0
+  PYTHON: python:3.12-alpine3.24@sha256:e6dae589c1c05976188fd3bd019afd091445fc533ed2ea29001beddc7368a9c8
+
+jobs:
+  secrets:
+    name: Secrets (files + full history)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: gitleaks — full Git history
+        # safe.directory: never let a folder-owner mismatch turn the scan into a silent "0 commits scanned" pass
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0='*' \
+            -v "$PWD":/repo:ro "$GITLEAKS" git /repo --config /repo/.gitleaks.toml --redact=100 --no-banner --exit-code 1 2>&1 | tee gitleaks.log
+          grep -Eq '[1-9][0-9]* commits scanned' gitleaks.log || { echo "::error::gitleaks scanned no commits"; exit 1; }
+      - name: gitleaks — current files
+        run: docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/repo:ro "$GITLEAKS" dir /repo --config /repo/.gitleaks.toml --redact=100 --no-banner --exit-code 1
+
+  python-deps:
+    name: Python dependencies (pip-audit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: pip-audit
+        run: >
+          docker run --rm -v "$PWD/docker/requirements.txt":/req.txt:ro --entrypoint sh "$PYTHON" -c
+          'pip install -q --disable-pip-version-check --root-user-action=ignore pip-audit==2.10.1 &&
+          pip-audit -r /req.txt --require-hashes --disable-pip --strict --progress-spinner off'
+
+  image:
+    name: Container image (Trivy)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build image
+        run: docker build -t preludarr:scan . && docker save preludarr:scan -o image.tar
+      - name: Report (all severities)
+        run: docker run --rm -v "$PWD":/scan:ro "$TRIVY" image --quiet --scanners vuln --input /scan/image.tar
+      - name: Fail on fixable HIGH/CRITICAL
+        run: docker run --rm -v "$PWD":/scan:ro "$TRIVY" image --quiet --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --input /scan/image.tar
+
+  static:
+    name: Static analysis (Bandit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Bandit (new medium+ findings fail)
+        run: >
+          docker run --rm -v "$PWD":/repo:ro -w /repo --entrypoint sh "$PYTHON" -c
+          'pip install -q --disable-pip-version-check --root-user-action=ignore bandit==1.9.4 &&
+          bandit -r preludarr -ll -ii -b .github/security/bandit-baseline.json'

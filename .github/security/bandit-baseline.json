@@ -1,0 +1,2264 @@
+{
+ "errors": [],
+ "metrics": {
+  "_totals": {
+   "CONFIDENCE.HIGH": 57,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 25,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 45,
+   "SEVERITY.MEDIUM": 37,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 15756,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/anidb.py": {
+   "CONFIDENCE.HIGH": 4,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 3,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 412,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/animethemes.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 131,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/app.py": {
+   "CONFIDENCE.HIGH": 10,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 5,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 7,
+   "SEVERITY.MEDIUM": 8,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 2723,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/app_logs.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 334,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/arr.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 1,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 611,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/auto_backup.py": {
+   "CONFIDENCE.HIGH": 2,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 2,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 170,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/auto_themes.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 1,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 152,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/backup_upload.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 58,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/custom_upload.py": {
+   "CONFIDENCE.HIGH": 3,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 3,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 332,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/download_clients.py": {
+   "CONFIDENCE.HIGH": 2,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 2,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 125,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/general_settings.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 340,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/httpserver.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 160,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/kinds.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 27,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/library_health.py": {
+   "CONFIDENCE.HIGH": 2,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 589,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/login.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 764,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/media_servers.py": {
+   "CONFIDENCE.HIGH": 5,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 4,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 777,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/movie_collections.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 424,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/neterrors.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 86,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/path_moves.py": {
+   "CONFIDENCE.HIGH": 2,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 8,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 2,
+   "SEVERITY.MEDIUM": 8,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 195,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/permissions.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 377,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/poster_connect.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 399,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/poster_filters.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 1,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 378,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/poster_format.py": {
+   "CONFIDENCE.HIGH": 2,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 2,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 51,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/poster_manual.py": {
+   "CONFIDENCE.HIGH": 3,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 2,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 762,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/ratelimit.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 119,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/release_notes.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 1,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 74,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/restore.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 236,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/root_folders.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 471,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/shows_movies.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 179,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/sources.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 251,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/system.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 2,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 2,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 626,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/theme_management.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 2,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 2,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 447,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/theme_queue.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 4,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 4,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 301,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/theme_review.py": {
+   "CONFIDENCE.HIGH": 5,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 5,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 772,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/ui.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 152,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/unmapped.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 220,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/updates.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 184,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/youtube_download.py": {
+   "CONFIDENCE.HIGH": 4,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 4,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 210,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/youtube_manual.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 376,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/youtube_search.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 393,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/youtube_settings.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 102,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "preludarr/youtube_ui.py": {
+   "CONFIDENCE.HIGH": 2,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 2,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 266,
+   "nosec": 0,
+   "skipped_tests": 0
+  }
+ },
+ "results": [
+  {
+   "code": "25 import urllib.request\n26 import xml.etree.ElementTree as ET\n27 from pathlib import Path\n",
+   "col_offset": 0,
+   "end_col_offset": 34,
+   "filename": "preludarr/anidb.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 20,
+    "link": "https://cwe.mitre.org/data/definitions/20.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Using xml.etree.ElementTree to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree with the equivalent defusedxml package, or make sure defusedxml.defuse_stdlib() is called.",
+   "line_number": 26,
+   "line_range": [
+    26
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b405-import-xml-etree",
+   "test_id": "B405",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "74     with gzip.open(path) as stream:\n75         for _, element in ET.iterparse(stream):\n76             if element.tag != 'anime':\n",
+   "col_offset": 26,
+   "end_col_offset": 46,
+   "filename": "preludarr/anidb.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 20,
+    "link": "https://cwe.mitre.org/data/definitions/20.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Using xml.etree.ElementTree.iterparse to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree.iterparse with its defusedxml equivalent function or make sure defusedxml.defuse_stdlib() is called",
+   "line_number": 75,
+   "line_range": [
+    75
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b313-b320-xml-bad-elementtree",
+   "test_id": "B314",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "124         req = urllib.request.Request(DUMP_URL, headers={'User-Agent': USER_AGENT})\n125         with urllib.request.urlopen(req, timeout=60) as response:\n126             data = response.read(MAX_DUMP + 1)\n",
+   "col_offset": 13,
+   "end_col_offset": 52,
+   "filename": "preludarr/anidb.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 125,
+   "line_range": [
+    125
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "360         req = urllib.request.Request(url, headers={'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip'})\n361         with urllib.request.urlopen(req, timeout=20) as response:\n362             raw = response.read(2 * 1024 * 1024)\n",
+   "col_offset": 13,
+   "end_col_offset": 52,
+   "filename": "preludarr/anidb.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 361,
+   "line_range": [
+    361
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "110                 req = urllib.request.Request(url, headers=headers)\n111                 with urllib.request.urlopen(req, timeout=TIMEOUT) as response:\n112                     data = json.load(response)\n",
+   "col_offset": 21,
+   "end_col_offset": 65,
+   "filename": "preludarr/animethemes.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 111,
+   "line_range": [
+    111
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "3 \"\"\"Preludarr (formerly Splicarr and Themearr): self-hosted theme songs for your library. Run: python3 app.py\"\"\"\n4 import os, sys, json, sqlite3, threading, time, re, urllib.request, urllib.parse, subprocess, tempfile, shutil, html, hashlib, contextlib, unicodedata\n5 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler\n",
+   "col_offset": 0,
+   "end_col_offset": 150,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Consider possible security implications associated with the subprocess module.",
+   "line_number": 4,
+   "line_range": [
+    4
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+   "test_id": "B404",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "94   if row and row['state']!=last['state']:text+=' (now '+_STATE_LABEL.get(row['state'],row['state'])+')'\n95  except Exception:pass\n96  return text\n",
+   "col_offset": 1,
+   "end_col_offset": 22,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 95,
+   "line_range": [
+    95
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "287       ratelimit.wait('tvdb')  # V1.9.14\n288       with urllib.request.urlopen(req,timeout=18) as response:\n289        items=json.load(response).get('data') or []\n",
+   "col_offset": 11,
+   "end_col_offset": 49,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 288,
+   "line_range": [
+    288
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "322    req=urllib.request.Request(poster_url,headers={'User-Agent':'Preludarr/1.12 (self-hosted theme manager)'})\n323    with urllib.request.urlopen(req,timeout=25) as response:\n324     content=response.read(3*1024*1024+1)\n",
+   "col_offset": 8,
+   "end_col_offset": 46,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 323,
+   "line_range": [
+    323
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "682     shows=request_json(url).get('anime') or []\n683    except Exception:\n684     continue\n685    for show in shows:\n",
+   "col_offset": 3,
+   "end_col_offset": 12,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Continue detected.",
+   "line_number": 683,
+   "line_range": [
+    683,
+    684
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b112_try_except_continue.html",
+   "test_id": "B112",
+   "test_name": "try_except_continue"
+  },
+  {
+   "code": "1074    )\n1075    subprocess.run(\n1076     [sys.executable,'-c',launcher]+ffmpeg_args,\n1077     check=True,timeout=120,pass_fds=(folder_fd,)\n1078    )\n1079    if progress: progress(\"validating\", \"Validating converted MP3\")\n",
+   "col_offset": 3,
+   "end_col_offset": 4,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "subprocess call - check for execution of untrusted input.",
+   "line_number": 1075,
+   "line_range": [
+    1075,
+    1076,
+    1077,
+    1078
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+   "test_id": "B603",
+   "test_name": "subprocess_without_shell_equals_true"
+  },
+  {
+   "code": "1167   event(name,status,source+(' \u2014 '+extra if extra else ''))\n1168  except Exception:\n1169   pass\n1170 \n",
+   "col_offset": 1,
+   "end_col_offset": 6,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 1168,
+   "line_range": [
+    1168,
+    1169
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "1248    req=urllib.request.Request(url,headers={'User-Agent':'Preludarr/1.12 (self-hosted theme manager)'})\n1249    with urllib.request.urlopen(req,timeout=35) as resp,open(source,'wb') as out:\n1250     total=0\n",
+   "col_offset": 8,
+   "end_col_offset": 46,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 1249,
+   "line_range": [
+    1249
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "1256      out.write(chunk)\n1257    subprocess.run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error','-y','-i',str(source),'-vn','-codec:a','libmp3lame','-q:a','4',str(converted)],check=True,timeout=120)\n1258    if converted.stat().st_size<1024:raise ValueError('Converted MP3 is unexpectedly small')\n",
+   "col_offset": 3,
+   "end_col_offset": 176,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Starting a process with a partial executable path",
+   "line_number": 1257,
+   "line_range": [
+    1257
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+   "test_id": "B607",
+   "test_name": "start_process_with_partial_path"
+  },
+  {
+   "code": "1256      out.write(chunk)\n1257    subprocess.run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error','-y','-i',str(source),'-vn','-codec:a','libmp3lame','-q:a','4',str(converted)],check=True,timeout=120)\n1258    if converted.stat().st_size<1024:raise ValueError('Converted MP3 is unexpectedly small')\n",
+   "col_offset": 3,
+   "end_col_offset": 176,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "subprocess call - check for execution of untrusted input.",
+   "line_number": 1257,
+   "line_range": [
+    1257
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+   "test_id": "B603",
+   "test_name": "subprocess_without_shell_equals_true"
+  },
+  {
+   "code": "2379     with db() as c:\n2380      total=c.execute('SELECT COUNT(*) FROM shows'+clause,args).fetchone()[0]\n2381      pages=max(1,(total+per_page-1)//per_page);page=min(page,pages)\n",
+   "col_offset": 21,
+   "end_col_offset": 49,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 2380,
+   "line_range": [
+    2380
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "2381      pages=max(1,(total+per_page-1)//per_page);page=min(page,pages)\n2382      rows=c.execute('SELECT path,name,library,state FROM shows'+clause+' ORDER BY name COLLATE NOCASE LIMIT ? OFFSET ?',args+[per_page,(page-1)*per_page]).fetchall()\n2383     def option(value,label,current):\n",
+   "col_offset": 20,
+   "end_col_offset": 63,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 2382,
+   "line_range": [
+    2382
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "2488    poster_filters.register(c,poster_file)\n2489    total=c.execute('SELECT COUNT(*) FROM shows'+where,params).fetchone()[0]\n2490    pages=max(1,(total+per_page-1)//per_page)\n",
+   "col_offset": 19,
+   "end_col_offset": 47,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 2489,
+   "line_range": [
+    2489
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "2492    order=\" ORDER BY (SELECT added FROM show_added WHERE show_added.path=shows.path) DESC,name\" if state=='recent' else \" ORDER BY CASE state WHEN 'review' THEN 0 WHEN 'missing' THEN 1 ELSE 2 END,name\"\n2493    rows=c.execute('SELECT * FROM shows'+where+order+\" LIMIT ? OFFSET ?\",params+[per_page,(page-1)*per_page]).fetchall()\n2494    events=c.execute('SELECT * FROM events ORDER BY id DESC LIMIT 20').fetchall()\n",
+   "col_offset": 18,
+   "end_col_offset": 39,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 2493,
+   "line_range": [
+    2493
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "2967  print(f'Preludarr listening on {PORT}, auto-download={AUTO}',flush=True)\n2968  httpserver.Server(('0.0.0.0',PORT),Handler).serve_forever()\n",
+   "col_offset": 20,
+   "end_col_offset": 29,
+   "filename": "preludarr/app.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 605,
+    "link": "https://cwe.mitre.org/data/definitions/605.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible binding to all interfaces.",
+   "line_number": 2968,
+   "line_range": [
+    2968
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b104_hardcoded_bind_all_interfaces.html",
+   "test_id": "B104",
+   "test_name": "hardcoded_bind_all_interfaces"
+  },
+  {
+   "code": "210             __import__('general_settings').apply_logging()  # saved Logging settings\n211         except Exception:\n212             pass\n213         return True\n",
+   "col_offset": 8,
+   "end_col_offset": 16,
+   "filename": "preludarr/app_logs.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 211,
+   "line_range": [
+    211,
+    212
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "519     msg = ''\n520     preview_token = ''\n521     try:\n",
+   "col_offset": 20,
+   "end_col_offset": 22,
+   "filename": "preludarr/arr.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 259,
+    "link": "https://cwe.mitre.org/data/definitions/259.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Possible hardcoded password: ''",
+   "line_number": 520,
+   "line_range": [
+    520
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html",
+   "test_id": "B105",
+   "test_name": "hardcoded_password_string"
+  },
+  {
+   "code": "128             app.event('Automatic backup', 'error', 'Automatic backup failed: ' + str(error)[:200])\n129         except Exception:\n130             pass\n131         return ''\n",
+   "col_offset": 8,
+   "end_col_offset": 16,
+   "filename": "preludarr/auto_backup.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 129,
+   "line_range": [
+    129,
+    130
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "139         app.event('Automatic backup', 'backup', 'Automatic backup created' + (f'; removed {len(removed)} older automatic backup' + ('' if len(removed) == 1 else 's') if removed else ''))\n140     except Exception:\n141         pass\n142     return name\n",
+   "col_offset": 4,
+   "end_col_offset": 12,
+   "filename": "preludarr/auto_backup.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 140,
+   "line_range": [
+    140,
+    141
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "116         sql, params = recent_clause()\n117         recent = c.execute('SELECT COUNT(*) FROM shows WHERE ' + sql, params).fetchone()[0]\n118     since = time.strftime('%Y-%m-%d %H:%M', time.localtime(s['enabled_at'])) if s['enabled_at'] else ''\n",
+   "col_offset": 27,
+   "end_col_offset": 62,
+   "filename": "preludarr/auto_themes.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 117,
+   "line_range": [
+    117
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "7 import re\n8 import subprocess\n9 import secrets\n",
+   "col_offset": 0,
+   "end_col_offset": 17,
+   "filename": "preludarr/custom_upload.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Consider possible security implications associated with the subprocess module.",
+   "line_number": 8,
+   "line_range": [
+    8
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+   "test_id": "B404",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "34  try:\n35   done = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'a:0',\n36                          '-show_entries', 'stream=codec_name:format=duration', '-of', 'json', str(path)],\n37                         capture_output=True, text=True, timeout=30)\n38  except (OSError, subprocess.TimeoutExpired):\n",
+   "col_offset": 9,
+   "end_col_offset": 67,
+   "filename": "preludarr/custom_upload.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Starting a process with a partial executable path",
+   "line_number": 35,
+   "line_range": [
+    35,
+    36,
+    37
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+   "test_id": "B607",
+   "test_name": "start_process_with_partial_path"
+  },
+  {
+   "code": "34  try:\n35   done = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'a:0',\n36                          '-show_entries', 'stream=codec_name:format=duration', '-of', 'json', str(path)],\n37                         capture_output=True, text=True, timeout=30)\n38  except (OSError, subprocess.TimeoutExpired):\n",
+   "col_offset": 9,
+   "end_col_offset": 67,
+   "filename": "preludarr/custom_upload.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "subprocess call - check for execution of untrusted input.",
+   "line_number": 35,
+   "line_range": [
+    35,
+    36,
+    37
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+   "test_id": "B603",
+   "test_name": "subprocess_without_shell_equals_true"
+  },
+  {
+   "code": "8 import shutil\n9 import subprocess\n10 import time\n",
+   "col_offset": 0,
+   "end_col_offset": 17,
+   "filename": "preludarr/download_clients.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Consider possible security implications associated with the subprocess module.",
+   "line_number": 9,
+   "line_range": [
+    9
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+   "test_id": "B404",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "31         try:\n32             value = subprocess.run([exe, '--version'], capture_output=True, text=True, timeout=8).stdout.strip()[:40]\n33         except (OSError, subprocess.SubprocessError):\n",
+   "col_offset": 20,
+   "end_col_offset": 97,
+   "filename": "preludarr/download_clients.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "subprocess call - check for execution of untrusted input.",
+   "line_number": 32,
+   "line_range": [
+    32
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+   "test_id": "B603",
+   "test_name": "subprocess_without_shell_equals_true"
+  },
+  {
+   "code": "220             __import__('sys').modules['__main__'].event('API', 'warning', 'An API request sent the key in the address (?apikey=). Move that tool to the X-Api-Key header.')\n221         except Exception:\n222             pass\n223     if method == 'POST' and path == '/api/v1/command/scan':\n",
+   "col_offset": 8,
+   "end_col_offset": 16,
+   "filename": "preludarr/general_settings.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 221,
+   "line_range": [
+    221,
+    222
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "148         return json.loads(raw)\n149     import xml.etree.ElementTree as ET\n150     return ET.fromstring(raw)\n",
+   "col_offset": 4,
+   "end_col_offset": 38,
+   "filename": "preludarr/library_health.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 20,
+    "link": "https://cwe.mitre.org/data/definitions/20.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Using xml.etree.ElementTree to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree with the equivalent defusedxml package, or make sure defusedxml.defuse_stdlib() is called.",
+   "line_number": 149,
+   "line_range": [
+    149
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b405-import-xml-etree",
+   "test_id": "B405",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "149     import xml.etree.ElementTree as ET\n150     return ET.fromstring(raw)\n151 \n",
+   "col_offset": 11,
+   "end_col_offset": 29,
+   "filename": "preludarr/library_health.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 20,
+    "link": "https://cwe.mitre.org/data/definitions/20.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Using xml.etree.ElementTree.fromstring to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree.fromstring with its defusedxml equivalent function or make sure defusedxml.defuse_stdlib() is called",
+   "line_number": 150,
+   "line_range": [
+    150
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b313-b320-xml-bad-elementtree",
+   "test_id": "B314",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "176  try:extra=__import__('general_settings').allowed_hosts()  # V1.9.7 Settings \u2192 Host \u2192 Allowed hosts\n177  except Exception:pass\n178  return extra_allowed_hosts()|extra\n",
+   "col_offset": 1,
+   "end_col_offset": 22,
+   "filename": "preludarr/login.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 177,
+   "line_range": [
+    177
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "19 import urllib.request\n20 import xml.etree.ElementTree as ET\n21 from pathlib import Path\n",
+   "col_offset": 0,
+   "end_col_offset": 34,
+   "filename": "preludarr/media_servers.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 20,
+    "link": "https://cwe.mitre.org/data/definitions/20.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Using xml.etree.ElementTree to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree with the equivalent defusedxml package, or make sure defusedxml.defuse_stdlib() is called.",
+   "line_number": 20,
+   "line_range": [
+    20
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b405-import-xml-etree",
+   "test_id": "B405",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "449         elif value.startswith(b'<'):\n450             tag = ET.fromstring(value).tag.rsplit('}', 1)[-1]\n451             if tag != 'MediaContainer':\n",
+   "col_offset": 18,
+   "end_col_offset": 38,
+   "filename": "preludarr/media_servers.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 20,
+    "link": "https://cwe.mitre.org/data/definitions/20.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Using xml.etree.ElementTree.fromstring to parse untrusted XML data is known to be vulnerable to XML attacks. Replace xml.etree.ElementTree.fromstring with its defusedxml equivalent function or make sure defusedxml.defuse_stdlib() is called",
+   "line_number": 450,
+   "line_range": [
+    450
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b313-b320-xml-bad-elementtree",
+   "test_id": "B314",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "560     side = full_sidebar(active)\n561     assert side.endswith('</aside>')\n562     return _SETTINGS_HEAD.replace('{title}', _e(title)) + side[:-len('</aside>')] + '\\n'\n",
+   "col_offset": 4,
+   "end_col_offset": 36,
+   "filename": "preludarr/media_servers.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.",
+   "line_number": 561,
+   "line_range": [
+    561
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b101_assert_used.html",
+   "test_id": "B101",
+   "test_name": "assert_used"
+  },
+  {
+   "code": "844             row('Sonarr / Radarr', 'arr', '\u2014', badge('Not configured', 'off'), '<span class=\"muted\">Optional</span>')\n845     except Exception:\n846         pass\n847     try:\n",
+   "col_offset": 4,
+   "end_col_offset": 12,
+   "filename": "preludarr/media_servers.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 845,
+   "line_range": [
+    845,
+    846
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "852             (f\"{st['anime']:,} anime \u00b7 updated \" + _e(st['updated'])) if st['available'] and st['updated'] else '\u2014')\n853     except Exception:\n854         pass\n855     return ('<section class=\"cx-sec\" id=\"cx-sec-status\"><div class=\"panel\" id=\"connect-status\"><h2>Status ' + ui.label('cached') + '</h2>'\n",
+   "col_offset": 4,
+   "end_col_offset": 12,
+   "filename": "preludarr/media_servers.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 853,
+   "line_range": [
+    853,
+    854
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "275             ms._refresh_one(servers[kind], item_id)\n276         except Exception:\n277             pass  # the file is in place; the server picks it up on its next scan\n278     with _LOCK:\n",
+   "col_offset": 8,
+   "end_col_offset": 16,
+   "filename": "preludarr/movie_collections.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 276,
+   "line_range": [
+    276,
+    277
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "76     show_added: a pre-existing title (baseline) or the earliest date; posters: the one with an image; media_ids: fields merged.\"\"\"\n77     a = c.execute(f'SELECT * FROM {table} WHERE path=?', (src,)).fetchone()\n78     b = c.execute(f'SELECT * FROM {table} WHERE path=?', (dst,)).fetchone()\n",
+   "col_offset": 20,
+   "end_col_offset": 34,
+   "filename": "preludarr/path_moves.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 77,
+   "line_range": [
+    77
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "77     a = c.execute(f'SELECT * FROM {table} WHERE path=?', (src,)).fetchone()\n78     b = c.execute(f'SELECT * FROM {table} WHERE path=?', (dst,)).fetchone()\n79     if table == 'show_added':\n",
+   "col_offset": 20,
+   "end_col_offset": 34,
+   "filename": "preludarr/path_moves.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 78,
+   "line_range": [
+    78
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "106                 continue\n107             rows = [r[0] for r in c.execute(f\"SELECT path FROM {table} WHERE path=? OR path LIKE ? ESCAPE '\\\\'\", (old, _like(old)))]\n108             counts[table] = len(rows)\n",
+   "col_offset": 46,
+   "end_col_offset": 63,
+   "filename": "preludarr/path_moves.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 107,
+   "line_range": [
+    107
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "112                 np = _swap(p, old, new)\n113                 exists = c.execute(f'SELECT 1 FROM {table} WHERE path=?', (np,)).fetchone()\n114                 if exists:\n",
+   "col_offset": 37,
+   "end_col_offset": 51,
+   "filename": "preludarr/path_moves.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 113,
+   "line_range": [
+    113
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "115                     if table in TABLES_NEW_WINS or not _moving_wins(app, c, table, p, np):\n116                         c.execute(f'DELETE FROM {table} WHERE path=?', (p,))\n117                         continue\n",
+   "col_offset": 36,
+   "end_col_offset": 48,
+   "filename": "preludarr/path_moves.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 116,
+   "line_range": [
+    116
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "117                         continue\n118                     c.execute(f'DELETE FROM {table} WHERE path=?', (np,))\n119                 c.execute(f'UPDATE {table} SET path=? WHERE path=?', (np, p))\n",
+   "col_offset": 32,
+   "end_col_offset": 44,
+   "filename": "preludarr/path_moves.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 118,
+   "line_range": [
+    118
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "118                     c.execute(f'DELETE FROM {table} WHERE path=?', (np,))\n119                 c.execute(f'UPDATE {table} SET path=? WHERE path=?', (np, p))\n120         if 'theme_queue' in tables:\n",
+   "col_offset": 28,
+   "end_col_offset": 35,
+   "filename": "preludarr/path_moves.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 119,
+   "line_range": [
+    119
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "173                       ', '.join(f'{k} {v}' for k, v in counts.items() if v))\n174         except Exception:\n175             pass\n176     return counts\n",
+   "col_offset": 8,
+   "end_col_offset": 16,
+   "filename": "preludarr/path_moves.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 174,
+   "line_range": [
+    174,
+    175
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "188             try:\n189                 paths |= {r[0] for r in c.execute(f'SELECT path FROM {table}')}\n190             except Exception:\n",
+   "col_offset": 52,
+   "end_col_offset": 69,
+   "filename": "preludarr/path_moves.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 189,
+   "line_range": [
+    189
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "189                 paths |= {r[0] for r in c.execute(f'SELECT path FROM {table}')}\n190             except Exception:\n191                 continue\n192     groups = {}\n",
+   "col_offset": 12,
+   "end_col_offset": 24,
+   "filename": "preludarr/path_moves.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Continue detected.",
+   "line_number": 190,
+   "line_range": [
+    190,
+    191
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b112_try_except_continue.html",
+   "test_id": "B112",
+   "test_name": "try_except_continue"
+  },
+  {
+   "code": "92     register(conn, poster_file)\n93     paths = [row[0] for row in conn.execute('SELECT path FROM shows' + where + ' ORDER BY path', params)]\n94     return [path for path in paths if not poster_file(path).is_file()]\n",
+   "col_offset": 44,
+   "end_col_offset": 68,
+   "filename": "preludarr/poster_filters.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 93,
+   "line_range": [
+    93
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "6 \"\"\"\n7 import subprocess\n8 import sys\n",
+   "col_offset": 0,
+   "end_col_offset": 17,
+   "filename": "preludarr/poster_format.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Consider possible security implications associated with the subprocess module.",
+   "line_number": 7,
+   "line_range": [
+    7
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+   "test_id": "B404",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "51     try:\n52         result = subprocess.run(\n53             command, input=content, stdout=subprocess.PIPE,\n54             stderr=subprocess.PIPE, timeout=25, check=True,\n55         )\n56     except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:\n",
+   "col_offset": 17,
+   "end_col_offset": 9,
+   "filename": "preludarr/poster_format.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "subprocess call - check for execution of untrusted input.",
+   "line_number": 52,
+   "line_range": [
+    52,
+    53,
+    54,
+    55
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+   "test_id": "B603",
+   "test_name": "subprocess_without_shell_equals_true"
+  },
+  {
+   "code": "23 import secrets\n24 import subprocess\n25 import sys\n",
+   "col_offset": 0,
+   "end_col_offset": 17,
+   "filename": "preludarr/poster_manual.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Consider possible security implications associated with the subprocess module.",
+   "line_number": 24,
+   "line_range": [
+    24
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+   "test_id": "B404",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "60                 'os.execvp(sys.argv[1],sys.argv[1:])')\n61     return subprocess.run([sys.executable, '-c', launcher] + args, input=data, stdout=subprocess.PIPE,\n62                           stderr=subprocess.PIPE, timeout=timeout, check=True).stdout\n63 \n",
+   "col_offset": 11,
+   "end_col_offset": 78,
+   "filename": "preludarr/poster_manual.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "subprocess call - check for execution of untrusted input.",
+   "line_number": 61,
+   "line_range": [
+    61,
+    62
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+   "test_id": "B603",
+   "test_name": "subprocess_without_shell_equals_true"
+  },
+  {
+   "code": "345                 __import__('ratelimit').wait('tvdb')  # V1.9.14\n346                 with urllib.request.urlopen(req, timeout=18) as response:\n347                     items = json.load(response).get('data') or []\n",
+   "col_offset": 21,
+   "end_col_offset": 60,
+   "filename": "preludarr/poster_manual.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 346,
+   "line_range": [
+    346
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "26             tables = {r[0] for r in con.execute(\"SELECT name FROM sqlite_master WHERE type='table'\")}\n27             return {key: (str(con.execute('SELECT COUNT(*) FROM \"' + table + '\"').fetchone()[0]) if table in tables else 'Unavailable')\n28                     for table, key in (('shows', 'library'), ('posters', 'posters'))}\n",
+   "col_offset": 42,
+   "end_col_offset": 66,
+   "filename": "preludarr/release_notes.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 27,
+   "line_range": [
+    27
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "112     req = urllib.request.Request(url, headers=UA)\n113     with urllib.request.urlopen(req, timeout=timeout) as r:\n114         final = urllib.parse.urlsplit(r.geturl())\n",
+   "col_offset": 9,
+   "end_col_offset": 53,
+   "filename": "preludarr/sources.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 113,
+   "line_range": [
+    113
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "190         kinds=[r[0] for r in c.execute('SELECT status FROM events GROUP BY status ORDER BY COUNT(*) DESC, status')]\n191         total=c.execute('SELECT COUNT(*) FROM events'+sql,args).fetchone()[0]\n192         pages=max(1,(total+ACTIVITY_PAGE-1)//ACTIVITY_PAGE);page_no=min(page_no,pages)\n",
+   "col_offset": 24,
+   "end_col_offset": 53,
+   "filename": "preludarr/system.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 191,
+   "line_range": [
+    191
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "192         pages=max(1,(total+ACTIVITY_PAGE-1)//ACTIVITY_PAGE);page_no=min(page_no,pages)\n193         rows=c.execute('SELECT at,name,status,detail FROM events'+sql+' ORDER BY id DESC LIMIT ? OFFSET ?',args+[ACTIVITY_PAGE,(page_no-1)*ACTIVITY_PAGE]).fetchall()\n194         # Preludarr 1.11.1 (user 2026-10-29): titles link to their Theme Browser page. Events store the folder name, so a name that\n",
+   "col_offset": 23,
+   "end_col_offset": 65,
+   "filename": "preludarr/system.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 193,
+   "line_range": [
+    193
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "332         card('Recycle bin','/library-health/trash','current',f'{len(b)} entr'+('y' if len(b)==1 else 'ies'),f\"Kept {st['days']} days\"+(' \u00b7 emptied on schedule' if st['cron'] else ''))\n333     except Exception:\n334         pass\n335     return ('<div class=\"ov-wrap\"><div class=\"ov-grid\">'+''.join(cards)+'</div></div>'\n",
+   "col_offset": 4,
+   "end_col_offset": 12,
+   "filename": "preludarr/system.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 333,
+   "line_range": [
+    333,
+    334
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "49         total = conn.execute(\n50             \"SELECT COUNT(*) FROM shows\" + where, params\n51         ).fetchone()[0]\n",
+   "col_offset": 12,
+   "end_col_offset": 40,
+   "filename": "preludarr/theme_management.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 50,
+   "line_range": [
+    50
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "54         rows = conn.execute(\n55             \"SELECT path,name,library,state FROM shows\" + where\n56             + \" ORDER BY name COLLATE NOCASE LIMIT ? OFFSET ?\",\n",
+   "col_offset": 12,
+   "end_col_offset": 55,
+   "filename": "preludarr/theme_management.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 55,
+   "line_range": [
+    55
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "506                 event(anime, label, detail)\n507             except Exception:\n508                 pass\n509         destination = '/manage-themes?' + urllib.parse.urlencode(\n",
+   "col_offset": 12,
+   "end_col_offset": 20,
+   "filename": "preludarr/theme_management.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 507,
+   "line_range": [
+    507,
+    508
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "60     with app.db() as c:\n61         c.execute(f'UPDATE theme_queue SET {cols} WHERE id=?', [state, _now(), *fields.values(), qid])\n62 \n",
+   "col_offset": 20,
+   "end_col_offset": 43,
+   "filename": "preludarr/theme_queue.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 61,
+   "line_range": [
+    61
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "225     with app.db() as c:\n226         return [r[0] for r in c.execute('SELECT path FROM shows WHERE ' + ' AND '.join(clauses) + ' ORDER BY name LIMIT ?', params + [MAX_ADD])]\n227 \n",
+   "col_offset": 40,
+   "end_col_offset": 71,
+   "filename": "preludarr/theme_queue.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 226,
+   "line_range": [
+    226
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "238     with app.db() as c:\n239         rows = c.execute('SELECT * FROM theme_queue WHERE ' + tabs[tab][0] + ' ORDER BY updated DESC, id DESC LIMIT 300').fetchall()\n240     tab_count = lambda k: sum(n.get(s, 0) for s in {'review': ['proposed'], 'waiting': ['queued', 'searching', 'approved', 'installing'],  # noqa: E731\n",
+   "col_offset": 25,
+   "end_col_offset": 59,
+   "filename": "preludarr/theme_queue.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 239,
+   "line_range": [
+    239
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "329                                'retry': (\"'failed','no_match','skipped','cancelled'\", 'queued'), 'cancel': (\"'approved'\", 'cancelled')}[action]\n330                     n = c.execute(f\"UPDATE theme_queue SET state=?, updated=?, note=CASE WHEN ?='queued' THEN '' ELSE note END WHERE id=? AND state IN ({allowed[0]})\",\n331                                   (allowed[1], _now(), allowed[1], int(qid))).rowcount\n",
+   "col_offset": 36,
+   "end_col_offset": 152,
+   "filename": "preludarr/theme_queue.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 330,
+   "line_range": [
+    330
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "22 import stat\n23 import subprocess\n24 import tempfile\n",
+   "col_offset": 0,
+   "end_col_offset": 17,
+   "filename": "preludarr/theme_review.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Consider possible security implications associated with the subprocess module.",
+   "line_number": 23,
+   "line_range": [
+    23
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+   "test_id": "B404",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "165     try:\n166         out = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration:format_tags=title,artist', '-of', 'json', str(path)],\n167                              capture_output=True, timeout=10, check=False).stdout\n168         fmt = json.loads(out or b'{}').get('format') or {}\n",
+   "col_offset": 14,
+   "end_col_offset": 74,
+   "filename": "preludarr/theme_review.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Starting a process with a partial executable path",
+   "line_number": 166,
+   "line_range": [
+    166,
+    167
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+   "test_id": "B607",
+   "test_name": "start_process_with_partial_path"
+  },
+  {
+   "code": "165     try:\n166         out = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration:format_tags=title,artist', '-of', 'json', str(path)],\n167                              capture_output=True, timeout=10, check=False).stdout\n168         fmt = json.loads(out or b'{}').get('format') or {}\n",
+   "col_offset": 14,
+   "end_col_offset": 74,
+   "filename": "preludarr/theme_review.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "subprocess call - check for execution of untrusted input.",
+   "line_number": 166,
+   "line_range": [
+    166,
+    167
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+   "test_id": "B603",
+   "test_name": "subprocess_without_shell_equals_true"
+  },
+  {
+   "code": "400             __import__('media_servers').after_install(app.CONFIG, str(folder))\n401     except Exception:\n402         pass\n403     return ('Kept ' + keep_rel + ' as theme.mp3' + (' (converted to MP3)' if convert else '') + '. Moved to the recycle bin: '\n",
+   "col_offset": 4,
+   "end_col_offset": 12,
+   "filename": "preludarr/theme_review.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 401,
+   "line_range": [
+    401,
+    402
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "508         __import__('library_health').refresh_title(app, str(folder))\n509     except Exception:\n510         pass\n511     return 'Undone: ' + folder.name + ' is back the way it was (' + ', '.join(sorted(items)) + ' restored).'\n",
+   "col_offset": 4,
+   "end_col_offset": 12,
+   "filename": "preludarr/theme_review.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 703,
+    "link": "https://cwe.mitre.org/data/definitions/703.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Try, Except, Pass detected.",
+   "line_number": 509,
+   "line_range": [
+    509,
+    510
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html",
+   "test_id": "B110",
+   "test_name": "try_except_pass"
+  },
+  {
+   "code": "98                                                'User-Agent': 'Preludarr update check'})\n99     with urllib.request.urlopen(req, timeout=20) as r:\n100         if urllib.parse.urlsplit(r.geturl()).hostname != 'api.github.com':\n",
+   "col_offset": 9,
+   "end_col_offset": 48,
+   "filename": "preludarr/updates.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 99,
+   "line_range": [
+    99
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "9 import stat\n10 import subprocess\n11 import tempfile\n",
+   "col_offset": 0,
+   "end_col_offset": 17,
+   "filename": "preludarr/youtube_download.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Consider possible security implications associated with the subprocess module.",
+   "line_number": 10,
+   "line_range": [
+    10
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+   "test_id": "B404",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "111     try:\n112         result = subprocess.run(\n113             command,\n114             stdout=subprocess.PIPE,\n115             stderr=subprocess.DEVNULL,\n116             timeout=timeout,\n117             check=False\n118         )\n119     except subprocess.TimeoutExpired:\n",
+   "col_offset": 17,
+   "end_col_offset": 9,
+   "filename": "preludarr/youtube_download.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "subprocess call - check for execution of untrusted input.",
+   "line_number": 112,
+   "line_range": [
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+   "test_id": "B603",
+   "test_name": "subprocess_without_shell_equals_true"
+  },
+  {
+   "code": "232         try:\n233             result = subprocess.run(\n234                 [\n235                     \"ffprobe\", \"-v\", \"error\",\n236                     \"-select_streams\", \"a:0\",\n237                     \"-show_entries\", \"stream=codec_type\",\n238                     \"-of\", \"default=noprint_wrappers=1:nokey=1\",\n239                     str(audio)\n240                 ],\n241                 capture_output=True,\n242                 timeout=20,\n243                 check=False\n244             )\n245         except subprocess.TimeoutExpired:\n",
+   "col_offset": 21,
+   "end_col_offset": 13,
+   "filename": "preludarr/youtube_download.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Starting a process with a partial executable path",
+   "line_number": 233,
+   "line_range": [
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    242,
+    243,
+    244
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html",
+   "test_id": "B607",
+   "test_name": "start_process_with_partial_path"
+  },
+  {
+   "code": "232         try:\n233             result = subprocess.run(\n234                 [\n235                     \"ffprobe\", \"-v\", \"error\",\n236                     \"-select_streams\", \"a:0\",\n237                     \"-show_entries\", \"stream=codec_type\",\n238                     \"-of\", \"default=noprint_wrappers=1:nokey=1\",\n239                     str(audio)\n240                 ],\n241                 capture_output=True,\n242                 timeout=20,\n243                 check=False\n244             )\n245         except subprocess.TimeoutExpired:\n",
+   "col_offset": 21,
+   "end_col_offset": 13,
+   "filename": "preludarr/youtube_download.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "subprocess call - check for execution of untrusted input.",
+   "line_number": 233,
+   "line_range": [
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    242,
+    243,
+    244
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+   "test_id": "B603",
+   "test_name": "subprocess_without_shell_equals_true"
+  },
+  {
+   "code": "8 import stat\n9 import subprocess\n10 import threading\n",
+   "col_offset": 0,
+   "end_col_offset": 17,
+   "filename": "preludarr/youtube_manual.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Consider possible security implications associated with the subprocess module.",
+   "line_number": 9,
+   "line_range": [
+    9
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+   "test_id": "B404",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "165     try:\n166         with urllib.request.urlopen(req, timeout=20) as r:\n167             if urllib.parse.urlsplit(r.geturl()).hostname != 'www.googleapis.com':\n",
+   "col_offset": 13,
+   "end_col_offset": 52,
+   "filename": "preludarr/youtube_search.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 22,
+    "link": "https://cwe.mitre.org/data/definitions/22.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.",
+   "line_number": 166,
+   "line_range": [
+    166
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen",
+   "test_id": "B310",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "92     import shutil\n93     import subprocess\n94     import tempfile\n",
+   "col_offset": 4,
+   "end_col_offset": 21,
+   "filename": "preludarr/youtube_ui.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Consider possible security implications associated with the subprocess module.",
+   "line_number": 93,
+   "line_range": [
+    93
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+   "test_id": "B404",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "106         try:\n107             r = subprocess.run([exe, '--ignore-config', '--no-warnings', '--no-progress', '--socket-timeout', '15', '--retries', '1',\n108                                 '--cookies', copy, '--flat-playlist', '--playlist-items', '1', '--skip-download', '--dump-single-json', TEST_URL],\n109                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=90, check=False)\n110         except subprocess.TimeoutExpired:\n",
+   "col_offset": 16,
+   "end_col_offset": 103,
+   "filename": "preludarr/youtube_ui.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "subprocess call - check for execution of untrusted input.",
+   "line_number": 107,
+   "line_range": [
+    107,
+    108,
+    109
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+   "test_id": "B603",
+   "test_name": "subprocess_without_shell_equals_true"
+  }
+ ]
+}

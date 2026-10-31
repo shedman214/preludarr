@@ -1,0 +1,2418 @@
+{
+ "results": {
+  "/anime/A Misanthrope Teaches a Class for Demi-Humans (2026)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/JingaiKyoushitsu-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/JingaiKyoushitsu-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Ningen"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/JingaiKyoushitsu-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Ningen",
+     "ED1 — Ningen Come True!",
+     "ED2 — Sora no Iro"
+    ],
+    "matched_slugs": [
+     "jingai_kyoushitsu_no_ningengirai_kyoushi"
+    ],
+    "messages": [],
+    "video_ids": [
+     "19363",
+     "19364",
+     "19438"
+    ]
+   },
+   "category": "tv-installed",
+   "name": "A Misanthrope Teaches a Class for Demi-Humans (2026)"
+  },
+  "/anime/Agents of the Four Seasons Dance of Spring (2026)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/ShunkashuutouDaikoushaHaruNoMai-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/ShunkashuutouDaikoushaHaruNoMai-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Petals feat. Kase"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/ShunkashuutouDaikoushaHaruNoMai-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Petals feat. Kase",
+     "ED1 — Hanaikada feat. Kase"
+    ],
+    "matched_slugs": [
+     "shunkashuutou_daikousha_haru_no_mai"
+    ],
+    "messages": [],
+    "video_ids": [
+     "19512",
+     "19513"
+    ]
+   },
+   "category": "tv-installed",
+   "name": "Agents of the Four Seasons Dance of Spring (2026)"
+  },
+  "/anime/Ahiru no Sora": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/AhiruNoSora-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/AhiruNoSora-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Happy Go Ducky!"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/AhiruNoSora-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Happy Go Ducky!",
+     "OP2 — Nevermind",
+     "OP3 — Humming Bird",
+     "OP4 — Rebirth",
+     "ED1 — Tsubasa",
+     "ED2 — Over",
+     "ED3 — Hikari Sasu Hou e",
+     "ED4 — Taiyou Runner"
+    ],
+    "matched_slugs": [
+     "ahiru_no_sora"
+    ],
+    "messages": [],
+    "video_ids": [
+     "10184",
+     "10185",
+     "10186",
+     "10187",
+     "10180",
+     "10181",
+     "10182",
+     "10183"
+    ]
+   },
+   "category": "no-year",
+   "name": "Ahiru no Sora"
+  },
+  "/anime/Akame ga Kill! (2014)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/AkameGaKill-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/AkameGaKill-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Skyreach"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/AkameGaKill-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Skyreach",
+     "OP2 — LIAR MASK",
+     "ED1 — Konna Sekai, Shiritakunakatta.",
+     "ED2 — Tsuki Akari"
+    ],
+    "matched_slugs": [
+     "akame_ga_kill"
+    ],
+    "messages": [],
+    "video_ids": [
+     "5526",
+     "5527",
+     "5524",
+     "5525"
+    ]
+   },
+   "category": "romaji-title",
+   "name": "Akame ga Kill! (2014)"
+  },
+  "/anime/Alma-chan Wants to Be a Family! (2025)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/AlmaChanWaKazokuNiNaritai-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/AlmaChanWaKazokuNiNaritai-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Dramatic Overlay"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/AlmaChanWaKazokuNiNaritai-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Dramatic Overlay",
+     "ED1 — Arifuretetai"
+    ],
+    "matched_slugs": [
+     "almachan_wa_kazoku_ni_naritai"
+    ],
+    "messages": [],
+    "video_ids": [
+     "19203",
+     "19204"
+    ]
+   },
+   "category": "romaji-title",
+   "name": "Alma-chan Wants to Be a Family! (2025)"
+  },
+  "/anime/BAKI-DOU The Invincible Samurai (2026)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "tv-missing",
+   "name": "BAKI-DOU The Invincible Samurai (2026)"
+  },
+  "/anime/Blood Lad (2013)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/BloodLad-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/BloodLad-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: ViViD"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/BloodLad-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — ViViD",
+     "ED1 — BLOODY HOLIC"
+    ],
+    "matched_slugs": [
+     "blood_lad"
+    ],
+    "messages": [],
+    "video_ids": [
+     "4772",
+     "4771"
+    ]
+   },
+   "category": "similar-names",
+   "name": "Blood Lad (2013)"
+  },
+  "/anime/Blood Reign Curse of the Yoma (1989)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — Ashita e no Prologue"
+    ],
+    "matched_slugs": [
+     "youma"
+    ],
+    "messages": [],
+    "video_ids": [
+     "16177",
+     "16179"
+    ]
+   },
+   "category": "similar-names",
+   "name": "Blood Reign Curse of the Yoma (1989)"
+  },
+  "/anime/Blood+ (2005)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/BloodPlus-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/BloodPlus-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Aozora no Namida"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/BloodPlus-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Aozora no Namida",
+     "OP2 — SEASON&#x27;S CALL",
+     "OP3 — Colors of the Heart",
+     "OP4 — Raion",
+     "ED1 — Kataritsugu koto",
+     "ED2 — CRY NO MORE",
+     "ED3 — This Love",
+     "ED4 — Brand New Map"
+    ],
+    "matched_slugs": [
+     "blood"
+    ],
+    "messages": [],
+    "video_ids": [
+     "1047",
+     "1048",
+     "1049",
+     "1050",
+     "1043",
+     "1044",
+     "1045",
+     "1046"
+    ]
+   },
+   "category": "similar-names",
+   "name": "Blood+ (2005)"
+  },
+  "/anime/Code Geass Rozé of the Recapture (2024)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ],
+    "returned": "Review: HTTP Error 404: Not Found",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Running In My Head",
+     "ED1 — Rozé (Prod.TeddyLoid)"
+    ],
+    "matched_slugs": [
+     "code_geass_dakkan_no_roze"
+    ],
+    "messages": [],
+    "video_ids": [
+     "17996",
+     "17997"
+    ]
+   },
+   "category": "tv-missing",
+   "name": "Code Geass Rozé of the Recapture (2024)"
+  },
+  "/anime/Digimon Tamers (2001)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/DigimonTamers-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/DigimonTamers-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: The Biggest Dreamer"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/DigimonTamers-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — The Biggest Dreamer",
+     "ED1 — My Tomorrow",
+     "ED2 — Days -Aijou to Nichijou-",
+     "OP1-EN — Season 3 Opening Theme"
+    ],
+    "matched_slugs": [
+     "digimon_tamers"
+    ],
+    "messages": [],
+    "video_ids": [
+     "171",
+     "172",
+     "169",
+     "170",
+     "173"
+    ]
+   },
+   "category": "tv-installed",
+   "name": "Digimon Tamers (2001)"
+  },
+  "/anime/El Hazard The Magnificent World (1995)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "tv-missing",
+   "name": "El Hazard The Magnificent World (1995)"
+  },
+  "/anime/Firefly Wedding (2026)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/HotaruNoYomeiri-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/HotaruNoYomeiri-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Period"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/HotaruNoYomeiri-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Period",
+     "ED1 — Yumegokochi"
+    ],
+    "matched_slugs": [
+     "hotaru_no_yomeiri"
+    ],
+    "messages": [],
+    "video_ids": [
+     "20084",
+     "20085"
+    ]
+   },
+   "category": "tv-installed",
+   "name": "Firefly Wedding (2026)"
+  },
+  "/anime/Ghost in the Shell Arise - Alternative Architecture (2015)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/GhostInTheShellAriseAlternativeArchitecture-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/GhostInTheShellAriseAlternativeArchitecture-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Anata wo Tamotsu Mono"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/GhostInTheShellAriseAlternativeArchitecture-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Anata wo Tamotsu Mono"
+    ],
+    "matched_slugs": [
+     "ghost_in_the_shell_arise_alternative_architecture"
+    ],
+    "messages": [],
+    "video_ids": [
+     "6089"
+    ]
+   },
+   "category": "tv-missing",
+   "name": "Ghost in the Shell Arise - Alternative Architecture (2015)"
+  },
+  "/anime/Haganai I Don't Have Many Friends (2011)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ],
+    "returned": "Review: HTTP Error 404: Not Found",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [
+     "boku_wa_tomodachi_ga_sukunai"
+    ],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "tv-missing",
+   "name": "Haganai I Don't Have Many Friends (2011)"
+  },
+  "/anime/Hanaukyo Maid Team (2001)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Hanaukyo Maid-tai no Uta",
+     "ED1 — Sanshoku no Himitsu"
+    ],
+    "matched_slugs": [
+     "hanaukyou_maid_tai"
+    ],
+    "messages": [],
+    "video_ids": [
+     "186",
+     "185"
+    ]
+   },
+   "category": "tv-installed",
+   "name": "Hanaukyo Maid Team (2001)"
+  },
+  "/anime/High School D×D": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ],
+    "returned": "Review: HTTP Error 404: Not Found",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Trip -innocent of D-",
+     "ED1 — STUDY x STUDY"
+    ],
+    "matched_slugs": [
+     "high_school_dxd"
+    ],
+    "messages": [],
+    "video_ids": [
+     "4363",
+     "4362"
+    ]
+   },
+   "category": "tv-missing",
+   "name": "High School D×D"
+  },
+  "/anime/Inukami! (2006)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/Inukami-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/Inukami-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Hikari"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/Inukami-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Hikari",
+     "ED1 — Yuujou Monogatari",
+     "ED2 — Kei no Uta",
+     "ED3 — Yuujou Monogatari - Danshi (?) Version"
+    ],
+    "matched_slugs": [
+     "inukami"
+    ],
+    "messages": [],
+    "video_ids": [
+     "1501",
+     "1498",
+     "1499",
+     "1500"
+    ]
+   },
+   "category": "tv-installed",
+   "name": "Inukami! (2006)"
+  },
+  "/anime/Kaiju Girl Caramelise": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/OtomeKaijuuCarameliser-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/OtomeKaijuuCarameliser-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Otome Kaijuu"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/OtomeKaijuuCarameliser-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Otome Kaijuu",
+     "ED1 — Otome no Honki"
+    ],
+    "matched_slugs": [
+     "otome_kaijuu_caramelise"
+    ],
+    "messages": [],
+    "video_ids": [
+     "19784",
+     "19785"
+    ]
+   },
+   "category": "no-year",
+   "name": "Kaiju Girl Caramelise"
+  },
+  "/anime/KissXSis (2010)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ],
+    "returned": "Review: HTTP Error 404: Not Found",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Balance KISS",
+     "ED1 — Our Steady Boy",
+     "ED2 — Futari"
+    ],
+    "matched_slugs": [
+     "kiss_x_sis_tv"
+    ],
+    "messages": [],
+    "video_ids": [
+     "3054",
+     "3051",
+     "3052",
+     "3053"
+    ]
+   },
+   "category": "tv-missing",
+   "name": "KissXSis (2010)"
+  },
+  "/anime/Lapis ReLiGHTs (2020)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ],
+    "returned": "Review: HTTP Error 404: Not Found",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Watashi-tachi no STARTRAIL",
+     "ED1 — Planetarium",
+     "ED2 — Midnight Sapphire",
+     "ED3 — Watashi no Na wa, Hikari.",
+     "ED4 — A.R.I.A."
+    ],
+    "matched_slugs": [
+     "lapis_relights"
+    ],
+    "messages": [],
+    "video_ids": [
+     "11785",
+     "11786",
+     "11787",
+     "11780",
+     "11781",
+     "11782",
+     "11783",
+     "11784"
+    ]
+   },
+   "category": "tv-missing",
+   "name": "Lapis ReLiGHTs (2020)"
+  },
+  "/anime/Love is Like a Cocktail (2017)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — Don&#x27;t Let Me Down"
+    ],
+    "matched_slugs": [
+     "osake_wa_fuufu_ni_natte_kara"
+    ],
+    "messages": [],
+    "video_ids": [
+     "7777"
+    ]
+   },
+   "category": "tv-installed",
+   "name": "Love is Like a Cocktail (2017)"
+  },
+  "/anime/Maid Sama! (2010)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/KaichouWaMaidSama-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/KaichouWaMaidSama-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: My Secret"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/KaichouWaMaidSama-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — My Secret",
+     "ED1 — Yokan",
+     "ED2 — ∞ Loop"
+    ],
+    "matched_slugs": [
+     "kaichou_wa_maid_sama"
+    ],
+    "messages": [],
+    "video_ids": [
+     "3050",
+     "3048",
+     "3049"
+    ]
+   },
+   "category": "romaji-title",
+   "name": "Maid Sama! (2010)"
+  },
+  "/anime/Miyuki-chan In Wonderland (1995)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "romaji-title",
+   "name": "Miyuki-chan In Wonderland (1995)"
+  },
+  "/anime/My Hero Academia": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [
+     "boku_no_hero_academia",
+     "boku_no_hero_academia_2nd_season",
+     "boku_no_hero_academia_3rd_season",
+     "boku_no_hero_academia_5th_season"
+    ],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "no-year",
+   "name": "My Hero Academia"
+  },
+  "/anime/My Love Story With Yamada-kun at Lv999": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/YamadaLv999-OP1-NCBD1080.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/YamadaLv999-OP1-NCBD1080.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Gradation feat. Yuuho Kitazawa"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/YamadaLv999-OP1-NCBD1080.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Gradation feat. Yuuho Kitazawa",
+     "ED1 — Trick Art"
+    ],
+    "matched_slugs": [
+     "yamada_kun_to_lv999_no_koi_wo_suru"
+    ],
+    "messages": [],
+    "video_ids": [
+     "16754",
+     "18343",
+     "16928",
+     "16755",
+     "18344",
+     "16963",
+     "18345",
+     "16975",
+     "18346",
+     "16982",
+     "18347"
+    ]
+   },
+   "category": "romaji-title",
+   "name": "My Love Story With Yamada-kun at Lv999"
+  },
+  "/anime/My Sister, My Writer (2018)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/ImoImo-OP1-NCBD1080.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/ImoImo-OP1-NCBD1080.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Secret Story"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/ImoImo-OP1-NCBD1080.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Secret Story",
+     "ED1 — Ki・Shou・Ten・Ketsu・Jo・Ha・Kyuu"
+    ],
+    "matched_slugs": [
+     "ore_ga_suki_nano_wa_imouto_dakedo_imouto_ja_nai"
+    ],
+    "messages": [],
+    "video_ids": [
+     "8870",
+     "8871",
+     "8868",
+     "8869"
+    ]
+   },
+   "category": "tv-installed",
+   "name": "My Sister, My Writer (2018)"
+  },
+  "/anime/Overgeared": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/Tempal-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/Tempal-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: SATISFY"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/Tempal-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — SATISFY",
+     "ED1 — Ray of Emotion"
+    ],
+    "matched_slugs": [
+     "tempal_item_no_chikara"
+    ],
+    "messages": [],
+    "video_ids": [
+     "20052",
+     "20053"
+    ]
+   },
+   "category": "tv-installed",
+   "name": "Overgeared"
+  },
+  "/anime/Ray the Animation (2006)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "tv-missing",
+   "name": "Ray the Animation (2006)"
+  },
+  "/anime/Romelia War Chronicle": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/RomeliaSenki-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/RomeliaSenki-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Akatsuki ni Naru"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/RomeliaSenki-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Akatsuki ni Naru",
+     "ED1 — Nightfall feat. Maika Loubté"
+    ],
+    "matched_slugs": [
+     "romeria_senki_maou_wo_taoshita_nochi_mo_jinrui_yabasou_dakara_guntai_soshiki_shita"
+    ],
+    "messages": [],
+    "video_ids": [
+     "20013",
+     "20090"
+    ]
+   },
+   "category": "no-year",
+   "name": "Romelia War Chronicle"
+  },
+  "/anime/Samurai - Hunt For The Sword (1999)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "similar-names",
+   "name": "Samurai - Hunt For The Sword (1999)"
+  },
+  "/anime/Samurai Girl Real Bout High School (2001)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "similar-names",
+   "name": "Samurai Girl Real Bout High School (2001)"
+  },
+  "/anime/Samurai Girls (2010)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/HyakkaRyouranSamuraiGirls-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/HyakkaRyouranSamuraiGirls-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Last vision for last"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/HyakkaRyouranSamuraiGirls-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Last vision for last",
+     "ED1 — Koi ni Sesse Tooryanse"
+    ],
+    "matched_slugs": [
+     "hyakka_ryouran_samurai_girls"
+    ],
+    "messages": [],
+    "video_ids": [
+     "2866",
+     "2865"
+    ]
+   },
+   "category": "similar-names",
+   "name": "Samurai Girls (2010)"
+  },
+  "/anime/Shigurui Death Frenzy (2007)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/Shigurui-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/Shigurui-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Shigurui"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/Shigurui-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Shigurui",
+     "ED1 — Koji"
+    ],
+    "matched_slugs": [
+     "shigurui"
+    ],
+    "messages": [],
+    "video_ids": [
+     "14047",
+     "14046"
+    ]
+   },
+   "category": "tv-installed",
+   "name": "Shigurui Death Frenzy (2007)"
+  },
+  "/anime/Street Fighter II V (1995)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/StreetFighterIIV-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/StreetFighterIIV-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Kaze Fuiteru"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/StreetFighterIIV-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Kaze Fuiteru",
+     "OP2 — Ima, Ashita no Tame ni",
+     "ED1 — Cry",
+     "ED2 — Lonely Baby",
+     "OP1-EN — Street Fighter II V Theme",
+     "ED1-EN — Street Fighter II V Theme"
+    ],
+    "matched_slugs": [
+     "street_fighter_ii_v"
+    ],
+    "messages": [],
+    "video_ids": [
+     "15367",
+     "15368",
+     "15365",
+     "15366",
+     "15370",
+     "15369"
+    ]
+   },
+   "category": "multi-season/sequel",
+   "name": "Street Fighter II V (1995)"
+  },
+  "/anime/The Kingdoms of Ruin": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/HametsuNoOukoku-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/HametsuNoOukoku-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Kieru made"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/HametsuNoOukoku-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Kieru made",
+     "ED1 — Prayer"
+    ],
+    "matched_slugs": [
+     "hametsu_no_oukoku"
+    ],
+    "messages": [],
+    "video_ids": [
+     "17227",
+     "17228"
+    ]
+   },
+   "category": "no-year",
+   "name": "The Kingdoms of Ruin"
+  },
+  "/anime/The Melancholy of Haruhi-chan Suzumiya (2009)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/SuzumiyaHaruhiChanNoYuuutsu-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/SuzumiyaHaruhiChanNoYuuutsu-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Ima made no Arasuji"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/SuzumiyaHaruhiChanNoYuuutsu-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Ima made no Arasuji",
+     "ED1 — Atogaki no You na Mono"
+    ],
+    "matched_slugs": [
+     "suzumiya_haruhi_chan_no_yuuutsu"
+    ],
+    "messages": [],
+    "video_ids": [
+     "2825",
+     "2824"
+    ]
+   },
+   "category": "romaji-title",
+   "name": "The Melancholy of Haruhi-chan Suzumiya (2009)"
+  },
+  "/anime/The Seven Heavenly Virtues": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — Psychomachia"
+    ],
+    "matched_slugs": [
+     "nanatsu_no_bitoku"
+    ],
+    "messages": [],
+    "video_ids": [
+     "9969",
+     "13899"
+    ]
+   },
+   "category": "no-year",
+   "name": "The Seven Heavenly Virtues"
+  },
+  "/anime/Yatogame-chan Kansatsu Nikki (2019)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — DELUXE DELUXE HAPPY"
+    ],
+    "matched_slugs": [
+     "yatogame_chan_kansatsu_nikki"
+    ],
+    "messages": [],
+    "video_ids": [
+     "10764"
+    ]
+   },
+   "category": "romaji-title",
+   "name": "Yatogame-chan Kansatsu Nikki (2019)"
+  },
+  "/anime/Yuuki Yuuna Is a Hero (2014)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "AniList year mismatch: folder 2014, result 2017"
+     ]
+    ],
+    "returned": "Review: AniList year mismatch: folder 2014, result 2017",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "AniList year mismatch: folder 2014, result 2017"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Hoshi to Hana",
+     "ED1 — Aurora Days",
+     "ED2 — Aurora Days",
+     "OP2 — Hoshi to Hana",
+     "ED3 — Inori no Uta (acoustic guitar ver.)",
+     "ED4 — Inori no Uta",
+     "ED5 — Aurora Days",
+     "ED6 — Aurora Days"
+    ],
+    "matched_slugs": [
+     "yuuki_yuuna_wa_yuusha_de_aru"
+    ],
+    "messages": [],
+    "video_ids": [
+     "5277",
+     "13954",
+     "5257",
+     "5272",
+     "5275",
+     "13955",
+     "13950",
+     "13952",
+     "13953",
+     "13951"
+    ]
+   },
+   "category": "tv-missing",
+   "name": "Yuuki Yuuna Is a Hero (2014)"
+  },
+  "/movies/Bleach the Movie - The DiamondDust Rebellion (2007)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "movie-missing",
+   "name": "Bleach the Movie - The DiamondDust Rebellion (2007)"
+  },
+  "/movies/Crayon Shin-chan - Burst Serving! Kung Fu Boys ~Ramen Rebellion~ (2018)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ],
+    "returned": "Review: HTTP Error 404: Not Found",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "romaji-title",
+   "name": "Crayon Shin-chan - Burst Serving! Kung Fu Boys ~Ramen Rebellion~ (2018)"
+  },
+  "/movies/Demon City Shinjuku (1988)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "movie-missing",
+   "name": "Demon City Shinjuku (1988)"
+  },
+  "/movies/Demon Slayer - Kimetsu no Yaiba Infinity Castle (2025)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/KimetsuNoYaibaMugenJouHen1-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/KimetsuNoYaibaMugenJouHen1-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Taiyou ga Noboranai Sekai"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/KimetsuNoYaibaMugenJouHen1-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Taiyou ga Noboranai Sekai",
+     "ED1 — Zankoku na Yoru ni Kagayake"
+    ],
+    "matched_slugs": [
+     "kimetsu_no_yaiba_movie_mugen_jouhen_part_1_akaza_sairai"
+    ],
+    "messages": [],
+    "video_ids": [
+     "19904",
+     "19905"
+    ]
+   },
+   "category": "movie-missing",
+   "name": "Demon Slayer - Kimetsu no Yaiba Infinity Castle (2025)"
+  },
+  "/movies/Digimon Adventure tri. Part 1 - Reunion (2015)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ],
+    "returned": "Review: HTTP Error 404: Not Found",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [
+     "digimon_adventure_tri_1_saikai"
+    ],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "multi-season/sequel",
+   "name": "Digimon Adventure tri. Part 1 - Reunion (2015)"
+  },
+  "/movies/Digimon Adventure tri. Part 2 - Determination (2016)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ],
+    "returned": "Review: HTTP Error 404: Not Found",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [
+     "digimon_adventure_tri_2_ketsui"
+    ],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "multi-season/sequel",
+   "name": "Digimon Adventure tri. Part 2 - Determination (2016)"
+  },
+  "/movies/Fragtime (2019) - imdb-tt11343974": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — fragile"
+    ],
+    "matched_slugs": [
+     "fragtime"
+    ],
+    "messages": [],
+    "video_ids": [
+     "10270"
+    ]
+   },
+   "category": "movie-installed",
+   "name": "Fragtime (2019) - imdb-tt11343974"
+  },
+  "/movies/Hal (2013)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "movie-installed",
+   "name": "Hal (2013)"
+  },
+  "/movies/Kizumonogatari Part 3 - Reiketsu (2017)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — étoile et toi [édition le blanc]"
+    ],
+    "matched_slugs": [
+     "kizumonogatari_iii_reiketsu_hen"
+    ],
+    "messages": [],
+    "video_ids": [
+     "8660"
+    ]
+   },
+   "category": "multi-season/sequel",
+   "name": "Kizumonogatari Part 3 - Reiketsu (2017)"
+  },
+  "/movies/LUPIN THE 3rd vs. CAT'S EYE (2023)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "multi-season/sequel",
+   "name": "LUPIN THE 3rd vs. CAT'S EYE (2023)"
+  },
+  "/movies/Mardock Scramble - The Second Combustion (2011)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "movie-missing",
+   "name": "Mardock Scramble - The Second Combustion (2011)"
+  },
+  "/movies/Mononoke the Movie - Chapter II - The Ashes of Rage (2025)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "multi-season/sequel",
+   "name": "Mononoke the Movie - Chapter II - The Ashes of Rage (2025)"
+  },
+  "/movies/My Hero Academia - Heroes Rising (2019) - imdb-tt11107074": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — Higher Ground"
+    ],
+    "matched_slugs": [
+     "boku_no_hero_academia_the_movie_2_heroesrising"
+    ],
+    "messages": [],
+    "video_ids": [
+     "10230"
+    ]
+   },
+   "category": "movie-missing",
+   "name": "My Hero Academia - Heroes Rising (2019) - imdb-tt11107074"
+  },
+  "/movies/Night Is Short, Walk On Girl (2017)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — Kouya wo Aruke"
+    ],
+    "matched_slugs": [
+     "yoru_wa_mijikashi_arukeyo_otome"
+    ],
+    "messages": [],
+    "video_ids": [
+     "8221"
+    ]
+   },
+   "category": "movie-installed",
+   "name": "Night Is Short, Walk On Girl (2017)"
+  },
+  "/movies/Promare (2019)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — Inferno",
+     "ED2 — Koori ni Tojikomete"
+    ],
+    "matched_slugs": [
+     "promare"
+    ],
+    "messages": [],
+    "video_ids": [
+     "10704",
+     "10705"
+    ]
+   },
+   "category": "movie-installed",
+   "name": "Promare (2019)"
+  },
+  "/movies/Puella Magi Madoka Magica the Movie Part I - Beginnings (2012)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/MadokaMagicaHajimari-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/MadokaMagicaHajimari-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Luminous"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/MadokaMagicaHajimari-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Luminous",
+     "ED1 — Magia [quattro]"
+    ],
+    "matched_slugs": [
+     "mahou_shoujo_madokamagica_hajimari_no_monogatari"
+    ],
+    "messages": [],
+    "video_ids": [
+     "3997",
+     "3996"
+    ]
+   },
+   "category": "multi-season/sequel",
+   "name": "Puella Magi Madoka Magica the Movie Part I - Beginnings (2012)"
+  },
+  "/movies/Puella Magi Madoka Magica the Movie Part II - Eternal (2012)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/MadokaMagicaEien-OP1.ogg"
+     ]
+    ],
+    "returned": "Review: DOWNLOAD_REACHED https://a.animethemes.moe/MadokaMagicaEien-OP1.ogg",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "downloading",
+      "Downloading: Luminous"
+     ],
+     [
+      "review",
+      "DOWNLOAD_REACHED https://a.animethemes.moe/MadokaMagicaEien-OP1.ogg"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "OP1 — Luminous",
+     "ED1 — Hikari Furu"
+    ],
+    "matched_slugs": [
+     "mahou_shoujo_madokamagica_eien_no_monogatari"
+    ],
+    "messages": [],
+    "video_ids": [
+     "3995",
+     "3994"
+    ]
+   },
+   "category": "multi-season/sequel",
+   "name": "Puella Magi Madoka Magica the Movie Part II - Eternal (2012)"
+  },
+  "/movies/Redline (2009) - imdb-tt1483797": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — REDLINE DAY"
+    ],
+    "matched_slugs": [
+     "redline"
+    ],
+    "messages": [],
+    "video_ids": [
+     "2736"
+    ]
+   },
+   "category": "movie-installed",
+   "name": "Redline (2009) - imdb-tt1483797"
+  },
+  "/movies/Rurouni Kenshin Part II - Kyoto Inferno (2014) - imdb-tt3029558": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ],
+    "returned": "Review: HTTP Error 404: Not Found",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "HTTP Error 404: Not Found"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "multi-season/sequel",
+   "name": "Rurouni Kenshin Part II - Kyoto Inferno (2014) - imdb-tt3029558"
+  },
+  "/movies/Street Fighter II - The Animated Movie (1994)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "multi-season/sequel",
+   "name": "Street Fighter II - The Animated Movie (1994)"
+  },
+  "/movies/The Secret World of Arrietty (2010)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ],
+    "returned": "Review: No exact alternative-title match on AnimeThemes",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No exact alternative-title match on AnimeThemes"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [],
+    "matched_slugs": [],
+    "messages": [
+     "No matching AnimeThemes entry found"
+    ],
+    "video_ids": []
+   },
+   "category": "movie-missing",
+   "name": "The Secret World of Arrietty (2010)"
+  },
+  "/movies/The Wind Rises (2013)": {
+   "auto": {
+    "events": [
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ],
+    "returned": "Review: No OP audio available",
+    "saves": [
+     [
+      "searching",
+      "Matching title with AniList and AnimeThemes"
+     ],
+     [
+      "review",
+      "No OP audio available"
+     ]
+    ]
+   },
+   "browser": {
+    "alternatives": [],
+    "groups": [
+     "ED1 — Hikouki Gumo"
+    ],
+    "matched_slugs": [
+     "kaze_tachinu"
+    ],
+    "messages": [],
+    "video_ids": [
+     "4841"
+    ]
+   },
+   "category": "movie-installed",
+   "name": "The Wind Rises (2013)"
+  }
+ },
+ "unrecorded_requests": []
+}

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Unraid Community Applications template for Preludarr. Never put real keys or passwords in this file. -->
+<Container version="2">
+  <Name>Preludarr</Name>
+  <Repository>ghcr.io/shedman214/preludarr:beta</Repository>
+  <Registry>https://github.com/shedman214/preludarr/pkgs/container/preludarr</Registry>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/shedman214/preludarr/issues</Support>
+  <Project>https://github.com/shedman214/preludarr</Project>
+  <ReadMe>https://github.com/shedman214/preludarr#readme</ReadMe>
+  <Overview>Theme songs for your media library. Preludarr finds the opening or theme song of each anime, TV show and movie and saves it as theme.mp3 in the title's folder, where Plex, Jellyfin and Emby play it.&#xD;
+&#xD;
+First start: open the container log (Docker, Preludarr, Logs) for the one-time setup code, then open the web page and create your account.&#xD;
+&#xD;
+Beta: make a backup (System, Backup &amp; Restore) before updating.</Overview>
+  <Category>MediaApp:Video MediaApp:Music</Category>
+  <WebUI>http://[IP]:[PORT:8787]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/shedman214/preludarr/main/unraid/my-preludarr.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/shedman214/preludarr/main/preludarr/static/preludarr-emblem-512.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <Requires/>
+  <Config Name="Web UI port" Target="8787" Default="8788" Mode="tcp" Description="Port for the web interface." Type="Port" Display="always" Required="true" Mask="false">8788</Config>
+  <Config Name="Config (appdata)" Target="/config" Default="/mnt/user/appdata/preludarr" Mode="rw" Description="Database, settings, backups and logs. Back up this folder." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/preludarr</Config>
+  <Config Name="TV shows" Target="/media/tv_shows" Default="" Mode="rw" Description="Your TV and anime TV share. Read/write so Preludarr can save theme.mp3 in title folders. Add root folders inside it in Settings, Media Management." Type="Path" Display="always" Required="false" Mask="false"/>
+  <Config Name="Movies" Target="/media/movies" Default="" Mode="rw" Description="Your movies and anime movies share. Read/write so Preludarr can save theme.mp3 in title folders." Type="Path" Display="always" Required="false" Mask="false"/>
+  <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="User Preludarr runs as. 99 = nobody, the owner of Unraid shares." Type="Variable" Display="always" Required="true" Mask="false">99</Config>
+  <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="Group Preludarr runs as. 100 = users." Type="Variable" Display="always" Required="true" Mask="false">100</Config>
+  <Config Name="UMASK" Target="UMASK" Default="002" Mode="" Description="Permissions for new files (002 = group can write)." Type="Variable" Display="advanced" Required="false" Mask="false">002</Config>
+  <Config Name="TMDB API key" Target="TMDB_API_KEY" Default="" Mode="" Description="Optional: your own TMDB API key (themoviedb.org, Settings, API) for posters and movie ids. Can also be set in Settings, Connect." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="Allowed host names" Target="PRELUDARR_EXTRA_ALLOWED_HOSTS" Default="" Mode="" Description="Optional: host names you open Preludarr by, e.g. preludarr.lan:8788. Private IP addresses always work." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Public HTTPS address" Target="PRELUDARR_PUBLIC_URL" Default="" Mode="" Description="Optional: the HTTPS address when you use a reverse proxy or tunnel, e.g. https://preludarr.example.com" Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Background posters" Target="POSTER_BACKGROUND_ENABLED" Default="false|true" Mode="" Description="Fetch missing posters in the background." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="Manual installs" Target="PRELUDARR_MANUAL_INSTALL_ENABLED" Default="0|1" Mode="" Description="1 = allow installing your own uploaded audio and YouTube links." Type="Variable" Display="advanced" Required="false" Mask="false">0</Config>
+  <Config Name="Update check" Target="PRELUDARR_UPDATE_CHECK" Default="1|0" Mode="" Description="0 = never check GitHub for new versions." Type="Variable" Display="advanced" Required="false" Mask="false">1</Config>
+</Container>
