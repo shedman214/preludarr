@@ -21,7 +21,6 @@ Before an update, make a backup (System, Backup &amp; Restore).</Overview>
   <TemplateURL>https://raw.githubusercontent.com/shedman214/preludarr/main/templates/my-preludarr.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/shedman214/preludarr/main/preludarr/static/preludarr-emblem-512.png</Icon>
   <ExtraParams/>
-  <PostArgs/>
   <Requires>Your TV and movie shares mapped read/write. Anime themes work out of the box; shows and movies use the free theme sources (Settings, Download Clients) and your own TMDB key.</Requires>
   <ExtraSearchTerms>theme themes theme.mp3 anime opening plex jellyfin emby sonarr radarr</ExtraSearchTerms>
   <License>GPL-3.0-or-later</License>
