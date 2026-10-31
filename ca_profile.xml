@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<CommunityApplications>
+  <Profile>**Preludarr**: theme songs for your media library. It finds the opening or theme song of each anime, TV show and movie and saves it as theme.mp3 in the title's folder, where Plex, Jellyfin and Emby play it.
+
+Questions and bugs: GitHub issues (https://github.com/shedman214/preludarr/issues). Security problems: please report privately (see SECURITY.md).</Profile>
+  <Icon>https://raw.githubusercontent.com/shedman214/preludarr/main/preludarr/static/preludarr-emblem-512.png</Icon>
+  <WebPage>https://github.com/shedman214/preludarr</WebPage>
+</CommunityApplications>

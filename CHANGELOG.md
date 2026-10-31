@@ -9,6 +9,11 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.12.0] — 2026-10-31 (first stable release)
+- **Stable.** The same app as 1.12.0-beta.1, now published as `latest` (and `1.12`, `1.12.0`). The `beta` tag also moves to each stable release, so it is never older than `latest`.
+- **Unraid:** the template lives in `templates/my-preludarr.xml`, uses `latest`, and offers `beta` as a second version in Community Applications.
+- **Release check:** the publish workflow reads the image's platforms reliably (it reported amd64 missing on beta.1 although the image was fine).
+
 ## [1.12.0-beta.1] — 2026-10-31 (first public beta)
 - **MainThemeSoundtracks first.** YouTube search for shows, movies and collections first looks for an exact title on the MainThemeSoundtracks channel (official main themes; the channel list is read about once a week and uses none of your daily searches). Only if it isn't there does Preludarr search all of YouTube; a *Search all of YouTube* button is there when you want other versions.
 - **Use this on title pages.** A YouTube search result on a show or movie page has *Use this*, which fills in the YouTube box; you review and install, as in Collections.

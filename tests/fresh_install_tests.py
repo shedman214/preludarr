@@ -41,9 +41,14 @@ check('Pages declare a dark colour scheme unless Appearance already set one (dar
 check('No old version names in the Automatic Themes text', 'V1.7.3' not in Path('/src/preludarr/auto_themes.py').read_text().split('def ', 1)[1])
 check('Empty base-image folders (cdrom, floppy, usb) are not in /media', not any(Path('/media', d).exists() for d in ('cdrom', 'floppy', 'usb')))
 import xml.etree.ElementTree as ET  # noqa: E402
-repo = ET.parse('/src/unraid/my-preludarr.xml').getroot().find('Repository').text
+repo = ET.parse('/src/templates/my-preludarr.xml').getroot().find('Repository').text
 wf = Path('/src/.github/workflows/docker.yml').read_text()
-check('Unraid template pulls a tag that exists: :beta while betas never get :latest', repo == 'ghcr.io/shedman214/preludarr:beta'
-      and 'type=raw,value=beta,enable=' in wf and "type=raw,value=latest,enable=${{ steps.version.outputs.prerelease == 'false' }}" in wf, repo)
+check('Unraid template pulls a tag that exists: :latest (stable releases) and beta follows every release',
+      repo == 'ghcr.io/shedman214/preludarr:latest' and "type=raw,value=latest,enable=${{ steps.version.outputs.prerelease == 'false' }}" in wf
+      and 'type=raw,value=beta\n' in wf, repo)
+tpl = ET.parse('/src/templates/my-preludarr.xml').getroot()
+check('Template for Community Applications: TemplateURL points at itself, beta branch, licence, screenshots; ca_profile.xml has a Profile',
+      tpl.find('TemplateURL').text.endswith('/main/templates/my-preludarr.xml') and tpl.find('Branch/Tag').text == 'beta'
+      and tpl.find('License').text and len(tpl.findall('Screenshot')) >= 3 and (ET.parse('/src/ca_profile.xml').getroot().find('Profile').text or '').strip())
 print(f'\n{sum(results)}/{len(results)} passed')
 sys.exit(0 if all(results) else 1)

@@ -10,7 +10,7 @@
 
 ![backend: Python](https://img.shields.io/badge/backend-Python-3776AB) ![db: SQLite](https://img.shields.io/badge/db-SQLite-003B57) ![docker: ghcr.io](https://img.shields.io/badge/docker-ghcr.io-2496ED) ![licence: GPL-3.0](https://img.shields.io/badge/licence-GPL--3.0-BD0000)
 
-> **Status: public beta.** `1.12.0-beta.1` is the first public release, published as `ghcr.io/shedman214/preludarr:beta`. Make a backup (System → Backup & Restore) before each update. Preludarr is **not** listed in Unraid Community Applications yet.
+> **Status: stable.** `1.12.0` is the first stable release: `ghcr.io/shedman214/preludarr:latest`. Make a backup (System → Backup & Restore) before each update.
 
 | Library | Theme review |
 |---|---|
@@ -50,7 +50,7 @@
 ```yaml
 services:
   preludarr:
-    image: ghcr.io/shedman214/preludarr:beta   # the newest beta
+    image: ghcr.io/shedman214/preludarr:latest
     container_name: preludarr
     restart: unless-stopped
     ports:
@@ -73,15 +73,15 @@ docker run -d --name preludarr --restart unless-stopped \
   -v /path/to/preludarr-config:/config \
   -v /path/to/tv:/media/tv_shows \
   -v /path/to/movies:/media/movies \
-  ghcr.io/shedman214/preludarr:beta
+  ghcr.io/shedman214/preludarr:latest
 ```
 
 ### Unraid
-Preludarr is **not in Community Applications yet**. Add it from the template:
+Preludarr is on its way to Community Applications. Until it is listed there, add it from the template:
 1. Open the Unraid terminal and run:
    ```sh
    wget -O /boot/config/plugins/dockerMan/templates-user/my-Preludarr.xml \
-     https://raw.githubusercontent.com/shedman214/preludarr/main/unraid/my-preludarr.xml
+     https://raw.githubusercontent.com/shedman214/preludarr/main/templates/my-preludarr.xml
    ```
 2. Docker → **Add Container** → Template: **Preludarr**.
 3. Set **TV shows** and **Movies** to your shares (for example `/mnt/user/tv` and `/mnt/user/movies`), keep **PUID 99 / PGID 100**, and click **Apply**.
@@ -89,9 +89,9 @@ Preludarr is **not in Community Applications yet**. Add it from the template:
 ### Image tags
 | Tag | Contents |
 |---|---|
-| `beta` | The newest beta. **Use this until the first stable release.** |
-| `1.12.0-beta.1`, … | One exact version. Use it to stay on a version or to go back. |
-| `latest`, `1.12`, `1.12.0` | Stable releases only (none yet). A beta never changes `latest`. |
+| `latest` | The newest stable release. **Recommended.** |
+| `1.12`, `1.12.0`, … | A release line or one exact version. Use it to stay on a version or to go back. |
+| `beta` | The newest beta, or the newest stable release if that is newer. A beta never changes `latest`. |
 
 ### Build it yourself
 ```sh

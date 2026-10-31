@@ -3,26 +3,41 @@
 <!-- Unraid Community Applications template for Preludarr. Never put real keys or passwords in this file. -->
 <Container version="2">
   <Name>Preludarr</Name>
-  <Repository>ghcr.io/shedman214/preludarr:beta</Repository>
+  <Repository>ghcr.io/shedman214/preludarr:latest</Repository>
   <Registry>https://github.com/shedman214/preludarr/pkgs/container/preludarr</Registry>
   <Network>bridge</Network>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
   <Support>https://github.com/shedman214/preludarr/issues</Support>
   <Project>https://github.com/shedman214/preludarr</Project>
-  <ReadMe>https://github.com/shedman214/preludarr#readme</ReadMe>
+  <ReadMe>https://raw.githubusercontent.com/shedman214/preludarr/main/README.md</ReadMe>
   <Overview>Theme songs for your media library. Preludarr finds the opening or theme song of each anime, TV show and movie and saves it as theme.mp3 in the title's folder, where Plex, Jellyfin and Emby play it.&#xD;
 &#xD;
 First start: open the container log (Docker, Preludarr, Logs) for the one-time setup code, then open the web page and create your account.&#xD;
 &#xD;
-Beta: make a backup (System, Backup &amp; Restore) before updating.</Overview>
+Before an update, make a backup (System, Backup &amp; Restore).</Overview>
   <Category>MediaApp:Video MediaApp:Music</Category>
   <WebUI>http://[IP]:[PORT:8787]/</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/shedman214/preludarr/main/unraid/my-preludarr.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/shedman214/preludarr/main/templates/my-preludarr.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/shedman214/preludarr/main/preludarr/static/preludarr-emblem-512.png</Icon>
   <ExtraParams/>
   <PostArgs/>
-  <Requires/>
+  <Requires>Your TV and movie shares mapped read/write. Anime themes work out of the box; shows and movies use the free theme sources (Settings, Download Clients) and your own TMDB key.</Requires>
+  <ExtraSearchTerms>theme themes theme.mp3 anime opening plex jellyfin emby sonarr radarr</ExtraSearchTerms>
+  <License>GPL-3.0-or-later</License>
+  <Changes>### 1.12.0&#xD;
+First stable release. Changes: https://github.com/shedman214/preludarr/blob/main/CHANGELOG.md</Changes>
+  <Date>2026-10-31</Date>
+  <MinVer>6.12.0</MinVer>
+  <Screenshot>https://raw.githubusercontent.com/shedman214/preludarr/main/.github/screenshots/library.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/shedman214/preludarr/main/.github/screenshots/theme-review.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/shedman214/preludarr/main/.github/screenshots/collections.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/shedman214/preludarr/main/.github/screenshots/appearance.png</Screenshot>
+  <DefaultTagDescription>Stable releases (recommended)</DefaultTagDescription>
+  <Branch>
+    <Tag>beta</Tag>
+    <TagDescription>Newest beta (or stable, whichever is newer). Make a backup before updating.</TagDescription>
+  </Branch>
   <Config Name="Web UI port" Target="8787" Default="8788" Mode="tcp" Description="Port for the web interface." Type="Port" Display="always" Required="true" Mask="false">8788</Config>
   <Config Name="Config (appdata)" Target="/config" Default="/mnt/user/appdata/preludarr" Mode="rw" Description="Database, settings, backups and logs. Back up this folder." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/preludarr</Config>
   <Config Name="TV shows" Target="/media/tv_shows" Default="" Mode="rw" Description="Your TV and anime TV share. Read/write so Preludarr can save theme.mp3 in title folders. Add root folders inside it in Settings, Media Management." Type="Path" Display="always" Required="false" Mask="false"/>

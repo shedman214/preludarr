@@ -56,7 +56,7 @@ df = (src / 'Dockerfile').read_text()
 ep = (src / 'docker' / 'entrypoint.sh').read_text()
 check('Image starts through the entrypoint that drops root', 'ENTRYPOINT ["/usr/local/bin/preludarr-entrypoint"]' in df and 'exec su-exec "$PUID:$PGID" "$@"' in ep)
 check('Entrypoint only ever changes the config folder, never follows symlinks', ep.count('chown') == 2 and '! -type l' in ep and '-xdev' in ep and '/media' not in ep.split('set -eu', 1)[1])
-check('Unraid template runs as 99:100', 'Target="PUID" Default="99"' in (src / 'unraid' / 'my-preludarr.xml').read_text())
+check('Unraid template runs as 99:100', 'Target="PUID" Default="99"' in (src / 'templates' / 'my-preludarr.xml').read_text())
 
 code = sorted(p.stem for p in (src / 'preludarr').glob('*.py'))
 check('All app code lives in preludarr/; nothing named themearr_* any more', code and not any(n.startswith('themearr_') for n in code)
