@@ -8,7 +8,7 @@
   <Network>bridge</Network>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/shedman214/preludarr/issues</Support>
+  <Support>https://forums.unraid.net/topic/201125-support-shedman214-preludarr/</Support>
   <Project>https://github.com/shedman214/preludarr</Project>
   <ReadMe>https://raw.githubusercontent.com/shedman214/preludarr/main/README.md</ReadMe>
   <Overview>Theme songs for your media library. Preludarr finds the opening or theme song of each anime, TV show and movie and saves it as theme.mp3 in the title's folder, where Plex, Jellyfin and Emby play it.&#xD;
