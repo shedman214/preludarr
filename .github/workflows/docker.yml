@@ -133,8 +133,10 @@ jobs:
       - name: Verify the published image
         run: |
           ref="${IMAGE}:${{ steps.meta.outputs.version }}"
-          docker buildx imagetools inspect "$ref" --format '{{json .Manifest}}' > manifest.json
-          for arch in amd64 arm64; do grep -q "\"architecture\":\"$arch\"" manifest.json || { echo "::error::$arch missing"; exit 1; }; done
+          # the image index lists one manifest per platform (plus attestations as "unknown"); read it, don't grep formatted JSON
+          archs=$(docker buildx imagetools inspect "$ref" --raw | jq -r '[.manifests[].platform.architecture] | join(" ")')
+          echo "platforms in the index: $archs"
+          for arch in amd64 arm64; do echo " $archs " | grep -q " $arch " || { echo "::error::$arch missing"; exit 1; }; done
           docker buildx imagetools inspect "$ref" --format '{{json .Provenance}}' | grep -q . || { echo "::error::no provenance"; exit 1; }
           docker buildx imagetools inspect "$ref" --format '{{json .SBOM}}' | grep -q . || { echo "::error::no SBOM"; exit 1; }
           docker pull -q --platform linux/amd64 "$ref"
