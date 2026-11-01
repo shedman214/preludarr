@@ -357,7 +357,7 @@ labels = [x.split('>')[-1] for x in tabs.split('</a>')[:-1]]
 check('One tab per root folder, named by its display name; Films selected', labels == ['Anime TV', 'Anime Movies', 'TV', 'Films', 'Kid Shows'] and 'aria-current="page" title="Movies' in tabs, labels)
 check('Switching tabs keeps filters but resets the page', 'page=' not in tabs and 'q=the' in tabs)
 check('No Library dropdown on a tab; the tab scopes search + bulk actions', 'id="ls-library"' not in page and page.count('name="library" value="' + films + '"') >= 3)
-check('Clear keeps the current tab', ('href="/?view=library&amp;library=' + urllib.parse.quote_plus(films) + '" class="ls-btn ls-quiet">Clear') in page)
+check('Clear keeps the current tab (and resets the remembered filters to All, 1.12.2)', ('href="/?view=library&amp;library=' + urllib.parse.quote_plus(films) + '&amp;state=all&amp;poster=all&amp;f=1" class="ls-btn ls-quiet">Clear') in page)
 res_html = page.split('id="library-results"')[1].split('id="recent-activity"')[0]
 check('Results only from the selected tab', 'The Matrix (1999)' in res_html and 'Breaking Bad' not in res_html and 'Naruto' not in res_html)
 kid = 'root:' + str(work / 'kids')

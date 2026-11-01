@@ -2491,8 +2491,11 @@ class Handler(httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, s
    return auth.redirect(self,'/?'+urllib.parse.urlencode({'view':'library',**{k:v[0] for k,v in query.items() if k in ('q','library','state','poster','page')}}))
   term=query.get('q',[''])[0].strip()[:120]
   library=query.get('library',['all'])[0]
-  state=query.get('state',['all'])[0]
-  poster_status=query.get('poster',['all'])[0]
+  if query.get('view',[''])[0]=='library':  # 1.12.2: the Library remembers the filters the user picks (library_prefs)
+   state,poster_status=__import__('library_prefs').resolve(CONFIG,query)
+  else:
+   state=query.get('state',['all'])[0]
+   poster_status=query.get('poster',['all'])[0]
   if poster_status not in ('all','missing','cached','failed'):poster_status='all'
   if library!='all' and not root_folders.valid_scope(library):library='all'
   # Preludarr 1.11.9: Library tabs are per root folder; an older type link opens that type's first root folder tab
@@ -2582,7 +2585,7 @@ class Handler(httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, s
   # V1.9.8 (user 2026-10-27): Library Search restyled — presentation only. Same forms, field names/values, actions,
   # counts, required Queue checkbox and poster-script hooks (form[action="/poster-filtered-review"], .panel ancestor).
   parts+=['<div class="panel ls-panel" id="library-search"><h2>Library Search</h2>',
-   '<form class="filters ls-toolbar',' ls-notype' if lib_tab else '','" method="GET" action="/" role="search" aria-label="Library search">',('<input type="hidden" name="view" value="library">' if view=='library' else ''),
+   '<form class="filters ls-toolbar',' ls-notype' if lib_tab else '','" method="GET" action="/" role="search" aria-label="Library search">',('<input type="hidden" name="view" value="library"><input type="hidden" name="f" value="1">' if view=='library' else ''),
    ('<input type="hidden" name="library" value="'+esc(library,quote=True)+'">' if lib_tab else ''),
    '<div class="ls-field ls-title"><label class="ls-label" for="ls-q">Title</label><input id="ls-q" type="search" name="q" placeholder="Search any series or movie title..." value="',esc(term,quote=True),'" aria-label="Search titles"></div>',
    ]
@@ -2597,7 +2600,7 @@ class Handler(httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, s
   parts+=['</select></div><div class="ls-field"><label class="ls-label" for="ls-poster">Poster status</label><select id="ls-poster" name="poster" aria-label="Poster status">']
   for value,label in [('all','All posters'),('missing','Missing posters'),('cached','Posters available'),('failed','Failed / no match')]:
    parts+=['<option value="',value,'"',(' selected' if poster_status==value else ''),'>',esc(label),'</option>']
-  parts+=['</select></div><div class="ls-buttons"><button type="submit" class="ls-btn ls-primary">Search</button><a href="',esc('/?'+urllib.parse.urlencode({'view':'library','library':library}) if lib_tab else '/?view=library&state=missing' if view=='library' and state=='missing' else '/',quote=True),'" class="ls-btn ls-quiet">Clear</a></div></form>',
+  parts+=['</select></div><div class="ls-buttons"><button type="submit" class="ls-btn ls-primary">Search</button><a href="',esc('/?'+urllib.parse.urlencode({'view':'library','library':library,'state':'all','poster':'all','f':'1'}) if lib_tab else '/?view=library&state=all&poster=all&f=1' if view=='library' else '/',quote=True),'" class="ls-btn ls-quiet">Clear</a></div></form>',
    '<p class="ls-summary">',f'{total:,}',' matching title','' if total==1 else 's',' · Page ',str(page),' of ',str(pages),'</p>',
    # V1.9.14: bulk administration folds away (closed by default) so the results come up; the summary keeps the scope visible.
    '<details class="ls-bulkbox"><summary><span class="ls-bulk-t">Bulk actions</span> <span class="ls-scope">Bulk actions apply to <strong>all ',f'{total:,}',' matching title',('' if total==1 else 's'),'</strong></span></summary>',

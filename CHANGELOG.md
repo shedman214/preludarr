@@ -9,6 +9,9 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [Unreleased]
+- **Library remembers your filters.** A new install starts at *All statuses* / *All posters*. When you pick a Theme status or Poster status and press Search, the Library keeps them until you change them again (or press Clear). Links that open the Library with a filter for one view, such as the sidebar's *Missing Themes*, don't change what is remembered.
+
 ## [1.12.1] — 2026-10-31
 - **Sonarr/Radarr on Windows:** path mappings accept Windows paths such as `G:\ => /mnt/media`, `G:\TV => /media/tv_shows` or `\\server\share => /media/tv_shows`. They match the way Windows does (upper or lower case, `\` or `/`), and the longest mapping wins. Suggested mappings work for Windows paths too. ([#1](https://github.com/shedman214/preludarr/issues/1))
 
