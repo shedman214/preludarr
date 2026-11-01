@@ -26,7 +26,7 @@ def check(name, ok, detail=''):
 
 # ------------------------------------------------------------------ 1-2: version, changelog, licence ----
 src = Path('/src')
-check('Version scheme: 1.12.0-dev, or a release 1.12.0[-alpha|beta|rc.N]', __import__('re').fullmatch(r'1\.12\.0(-dev|-(alpha|beta|rc)\.[1-9][0-9]*)?', __import__('login').APP_VERSION), __import__('login').APP_VERSION)
+check('Version scheme: 1.12.x-dev, or a release 1.12.x[-alpha|beta|rc.N]', __import__('re').fullmatch(r'1\.12\.(0|[1-9][0-9]*)(-dev|-(alpha|beta|rc)\.[1-9][0-9]*)?', __import__('login').APP_VERSION), __import__('login').APP_VERSION)
 cl = (src / 'CHANGELOG.md').read_text()
 check('CHANGELOG explains the version rules and lists releases', 'Semantic Versioning' in cl and '## [1.11.9]' in cl and '1.12.0-beta.1' in cl)
 lic = (src / 'LICENSE').read_text()

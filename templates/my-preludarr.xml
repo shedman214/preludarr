@@ -24,7 +24,9 @@ Before an update, make a backup (System, Backup &amp; Restore).</Overview>
   <Requires>Your TV and movie shares mapped read/write. Anime themes work out of the box; shows and movies use the free theme sources (Settings, Download Clients) and your own TMDB key.</Requires>
   <ExtraSearchTerms>theme themes theme.mp3 anime opening plex jellyfin emby sonarr radarr</ExtraSearchTerms>
   <License>GPL-3.0-or-later</License>
-  <Changes>### 1.12.0&#xD;
+  <Changes>### 1.12.1&#xD;
+Sonarr/Radarr on Windows: path mappings accept Windows paths (G:\ =&gt; /mnt/media).&#xD;
+### 1.12.0&#xD;
 First stable release. Changes: https://github.com/shedman214/preludarr/blob/main/CHANGELOG.md</Changes>
   <Date>2026-10-31</Date>
   <MinVer>6.12.0</MinVer>

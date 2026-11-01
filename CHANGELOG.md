@@ -9,6 +9,9 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.12.1] — 2026-10-31
+- **Sonarr/Radarr on Windows:** path mappings accept Windows paths such as `G:\ => /mnt/media`, `G:\TV => /media/tv_shows` or `\\server\share => /media/tv_shows`. They match the way Windows does (upper or lower case, `\` or `/`), and the longest mapping wins. Suggested mappings work for Windows paths too. ([#1](https://github.com/shedman214/preludarr/issues/1))
+
 ## [1.12.0] — 2026-10-31 (first stable release)
 - **Stable.** The same app as 1.12.0-beta.1, now published as `latest` (and `1.12`, `1.12.0`). The `beta` tag also moves to each stable release, so it is never older than `latest`.
 - **Unraid:** the template lives in `templates/my-preludarr.xml`, uses `latest`, and offers `beta` as a second version in Community Applications.

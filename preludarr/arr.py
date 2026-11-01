@@ -14,6 +14,7 @@ API keys are stored privately (0600) and never shown or logged.
 import html
 import json
 import os
+import re
 import secrets
 import threading
 import time
@@ -121,18 +122,72 @@ def test(inst):
 
 
 # ------------------------------------------------------------------------------ mapping ----
+# 1.12.1 (GitHub issue #1): Sonarr/Radarr on Windows report paths like G:\TV\Show or \\server\share\TV\Show.
+_WINDOWS = re.compile(r'^(?:[A-Za-z]:(?:[\\/]|$)|[\\/]{2}[^\\/]+[\\/][^\\/]+)')
+
+
+def is_windows_path(path):
+    return bool(_WINDOWS.match(str(path or '').strip()))
+
+
+def norm_remote(path):
+    """A Sonarr/Radarr path in its stored form. Linux: normpath. Windows: backslashes, '..' resolved, upper-case drive,
+    no trailing backslash except on a drive root ('G:\\')."""
+    path = str(path or '').strip()
+    if not path:
+        return path
+    if not is_windows_path(path):
+        return os.path.normpath(path)
+    unc = path[:2] in ('\\\\', '//', '\\/', '/\\')
+    keep = 2 if unc else 1  # never climb above the share or the drive
+    parts = []
+    for part in re.split(r'[\\/]+', path[2:] if unc else path):
+        if part in ('', '.'):
+            continue
+        if part == '..':
+            if len(parts) > keep:
+                parts.pop()
+            continue
+        parts.append(part)
+    if unc:
+        return '\\\\' + '\\'.join(parts)
+    return parts[0].upper() + '\\' + '\\'.join(parts[1:])
+
+
+def _slashed(path):
+    """Stored form with '/' separators and no trailing '/', for prefix matching."""
+    n = norm_remote(path)
+    return n.replace('\\', '/').rstrip('/') if is_windows_path(n) else n.rstrip('/')
+
+
+def _key(path):
+    """Comparable form: Windows paths compare case-insensitively, like Windows does."""
+    s = _slashed(path)
+    return s.lower() if is_windows_path(path) else s
+
+
+def _under(key, root_key):
+    return key == root_key or key.startswith(root_key + '/')
+
+
+def _parent_and_name(path):
+    n = norm_remote(path)
+    if is_windows_path(n):
+        head, _, name = n.rstrip('\\').rpartition('\\')
+        return (head + '\\' if head.endswith(':') else head), name
+    return str(Path(n).parent), Path(n).name
+
+
 def to_local(inst, remote):
     """Translate a Sonarr/Radarr path with the instance's mappings (longest prefix wins). None if unmapped."""
-    remote = str(remote or '').rstrip('/')
-    best = None
+    key, best, length = _key(remote), None, -1
     for m in inst.get('mappings', []):
-        r = m['remote'].rstrip('/')
-        if remote == r or remote.startswith(r + '/'):
-            if best is None or len(r) > len(best['remote'].rstrip('/')):
-                best = m
+        r = _key(m['remote'])
+        if _under(key, r) and len(r) > length:
+            best, length = m, len(r)
     if not best:
         return None
-    rest = remote[len(best['remote'].rstrip('/')):].lstrip('/')
+    rest = _slashed(remote)[length:].lstrip('/')
     return str(Path(best['local']) / rest) if rest else best['local']
 
 
@@ -141,9 +196,8 @@ def suggest_mappings(app, inst, items):
     out = []
     by_root = {}
     for it in items:
-        p = str(it.get('path') or '')
-        parent = str(Path(p).parent)
-        by_root.setdefault(parent, []).append(Path(p).name)
+        parent, name = _parent_and_name(it.get('path') or '')
+        by_root.setdefault(parent, []).append(name)
     for remote_root, names in sorted(by_root.items(), key=lambda kv: -len(kv[1])):
         best, hits = None, 0
         for _, root in app.ROOTS:
@@ -162,8 +216,8 @@ _PREVIEW_TTL = 600
 
 def preview_mapping(app, inst, remote, local, all_items, data=None):
     """What one path mapping would line up, read-only: counts and a few examples. Nothing is saved or created."""
-    remote = os.path.normpath(remote)
-    trial = dict(inst, mappings=[m for m in inst.get('mappings', []) if m['remote'] != remote] + [{'remote': remote, 'local': local}])
+    remote = norm_remote(remote)
+    trial = dict(inst, mappings=[m for m in inst.get('mappings', []) if _key(m['remote']) != _key(remote)] + [{'remote': remote, 'local': local}])
     with app.db() as c:
         known = {r[0] for r in c.execute('SELECT path FROM shows')}
     data = data if data is not None else load(app.CONFIG)
@@ -171,8 +225,7 @@ def preview_mapping(app, inst, remote, local, all_items, data=None):
     res = {'remote': remote, 'local': local, 'covered': 0, 'found': 0, 'in_library': 0, 'missing': 0, 'outside': 0, 'would_create': 0,
            'found_examples': [], 'missing_examples': [], 'auto_create': since is not None}
     for it in all_items:
-        rp = os.path.normpath(it['path'])
-        if not (rp == remote or rp.startswith(remote.rstrip('/') + '/')):
+        if not _under(_key(it['path']), _key(remote)):
             continue
         res['covered'] += 1
         loc = to_local(trial, it['path'])
@@ -464,7 +517,7 @@ def _form(app, inst):
             '<label class="af">URL (HTTPS or private-LAN HTTP)</label><input name="url" type="url" maxlength="200" required autocomplete="off"' + _NOPM + ' value="' + _e((inst or {}).get('url', '')) + '" placeholder="http://192.168.1.50:8989">'
             '<label class="af">API key</label><input name="api_key" type="password" maxlength="64" autocomplete="new-password"' + _NOPM + ' placeholder="' + ('Leave blank to keep the saved key' if inst else 'Required') + '">'
             '<label class="af">Path mappings — one per line: <code>Sonarr/Radarr path =&gt; Preludarr path</code></label>'
-            '<textarea name="mappings" rows="3" placeholder="/data/tv/anime => /anime">' + _e(maps) + '</textarea>'
+            '<textarea name="mappings" rows="3" placeholder="/data/tv/anime => /anime&#10;G:\\TV => /media/tv_shows">' + _e(maps) + '</textarea>'
             + ('<p class="muted">Suggested from your folders (copy any that are right):</p><ul class="arr-list">' + hint + '</ul>' if hint else '') +
             '<div class="arr-actions"><button type="submit">Save</button></div></form>')
 
@@ -478,12 +531,14 @@ def _parse_mappings(app, text):
         if '=>' not in line:
             raise ValueError('Each mapping line needs “=>”, e.g. /data/tv/anime => /anime')
         remote, local = (x.strip() for x in line.split('=>', 1))
-        if not remote.startswith('/') or not local.startswith('/'):
-            raise ValueError('Mapping paths must start with “/”.')
+        if not (remote.startswith('/') or is_windows_path(remote)):
+            raise ValueError('The Sonarr/Radarr path must start with “/” (Linux, Docker) or a drive letter such as “G:\\” or “\\\\server\\share” (Windows).')
+        if not local.startswith('/'):
+            raise ValueError('The Preludarr path must start with “/”.')
         local = os.path.normpath(local)
         if not any(Path(local) == r for _, r in app.ROOTS):
             raise ValueError(f'“{local}” is not one of Preludarr’s root folders (Settings → Media Management).')
-        out.append({'remote': os.path.normpath(remote), 'local': local})
+        out.append({'remote': norm_remote(remote), 'local': local})
     return out[:20]
 
 
