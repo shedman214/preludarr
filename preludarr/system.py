@@ -172,12 +172,16 @@ def _nav(current):
 ACTIVITY_PAGE=50
 
 
-def _activity_page(app,query):
-    """Full activity log: every event, newest first, search + type filter + paging (read-only)."""
-    term=(query.get('q',[''])[0]).strip()[:100]
-    kind=(query.get('type',[''])[0]).strip()[:40]
-    try:page_no=max(1,int(query.get('page',['1'])[0]))
+def _activity_page(app,query,where='system'):
+    """Full activity log: every event, newest first, search + type filter + paging (read-only).
+    1.12.2: also on the Dashboard (where='dashboard'): own parameter names (aq, atype, apage) and a remembered page size."""
+    dash=where=='dashboard'
+    P=(lambda n:'a'+n) if dash else (lambda n:n)
+    term=(query.get(P('q'),[''])[0]).strip()[:100]
+    kind=(query.get(P('type'),[''])[0]).strip()[:40]
+    try:page_no=max(1,int(query.get(P('page'),['1'])[0]))
     except ValueError:page_no=1
+    size=__import__('library_prefs').activity_size(app.CONFIG,query) if dash else ACTIVITY_PAGE
     where,args=[],[]
     if term:
         where.append("(name LIKE ? ESCAPE '\\' OR detail LIKE ? ESCAPE '\\')")
@@ -189,8 +193,8 @@ def _activity_page(app,query):
     with app.db() as c:
         kinds=[r[0] for r in c.execute('SELECT status FROM events GROUP BY status ORDER BY COUNT(*) DESC, status')]
         total=c.execute('SELECT COUNT(*) FROM events'+sql,args).fetchone()[0]
-        pages=max(1,(total+ACTIVITY_PAGE-1)//ACTIVITY_PAGE);page_no=min(page_no,pages)
-        rows=c.execute('SELECT at,name,status,detail FROM events'+sql+' ORDER BY id DESC LIMIT ? OFFSET ?',args+[ACTIVITY_PAGE,(page_no-1)*ACTIVITY_PAGE]).fetchall()
+        pages=max(1,(total+size-1)//size);page_no=min(page_no,pages)
+        rows=c.execute('SELECT at,name,status,detail FROM events'+sql+' ORDER BY id DESC LIMIT ? OFFSET ?',args+[size,(page_no-1)*size]).fetchall()
         # Preludarr 1.11.1 (user 2026-10-29): titles link to their Theme Browser page. Events store the folder name, so a name that
         # matches exactly one library title links to it; a name shared by several titles links to a Library search for it.
         found={}
@@ -200,17 +204,32 @@ def _activity_page(app,query):
                 found.setdefault(s['name'],[]).append(s['path'])
     def url(p):
         from urllib.parse import urlencode
+        if dash:
+            return '/?'+urlencode({k:v for k,v in (('aq',term),('atype',kind),('apage',p if p>1 else '')) if v})+'#dash-activity'
         return '/system?'+urlencode({k:v for k,v in (('tab','activity'),('q',term),('type',kind),('page',p)) if v})
-    parts=['<section class="panel" id="activity"><h2>Activity</h2>',
-           '<p class="muted">Everything Preludarr did: installs, failures, reviews, recycle bin, scans and settings — newest first, times in '+_esc(__import__('ui').when(time.time()).split(' ')[-1])+'. '
+    zone=_esc(__import__('ui').when(time.time()).split(' ')[-1])
+    if dash:
+        parts=['<section class="panel" id="dash-activity"><h2>Activity</h2>',
+               '<p class="muted">Latest events, newest first, times in '+zone+'. Full history with the same filters: <a href="/system?tab=activity">System → Activity</a>.</p>',
+               '<form method="get" action="/#dash-activity" class="act-filter">',
+               '<input name="aq" maxlength="100" placeholder="Search title or details" value="',_esc(term),'" aria-label="Search activity">',
+               '<select name="atype" aria-label="Event type"><option value="">All events</option>']
+    else:
+        parts=['<section class="panel" id="activity"><h2>Activity</h2>',
+           '<p class="muted">Everything Preludarr did: installs, failures, reviews, recycle bin, scans and settings — newest first, times in '+zone+'. '
            'The sidebar’s <strong>Activity</strong> item opens this same tab. Related: <a href="/?view=activity#poster-recovery">Poster recovery</a> · <a href="/poster-report">Missing poster report</a></p>',
            '<form method="get" action="/system" class="act-filter"><input type="hidden" name="tab" value="activity">',
            '<input name="q" maxlength="100" placeholder="Search title or details" value="',_esc(term),'" aria-label="Search activity">',
            '<select name="type" aria-label="Event type"><option value="">All events</option>']
     for k in kinds:
         parts+=['<option value="',_esc(k),'"',' selected' if k==kind else '','>',_esc(k),'</option>']
-    parts+=['</select><button type="submit">Filter</button>',
-            ('<a class="button act-clear" href="/system?tab=activity">Clear</a>' if term or kind else ''),'</form>',
+    parts+=['</select>']
+    if dash:  # page size, remembered (library_prefs.activity_size)
+        sizes=__import__('library_prefs').ACTIVITY_SIZES
+        parts+=['<label class="act-size">Show <select name="asize" aria-label="Events per page" onchange="this.form.submit()">',
+                ''.join('<option value="'+str(n)+'"'+(' selected' if n==size else '')+'>'+str(n)+'</option>' for n in sizes),'</select> per page</label>']
+    parts+=['<button type="submit">Filter</button>',
+            ('<a class="button act-clear" href="'+('/#dash-activity' if dash else '/system?tab=activity')+'">Clear</a>' if term or kind else ''),'</form>',
             '<p class="muted">',str(total),' event',('' if total==1 else 's'),('' if not (term or kind) else ' match'),'.</p>']
     if rows:
         ui=__import__('ui')
@@ -250,7 +269,9 @@ def _activity_page(app,query):
             '.act-title a:focus-visible{outline:3px solid #8fc1ff;outline-offset:2px;border-radius:3px}',
             '.act-kind{display:inline-block;padding:2px 9px;border-radius:999px;background:#294569;color:#e4edfb;font-size:12.5px;font-weight:700;white-space:nowrap}',
             '.act-kind.ok{background:#1d4a39;color:#b9f3d5}.act-kind.bad{background:#4a2430;color:#ffc4cc}.act-kind.warn{background:#4a3a1c;color:#ffe2a8}',
-            '.act-more summary{cursor:pointer;color:#cfe0f8}.act-pager{margin-top:12px}</style></section>']
+            '.act-more summary{cursor:pointer;color:#cfe0f8}.act-pager{margin-top:12px}',
+            '.act-size{display:flex;gap:6px;align-items:center;white-space:nowrap;color:#cfe0f8}.act-size select{padding:10px}',
+            '#dash-activity .scroll{overflow-x:auto;max-width:100%;scrollbar-color:#3b4b6b #101c30}#dash-activity table{width:100%;border-collapse:collapse}</style></section>']
     return ''.join(parts)
 
 

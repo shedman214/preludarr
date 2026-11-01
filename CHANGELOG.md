@@ -10,6 +10,7 @@ Versions follow [Semantic Versioning](https://semver.org/):
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
 ## [Unreleased]
+- **Activity on the Dashboard.** The latest events now also show on the Dashboard, with the same search and event filter as System → Activity (which stays as it is) and a *Show 10 / 25 / 50 / 100 / 250 per page* choice that is remembered.
 - **Library remembers your filters.** A new install starts at *All statuses* / *All posters*. When you pick a Theme status or Poster status and press Search, the Library keeps them until you change them again (or press Clear). Links that open the Library with a filter for one view, such as the sidebar's *Missing Themes*, don't change what is remembered.
 
 ## [1.12.1] — 2026-10-31

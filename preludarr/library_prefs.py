@@ -50,3 +50,28 @@ def resolve(config, query):
     if query.get('f', [''])[0] == '1':
         save(config, state, poster)
     return state, poster
+
+
+# 1.12.2 (user 2026-11-01): Dashboard Activity — "the ability to filter the amount they want to see" (page size), remembered.
+ACTIVITY_SIZES = (10, 25, 50, 100, 250)
+ACTIVITY_DEFAULT = 25
+ACTIVITY_FILE = 'preludarr_dashboard_activity.json'
+
+
+def activity_size(config, query=None):
+    """Events per page on the Dashboard: `asize` from the Dashboard's own form is remembered; otherwise the saved size."""
+    p = Path(config) / ACTIVITY_FILE
+    try:
+        saved = int(({} if p.is_symlink() else json.loads(p.read_text())).get('size'))
+    except (OSError, ValueError, TypeError):
+        saved = ACTIVITY_DEFAULT
+    saved = saved if saved in ACTIVITY_SIZES else ACTIVITY_DEFAULT
+    raw = (query or {}).get('asize', [''])[0]
+    if raw.isdigit() and int(raw) in ACTIVITY_SIZES and int(raw) != saved:
+        tmp = p.with_name('.' + ACTIVITY_FILE + '.part')
+        fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, 'O_NOFOLLOW', 0), 0o600)
+        with os.fdopen(fd, 'w') as f:
+            json.dump({'size': int(raw)}, f)
+        os.replace(tmp, p)
+        saved = int(raw)
+    return saved
