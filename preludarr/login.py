@@ -15,7 +15,7 @@ from pathlib import Path
 
 import youtube_ui
 
-APP_VERSION='1.12.1'
+APP_VERSION='1.12.2'
 
 # Branding assets shipped in /app/static (V1.10.0: Preludarr logo + emblem; the old Themearr files stay allowed so cached pages
 # never show a broken image). Only these exact files are served.
