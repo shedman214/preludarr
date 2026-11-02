@@ -9,19 +9,28 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
-## [Unreleased]
+## [1.13.0] — 2026-11-02
+
+This release adds Language & Region settings and updates the YouTube downloader.
 
 ### ✨ Highlights
-- Choose your display language, date format, clock and time zone under Settings → General → Language & Region.
+- Seven additional interface languages.
+- A compact Language & Region settings tab with an easy way back to English.
+- Updated YouTube downloader.
 
 ### ➕ Added
-- **Language & Region.** Saved instance-wide preferences for short and long dates, 12/24-hour time, display time zone and Today/Yesterday labels, with a preview.
-- **Arabic layout.** Right-to-left navigation and forms, with English recovery controls and technical fields kept left-to-right.
-- **English recovery.** A permanent “Language / English” navigation link and “Switch back to English” button keep the language setting accessible without resetting date/time preferences.
-- **Interface languages.** Spanish, French, German, Portuguese (Brazil), Japanese, Simplified Chinese and Arabic translations for core navigation and common controls. Untranslated text falls back to English; media titles and provider data retain their original language.
+- **Interface languages.** Spanish, French, German, Portuguese (Brazil), Japanese, Simplified Chinese and Arabic for navigation and common controls. Untranslated text falls back to English.
+- **Arabic layout.** Right-to-left navigation and forms.
+- **Date and time preferences.** Short and long date formats, 12/24-hour time, display time zones and Today/Yesterday labels.
+- **English recovery.** “Switch back to English” stays beside the language dropdown and preserves your date/time preferences.
 
 ### 🔄 Changed
-- **Displayed dates.** Activity, backup/system dates, log-file dates, current-theme dates and recycle-bin schedules/expiry use the display preferences. Stored timestamps and job schedules are unchanged.
+- **Displayed dates.** Activity, backups and other supported displays follow your preferences. Stored timestamps and scheduled jobs remain unchanged.
+- **YouTube downloader.** Updated yt-dlp from 2026.8.19 to 2026.10.26. Dependencies remain pinned and verified against published file hashes.
+
+### 🔧 Fixed
+- **Stable-release documentation.** The feature list, limitations and security support policy now correctly describe Preludarr as stable.
+- **Dependency maintenance.** Fixed the dependency lock generator’s line continuations so it produces a valid requirements file.
 
 ## [1.12.3] — 2026-11-01
 - Theme Browser candidates now link directly to their AnimeThemes anime page for visual verification, including manual and low-confidence suggestions. Opening the link never remembers a match or installs a theme.

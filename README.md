@@ -24,7 +24,7 @@
 
 ## Features
 
-**Available in 1.12 (beta)**
+**Available in 1.13**
 - **Anime TV and anime movies:** openings and endings from [AnimeThemes](https://animethemes.moe), matched by title and year through AniList and the AniDB title list. Preview every version, then install the one you choose.
 - **TV shows and movies:** suggestions from Plex TV Themes and ThemerrDB. Optional YouTube search (your own API key and cookies; preview only until you install). For shows and movies it looks on the [MainThemeSoundtracks](https://www.youtube.com/@mainthemesoundtracks) channel first, which costs none of your daily searches, then searches all of YouTube.
 - **Library:** a tab per root folder, search and filters, a Theme Queue for reviewing many titles at once, automatic installs for anime (off by default), and Library Health (folders Preludarr cannot write to, extra theme files).
@@ -38,7 +38,7 @@
 - **Appearance:** Settings → Appearance — Dark, Light or Auto (follows each device), OLED mode, six accent colours and eight immersive themes (Winamp, Terminal, Vaporwave, Y2K Cyber, Film Noir, VHS, Synthwave, Amber CRT), with a live preview. Text stays readable (WCAG AA contrast) in every theme.
 - **Safety:** first-run account setup, sign-in on every page, protection against cross-site requests, a read-only API key by default, and a container that runs as a normal user.
 
-**Beta limitations**
+**Current limitations**
 - Posters for shows and movies need your own TMDB (or TheTVDB) API key.
 - YouTube search needs your own YouTube Data API key and a cookies.txt file, and has a daily quota.
 - One user account. There are no separate users or roles.
