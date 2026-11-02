@@ -102,7 +102,7 @@ If you prefer to add the template manually:
 | Tag | Contents |
 |---|---|
 | `latest` | The newest stable release. **Recommended.** |
-| `1.14`, `1.14.0`, … | A release line or one exact version. Use it to stay on a version or to go back. |
+| `1.14`, `1.14.1`, … | A release line or one exact version. Use it to stay on a version or to go back. |
 | `beta` | The newest beta, or the newest stable release if that is newer. A beta never changes `latest`. |
 
 ### Build it yourself

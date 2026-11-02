@@ -24,7 +24,9 @@ Before an update, make a backup (System, Backup &amp; Restore).</Overview>
   <Requires>Your TV and movie shares mapped read/write. Anime themes work out of the box; shows and movies use the free theme sources (Settings, Download Clients) and your own TMDB key.</Requires>
   <ExtraSearchTerms>theme themes theme.mp3 anime opening plex jellyfin emby sonarr radarr</ExtraSearchTerms>
   <License>GPL-3.0-or-later</License>
-  <Changes>### 1.14.0&#xD;
+  <Changes>### 1.14.1&#xD;
+Enable manual installs from YouTube settings without restarting; disabled upload and YouTube tools show setup guidance. Review and confirmation remain required.&#xD;
+### 1.14.0&#xD;
 Automatic missing posters for new installs; Trace logging; slower Radarr root-folder checks; clearer poster retry feedback and readable appearance themes.&#xD;
 ### 1.13.0&#xD;
 Language &amp; Region settings with an English recovery button, date/time preferences and an updated YouTube downloader.&#xD;
