@@ -18,11 +18,11 @@ If the **Report a vulnerability** button is missing, open a public issue that sa
 
 ## Supported versions
 
-Preludarr is in beta. Only the **newest release** gets security fixes; please update before reporting.
+Preludarr is stable. Only the **newest stable release** gets security fixes; please update before reporting.
 
 | Version | Security fixes |
 |---|---|
-| Newest 1.12.x beta | Yes |
+| Newest stable release | Yes |
 | Anything older | No |
 
 ## Scope
