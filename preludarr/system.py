@@ -39,7 +39,8 @@ def _send(handler, status, text, ctype='text/html; charset=utf-8'):
     nonce=secrets.token_urlsafe(16)
     if ctype.startswith('text/html'):
         text=__import__('login').add_icons(text)  # V1.9.7 site emblem
-        text=__import__('ui').apply(text,getattr(handler,'path','/system'))  # V1.9.8 shared design
+        text=__import__('ui').apply(text,getattr(handler,'path','/system'))
+        text=__import__('region').apply(text)  # V1.9.8 shared design
         text=re.sub(r'<script(?=[\s>])','<script nonce="'+nonce+'"',text)  # V1.9.8: only our own inline scripts may run
     data=text.encode('utf-8')
     handler.send_response(status)
@@ -451,7 +452,7 @@ def _backup_page(config,message=''):
     rows=[]
     for name,size,modified in files[:100]:
         link='/system/backup/download?name='+quote(name)
-        rows.append('<tr><td><strong>'+_esc(ui.when(modified))+'</strong> <span class="bk-kind'+(' auto' if name in auto else '')+'">'+('Automatic' if name in auto else 'Manual')+'</span><details class="bk-name"><summary>File name</summary><code>'+_esc(name)+'</code></details></td>'
+        rows.append('<tr><td><strong>'+_esc(ui.when(modified, long=True))+'</strong> <span class="bk-kind'+(' auto' if name in auto else '')+'">'+('Automatic' if name in auto else 'Manual')+'</span><details class="bk-name"><summary>File name</summary><code>'+_esc(name)+'</code></details></td>'
                     '<td>'+f'{size/1024/1024:.2f} MiB'+'</td>'
                     '<td class="bk-actions"><a class="btn" href="'+_esc(link)+'">Download</a> '
                     '<a class="btn" href="/system/backup/verify?name='+quote(name)+'">Verify archive</a></td></tr>')

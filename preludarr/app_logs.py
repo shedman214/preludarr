@@ -306,7 +306,7 @@ def page(config, query=None):
         download_link = '/logs/download?' + urllib.parse.urlencode({'file': name})
         display_name = name + (' — Poster activity' if name.startswith('poster.log') else ' — All activity')
         table.append(f'<tr{sel}><td>{esc(display_name)}</td><td>{size/1024:,.1f} KiB</td>'
-                     f'<td>{esc(time.strftime("%Y-%m-%d %H:%M", time.localtime(modified)))}</td>'
+                     f'<td>{esc(__import__("region").when(modified))}</td>'
                      f'<td><a href="{esc(download_link)}">Download</a></td></tr>')
     if not table:
         table = ['<tr><td colspan="4">No saved logs yet</td></tr>']

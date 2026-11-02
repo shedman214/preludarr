@@ -337,7 +337,7 @@ def panels(h):
              '.g-flag span{flex:1 1 auto;min-width:0}'
              '.g-info{display:grid;grid-template-columns:170px minmax(0,1fr);gap:6px 14px;margin:16px 0 0;font-size:.92em}.g-info dt{color:#adbed9}.g-info dd{margin:0}'
              '@media(max-width:700px){.g-info{grid-template-columns:1fr}}</style>')
-    return host + app_url + sec + logging_panel + style
+    return host + app_url + sec + logging_panel + style + __import__('region').panel(q)
 
 
 _NOPM = 'data-bwignore="true" data-lpignore="true" data-1p-ignore="true"'
@@ -369,6 +369,15 @@ def post(h, redirect):
         elif section == 'regenerate':
             regenerate_key()
             key, msg = 'security_notice', 'New API key created — the old key no longer works. Update any tool that uses it.'
+        elif section == 'region-english':
+            import region
+            prefs = region.settings()
+            prefs['language'] = 'en'
+            region.save({k: ['1'] if v is True else [v] for k, v in prefs.items() if v is not False})
+            key, msg = 'region_notice', 'Language and region saved.'
+        elif section == 'region':
+            __import__('region').save(form)
+            key, msg = 'region_notice', 'Language and region saved.'
         elif section == 'logging':
             lvl = f('log_level')
             if lvl not in ('info', 'debug'):
@@ -386,9 +395,10 @@ def post(h, redirect):
             raise ValueError('Unknown section.')
     except (ValueError, UnicodeError) as error:
         section = locals().get('section') or 'host'
-        key = {'security': 'security_notice', 'regenerate': 'security_notice', 'logging': 'logging_notice'}.get(section, 'host_notice')
+        key = {'security': 'security_notice', 'regenerate': 'security_notice', 'logging': 'logging_notice', 'region': 'region_notice', 'region-english': 'region_notice'}.get(section, 'host_notice')
         msg = '✗ ' + str(error)
     except OSError:
-        key, msg = 'host_notice', '✗ Could not save the settings.'
-    tab = {'host_notice': 'host', 'security_notice': 'security', 'logging_notice': 'logging'}[key]
+        key = 'region_notice' if locals().get('section') in ('region', 'region-english') else 'host_notice'
+        msg = '✗ Could not save the settings.'
+    tab = {'host_notice': 'host', 'security_notice': 'security', 'logging_notice': 'logging', 'region_notice': 'region'}[key]
     return redirect(h, '/settings?' + urllib.parse.urlencode({'section': tab, key: msg}))

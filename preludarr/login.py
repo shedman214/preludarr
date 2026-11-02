@@ -376,16 +376,16 @@ class Auth:
   if not requested:  # V1.9.8: after saving, come back to the tab that was saved
    requested=next((t for k,t in (('recycle_notice','recycle'),('remote_notice','remote'),('host_notice','host'),('security_notice','security'),('logging_notice','logging')) if k in _q),'general')
   section=requested if requested in (
-   'general','youtube','ui','recycle','host','remote','security','logging'
+   'general','youtube','ui','recycle','host','remote','security','logging','region'
   ) else 'general'
   visible={
    'general':'#settings-authentication',  # V1.9.8: each General tab shows only its own section (user 2026-10-27)
    'recycle':'#settings-recycle-bin','host':'#settings-host','remote':'#settings-remote-access',
-   'security':'#settings-security','logging':'#settings-logging',
+   'security':'#settings-security','logging':'#settings-logging','region':'#settings-region',
    'youtube':'#youtube-settings',
    'ui':'#settings-ui'
   }[section]
-  gtab=section in ('general','recycle','host','remote','security','logging')
+  gtab=section in ('general','recycle','host','remote','security','logging','region')
   note=('<div role="status" class="notice">'+html.escape(message)+'</div>') if message else ''
   username,stored=self.credentials()
   username=html.escape(username or '',quote=True)
@@ -433,7 +433,7 @@ class Auth:
     +'/* themearr-settings-sticky-v2 */'+'aside.themearr-sidebar{position:sticky;top:0;'+'height:100vh;max-height:100vh;overflow-y:auto;'+'align-self:flex-start;overscroll-behavior:contain;'+'scrollbar-width:thin;scrollbar-color:#3b4b6b #101c30}'+'.settings-subnav .settings-group-link{'+'font-weight:750;color:#dce9ff}'+'.settings-subnav .settings-nested{'+'padding-left:25px;color:#b9d5ff}'+'/* V1.7.3 aligned settings menu: one left edge for sections, one indent for sub-items */'+'.themearr-sidebar .settings-subnav a,.themearr-sidebar .settings-subnav .settings-subgroup{display:block;margin:0;'+'padding:8px 12px;font-size:14px;font-weight:700;line-height:1.3;color:#dce9ff;text-align:left}'+'.themearr-sidebar .settings-subnav .settings-subgroup{cursor:default}'+'.themearr-sidebar .settings-subnav a.settings-nested{padding:6px 12px 6px 28px;font-size:13px;font-weight:500;color:#b9d5ff}'+'@media(max-width:700px){aside.themearr-sidebar{'+'position:relative;height:auto;max-height:none;'+'overflow:visible}}'+'/* themearr-settings-views-v3 */'
   +'main .panel{display:none!important}'
   +visible+'{display:block!important}'
-  +'</style></head><body>'+full_sidebar('downloads' if section=='youtube' else 'general' if gtab else section)+'<main id="settings-general"><div class="crumb">Settings / General</div><h1>⚙️ Settings</h1><p class="muted">Account, recycle bin, host, remote access, API key and logging.</p>'+(general_tabs(section) if gtab else '')+'<div class="panel" id="settings-authentication"><div class="pill">General · Security</div><h2>🔐 Authentication</h2><p class="muted">Change your login username, password, or both from here.</p>'
+  +'</style></head><body>'+full_sidebar('downloads' if section=='youtube' else 'general' if gtab else section)+'<main id="settings-general"><div class="crumb">Settings / General</div><h1>⚙️ Settings</h1><p class="muted">Account, recycle bin, host, remote access, API key, logging, language and region.</p>'+(general_tabs(section) if gtab else '')+'<div class="panel" id="settings-authentication"><div class="pill">General · Security</div><h2>🔐 Authentication</h2><p class="muted">Change your login username, password, or both from here.</p>'
    +note+'<form method="post" action="/change-account">'
    '<label for="username">Username<input id="username" name="username" value="'+username+'" '
    'autocomplete="username" minlength="3" maxlength="32" required></label>'
@@ -652,7 +652,7 @@ class Auth:
   except Exception:pass
   if isinstance(body,str) and 'name="color-scheme"' not in body and '</head>' in body:  # 1.12 #15: dark scrollbars/controls on the default theme
    body=body.replace('</head>','<meta name="color-scheme" content="dark"></head>',1)
-  if not self.active(h):return body
+  if not self.active(h):return __import__('region').apply(body)
   sidebar_actions=('<a href="/settings">⚙️ Settings</a><a href="/system">🖥️ System</a><form method="post" action="/logout" style="margin:8px 0 0"><button type="submit" style="width:100%;text-align:left;background:#293d5b;border:1px solid #506482;border-radius:7px;color:#eaf2ff;padding:10px;cursor:pointer">↪ Log out</button></form>')
   actions=''
   # V1.9.8 (user 2026-10-27: "remove this we dont need it anymore"): the floating Settings/System/Log out box is gone.
@@ -671,7 +671,7 @@ class Auth:
    actions+=('<div role="status" style="position:fixed;z-index:10001;top:65px;right:12px;'
     'background:#163d2c;color:#e1ffec;padding:15px;border:1px solid #438a63;border-radius:8px">'
     '✅ Theme installed successfully! <a style="color:#adf0c7" href="/">Dashboard</a></div>')
-  return body.replace('<body>','<body>'+actions,1)
+  return __import__('region').apply(body.replace('<body>','<body>'+actions,1))
 
 
 # ------------------------------------------------------------------------------------------------
@@ -750,7 +750,7 @@ _SETTINGS_NAV=(('settings-group-link','general','/settings?section=general','Gen
  ('settings-group-link','appearance','/settings/appearance','Appearance'))  # 1.12
 
 
-GENERAL_TABS=(('general','Account'),('recycle','Recycle bin'),('host','Host'),('remote','Remote access'),('security','API key & security'),('logging','Logging'))
+GENERAL_TABS=(('general','Account'),('recycle','Recycle bin'),('host','Host'),('remote','Remote access'),('security','API key & security'),('logging','Logging'),('region','Language & Region'))
 
 
 def general_tabs(current):

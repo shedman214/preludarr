@@ -156,18 +156,9 @@ def apply(body, path):
     return buttons(body)
 
 
-def when(ts, with_date=True):
+def when(ts, with_date=True, long=False):
     """Local time with an explicit timezone, e.g. 'Oct 27, 2026 · 9:31 PM CDT' (ts = epoch seconds or aware datetime)."""
-    import datetime as _dt
-    try:
-        d = ts if isinstance(ts, _dt.datetime) else _dt.datetime.fromtimestamp(float(ts), _dt.timezone.utc)
-        if d.tzinfo is None:
-            d = d.replace(tzinfo=_dt.timezone.utc)
-        d = d.astimezone()
-        text = d.strftime(('%b %d, %Y · ' if with_date else '') + '%I:%M %p %Z')
-        return text.replace(' 0', ' ').replace('· 0', '· ')
-    except (TypeError, ValueError, OSError, OverflowError):
-        return 'unknown time'
+    return __import__('region').when(ts, with_date=with_date, long=long)
 
 
 def label(kind):

@@ -88,6 +88,27 @@ check('The same write without sign-in is refused (sent to sign-in)', st == 303 a
 st, _, _ = req('POST', '/system/backup/create', {'csrf': csrf(req('GET', '/system?tab=backup')[2].decode(), '/system/backup/create')}, origin='http://evil.example')
 check('The same write from another site (Origin) is refused', st == 403)
 
+# ---- Language & Region: real authenticated POST, language recovery and rejected origins
+region_form = {'section':'region', 'language':'ja', 'short_date':'iso', 'long_date':'weekday',
+               'clock':'24', 'timezone':'Asia/Tokyo', 'relative_dates':'1'}
+st, _, _ = req('POST', '/settings/general', region_form, auth=False)
+check('Region save requires sign-in', st == 303)
+st, _, _ = req('POST', '/settings/general', region_form, origin='http://evil.example')
+check('Region save rejects foreign origins', st == 403)
+st, h, _ = req('POST', '/settings/general', region_form)
+check('Region settings save through authenticated form', st == 303 and 'section=region' in h.get('location',''))
+st, _, page = req('GET', '/settings?section=region')
+check('Japanese page keeps an English recovery control', st == 200 and b'lang="ja"' in page and b'Switch back to English' in page and b'Language / English' in page)
+for language, direction in [('zh-Hans', b'dir="ltr"'), ('ar', b'dir="rtl"')]:
+    req('POST', '/settings/general', dict(region_form, language=language))
+    st, _, page = req('GET', '/settings?section=region')
+    check('Region language and direction: '+language, st == 200 and ('lang="'+language+'"').encode() in page and direction in page and b'Switch back to English' in page)
+st, _, _ = req('POST', '/settings/general', {'section':'region-english'})
+st, _, page = req('GET', '/settings?section=region')
+check('English recovery keeps clock and time zone', st == 200 and b'Language &amp; Region' in page and b'value="24" selected' in page and b'value="Asia/Tokyo" selected' in page)
+# Return the disposable server to default display settings for existing checks below.
+req('POST', '/settings/general', {'section':'region','language':'en','short_date':'month','long_date':'weekday','clock':'12','timezone':'server'})
+
 # ---- download (password step) + upload (multipart)
 page = req('GET', '/system?tab=backup')[2].decode()
 name = re.search(r'(tsbackup-\d{8}T\d{6}Z-[a-f0-9]{8}\.zip)', page).group(1)
