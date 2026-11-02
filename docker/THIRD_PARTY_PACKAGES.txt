@@ -158,5 +158,5 @@ pycryptodomex 3.24.1 | BSD, Public Domain
 requests 2.34.2 | Apache-2.0
 urllib3 2.8.0 | MIT
 websockets 17.3 | BSD-3-Clause
-yt-dlp 2026.8.19 | Unlicense
+yt-dlp 2026.10.26 | Unlicense
 yt-dlp-ejs 0.8.0 | Unlicense AND MIT AND ISC

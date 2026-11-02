@@ -9,6 +9,15 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [Unreleased]
+
+### 🔄 Changed
+- **YouTube downloader.** Updated yt-dlp from 2026.8.19 to 2026.10.26, keeping the required dependencies pinned and hash-verified.
+
+### 🔧 Fixed
+- **Stable-release documentation.** Removed outdated beta wording from the feature list, limitations and security support policy.
+- **Dependency lock generation.** Regenerating the dependency lock now writes valid line continuations.
+
 ## [1.12.3] — 2026-11-01
 - Theme Browser candidates now link directly to their AnimeThemes anime page for visual verification, including manual and low-confidence suggestions. Opening the link never remembers a match or installs a theme.
 
