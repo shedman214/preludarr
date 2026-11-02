@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Language & Region regression suite: offline, disposable data, all six languages."""
+"""Language & Region regression suite: offline, disposable data, all eight languages."""
 import datetime as dt
 import io
 import json
@@ -115,6 +115,15 @@ class LanguageRegion(unittest.TestCase):
                 self.assertIn('lang="'+lang+'"', out)
                 self.assertIn(region.text('Language & Region', lang), out)
                 self.assertIn(region.text('Save Changes', lang), out)
+        self.path.write_text(json.dumps(self.prefs(language='ar')))
+        arabic=region.apply(body)
+        self.assertIn('dir="rtl"', arabic)
+        self.assertIn('id="region-rtl"', arabic)
+        self.assertIn('lang="en" dir="ltr"', arabic)
+        self.path.write_text(json.dumps(self.prefs(language='zh-Hans')))
+        chinese=region.apply(body)
+        self.assertIn('lang="zh-Hans" dir="ltr"', chinese)
+        self.assertNotIn('id="region-rtl"', chinese)
         self.assertEqual(region.apply('{"Settings":1}'), '{"Settings":1}')
 
     def test_panel_saved_values_and_notice_escaping(self):

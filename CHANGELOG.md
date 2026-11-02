@@ -16,8 +16,9 @@ Each release says what changed for users. Upgrades keep your data, settings and 
 
 ### ➕ Added
 - **Language & Region.** Saved instance-wide preferences for short and long dates, 12/24-hour time, display time zone and Today/Yesterday labels, with a preview.
+- **Arabic layout.** Right-to-left navigation and forms, with English recovery controls and technical fields kept left-to-right.
 - **English recovery.** A permanent “Language / English” navigation link and “Switch back to English” button keep the language setting accessible without resetting date/time preferences.
-- **Interface languages.** Spanish, French, German, Portuguese (Brazil) and Japanese translations for core navigation and common controls. Untranslated text falls back to English; media titles and provider data retain their original language.
+- **Interface languages.** Spanish, French, German, Portuguese (Brazil), Japanese, Simplified Chinese and Arabic translations for core navigation and common controls. Untranslated text falls back to English; media titles and provider data retain their original language.
 
 ### 🔄 Changed
 - **Displayed dates.** Activity, backup/system dates, log-file dates, current-theme dates and recycle-bin schedules/expiry use the display preferences. Stored timestamps and job schedules are unchanged.
