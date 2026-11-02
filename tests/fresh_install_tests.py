@@ -23,7 +23,7 @@ def check(name, ok, detail=''):
 src = Path('/src/preludarr/app.py').read_text()
 block = src[src.index("if self.path=='/confirm-theme':"):src.index("fingerprint=take_theme_confirmation(token")]
 check('Theme Browser AnimeThemes installs are not blocked when manual installs are off (default)', "getenv('THEMEARR_MANUAL_INSTALL_ENABLED'" not in block)
-check('…uploads and YouTube links still follow the manual-install setting', all("getenv('THEMEARR_MANUAL_INSTALL_ENABLED', '0') == '1'" in Path('/src/preludarr/' + f).read_text().replace('"', "'")
+check('…uploads and YouTube links still follow the shared manual-install setting', all("__import__('manual_settings').enabled()" in Path('/src/preludarr/' + f).read_text()
                                                                               for f in ('custom_upload.py', 'youtube_manual.py')))
 
 ob = __import__('onboarding')

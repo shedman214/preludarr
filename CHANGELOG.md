@@ -9,6 +9,14 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## Unreleased
+
+### ➕ Added
+- **Manual-install setting.** Enable or disable YouTube links and custom audio uploads from YouTube’s Configure panel under Settings → Download Clients. The saved choice applies immediately and overrides the Docker default; review and confirmation remain required.
+
+### 🔧 Fixed
+- **Disabled manual installs.** The Theme Browser shows setup guidance and a settings link instead of upload and YouTube download forms when manual installs are off.
+
 ## [1.14.0] — 2026-11-02
 
 This release simplifies poster setup, fixes slow Radarr connection checks and improves theme readability.

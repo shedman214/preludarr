@@ -439,7 +439,7 @@ def _to_mp3(src, config):
 def install_youtube(app, kind, item_id, url, report=None):
     report = report or (lambda *a: None)
     if not manual_enabled():
-        raise ValueError('YouTube links are off. Turn on manual installs (PRELUDARR_MANUAL_INSTALL_ENABLED=1) to use them.')
+        raise ValueError('YouTube links are off. Enable Allow manual installs in Settings → Download Clients → Download engines → YouTube → Configure.')
     item = _item(app, kind, item_id)
     yd = __import__('youtube_download')
     report('checking', 'Checking the YouTube link')
@@ -458,7 +458,7 @@ def install_upload(app, handler, report=None):
     """multipart/form-data: server, id, root, audio (one file). Returns (kind, title, source name)."""
     report = report or (lambda *a: None)
     if not manual_enabled():
-        raise ValueError('Uploads are off. Turn on manual installs (PRELUDARR_MANUAL_INSTALL_ENABLED=1) to use them.')
+        raise ValueError('Uploads are off. Enable Allow manual installs in Settings → Download Clients → Download engines → YouTube → Configure.')
     from email import policy
     from email.parser import BytesParser
     ct = handler.headers.get('Content-Type', '')
@@ -824,7 +824,7 @@ def _sources(kind, item, extra, ident):
                   '<button type="submit">Upload and install</button></form>',
                   '<p class="muted">Audio up to 10 minutes / 40 MB; Preludarr converts it to MP3.</p>']
     else:
-        parts += ['<p class="muted">YouTube links and your own audio need manual installs turned on (<code>PRELUDARR_MANUAL_INSTALL_ENABLED=1</code>).</p>']
+        parts += __import__('manual_settings').notice()
     parts.append('</details>')
     return parts
 
