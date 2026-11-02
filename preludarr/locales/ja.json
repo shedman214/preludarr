@@ -97,5 +97,8 @@
   "Find and preview themes for a title": "タイトルのテーマを検索・試聴",
   "Titles that have no theme yet": "テーマが未設定のタイトル",
   "Themes already installed": "インストール済みのテーマ",
-  "Proposed installs waiting for approval": "確認待ちのインストール候補"
+  "Proposed installs waiting for approval": "確認待ちのインストール候補",
+  "Language": "言語",
+  "Dates": "日付",
+  "UI Language": "表示言語"
 }

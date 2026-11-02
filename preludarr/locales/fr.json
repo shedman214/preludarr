@@ -97,5 +97,8 @@
   "Find and preview themes for a title": "Rechercher et écouter les thèmes d’un titre",
   "Titles that have no theme yet": "Titres sans thème",
   "Themes already installed": "Thèmes déjà installés",
-  "Proposed installs waiting for approval": "Installations proposées en attente de validation"
+  "Proposed installs waiting for approval": "Installations proposées en attente de validation",
+  "Language": "Langue",
+  "Dates": "Dates",
+  "UI Language": "Langue de l’interface"
 }

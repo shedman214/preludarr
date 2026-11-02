@@ -128,6 +128,9 @@ class LanguageRegion(unittest.TestCase):
         self.assertIn('Idioma y región', translated)
         self.assertIn('Guardar idioma y región', translated)
         self.assertIn('action="/settings/general"', translated)
+        self.assertIn('form="region-english-form" translate="no" lang="en"', panel)
+        self.assertIn('<form id="region-english-form"', panel)
+        self.assertIn('class="region-row"', panel)
 
     def test_post_route_valid_and_rejected(self):
         class H:

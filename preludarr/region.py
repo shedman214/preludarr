@@ -141,9 +141,13 @@ def when(value, with_date=True, long=False, prefs=None, now=None, date_only=Fals
 def panel(query):
     s = settings()
     def select(key, label, options):
-        return ('<label for="region-' + key + '">' + html.escape(label) + '</label><select id="region-' + key +
-                '" name="' + key + '">' + ''.join('<option value="' + html.escape(k, quote=True) + '"' +
-                (' selected' if s[key] == k else '') + '>' + html.escape(v) + '</option>' for k, v in options.items()) + '</select>')
+        recovery = ('<button type="submit" form="region-english-form" translate="no" lang="en">Switch back to English</button>'
+                    if key == 'language' else '')
+        return ('<div class="region-row"><label for="region-' + key + '">' + html.escape(label) +
+                '</label><div class="region-control"><select id="region-' + key + '" name="' + key + '">' +
+                ''.join('<option value="' + html.escape(k, quote=True) + '"' +
+                (' selected' if s[key] == k else '') + '>' + html.escape(v) + '</option>' for k, v in options.items()) +
+                '</select>' + recovery + '</div></div>')
     notice = query.get('region_notice', [''])[0][:300]
     sample = dt.datetime(2026, 11, 2, 17, 30, tzinfo=dt.timezone.utc)
     zones = {'server': 'Server time zone'}
@@ -152,9 +156,9 @@ def panel(query):
             ('<p role="status">' + html.escape(notice) + '</p>' if notice else '') +
             '<p>These preferences apply to everyone using this Preludarr instance.</p>'
             '<form method="post" action="/settings/general"><input type="hidden" name="section" value="region">' +
-            select('language', 'Interface language', LANGUAGES) +
+            '<h3 class="region-heading">Language</h3>' + select('language', 'UI Language', LANGUAGES) +
             '<p class="help">Core navigation and common controls are translated. Untranslated text falls back to English. Media titles and provider data keep their original language.</p>' +
-            select('short_date', 'Short date format', {'month': when(sample, date_only=True, prefs=dict(s, short_date='month', relative_dates=False)), 'iso': '2026-11-02', 'dmy': '02/11/2026', 'mdy': '11/02/2026'}) +
+            '<h3 class="region-heading">Dates</h3>' + select('short_date', 'Short date format', {'month': when(sample, date_only=True, prefs=dict(s, short_date='month', relative_dates=False)), 'iso': '2026-11-02', 'dmy': '02/11/2026', 'mdy': '11/02/2026'}) +
             select('long_date', 'Long date format', {'weekday': when(sample, long=True, date_only=True, prefs=dict(s, long_date='weekday', relative_dates=False)), 'date': when(sample, long=True, date_only=True, prefs=dict(s, long_date='date', relative_dates=False))}) +
             select('clock', 'Time format', {'12': '5:30 PM (12-hour)', '24': '17:30 (24-hour)'}) +
             select('timezone', 'Display time zone', zones) +
@@ -165,12 +169,19 @@ def panel(query):
             html.escape(when(sample, long=True, prefs=s)) + '</output>'
             '<p class="help">Save to apply your choices and refresh the preview. No restart is needed.</p>'
             '<button type="submit">Save Language &amp; Region</button></form>'
-            '<form method="post" action="/settings/general"><input type="hidden" name="section" value="region-english">'
-            '<button type="submit" translate="no" lang="en">Switch back to English</button></form>'
-            '<style>#settings-region select{display:block;width:100%;margin:8px 0 16px;min-height:42px;font:inherit}'
+            '<form id="region-english-form" method="post" action="/settings/general"><input type="hidden" name="section" value="region-english"></form>'
+            '<style>#settings-region .region-heading{font-size:20px;font-weight:500;border-bottom:1px solid var(--tm-line,#536787);padding-bottom:8px;margin:24px 0 20px}'
+            '#settings-region .region-row{display:grid;grid-template-columns:220px minmax(0,1fr);align-items:start;gap:20px;margin:18px 0}'
+            '#settings-region .region-row>label{text-align:right;margin:10px 0 0;font-size:14px}'
+            '#settings-region .region-control{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}'
+            '#settings-region .region-control select{display:block;width:380px;max-width:100%;margin:0;min-height:36px;font:inherit}'
+            '#settings-region .region-control button{margin:0;white-space:normal;text-align:center;max-width:100%}'
             '#settings-region output{display:block;overflow-wrap:anywhere;line-height:1.8}'
             '#settings-region .region-check{display:flex;gap:10px;align-items:center}'
-            '#settings-region .region-check input{width:18px;height:18px;margin:0;flex:none}</style></section>')
+            '#settings-region .region-check input{width:18px;height:18px;margin:0;flex:none}'
+            '@media(max-width:700px){#settings-region .region-row{grid-template-columns:minmax(0,1fr);gap:8px}'
+            '#settings-region .region-row>label{text-align:left;margin:0}#settings-region .region-control select{width:100%}}</style></section>')
+
 
 
 class _Interface(HTMLParser):
