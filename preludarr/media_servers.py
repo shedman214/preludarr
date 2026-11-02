@@ -7,6 +7,7 @@ All mutating routes must be invoked *after* Themearr's auth.post(handler).
 from __future__ import annotations
 
 import html
+import animethemes
 import ipaddress
 import json
 import os
@@ -267,6 +268,7 @@ def fallback_panel(config, anime_path, name, request_json):
                             '<div class="sm-actions">',
                             '<a style="color:#b8efff;font-weight:700;text-decoration:underline" href="',
                             _e(_u('/themes', path=anime_path, theme_slug=slug)), '">Preview OP/ED</a>',
+                    animethemes.anime_page_link(slug),
                             '<form method="post" action="/v4-save-match">',
                             '<input type="hidden" name="path" value="', _e(anime_path), '">',
                             '<input type="hidden" name="slug" value="', _e(slug), '">',

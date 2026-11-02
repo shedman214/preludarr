@@ -2263,7 +2263,7 @@ class Handler(httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, s
          chosen=candidates[0]
          tracks=list_available_themes(chosen)
          parts+=['<h3>Manual selection: ',esc(str(chosen.get('name') or manual_slug)),'</h3>',
-                 '<p>',str(len(tracks)),' available audio themes</p>']
+                 '<p>',str(len(tracks)),' available audio themes</p>',animethemes.anime_page_link(chosen.get('slug'))]
          for track in tracks:
           parts+=['<div class="panel"><h3>',
                   esc(str(track['slug'])),' — ',esc(str(track['title'])),
@@ -2284,13 +2284,7 @@ class Handler(httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, s
         if not candidates:
          parts+=['<p>No AnimeThemes entries matched this search.</p>']
         for candidate in candidates[:20]:
-         slug=str(candidate.get('slug') or '')
-         if not slug:continue
-         link='/themes?'+urllib.parse.urlencode({'path':selected,'theme_slug':slug})
-         parts+=['<p><a style="color:#9fc1ff" href="',
-                 esc(link,quote=True),'">',
-                 esc(str(candidate.get('name') or slug)),
-                 '</a> — Preview OP/ED tracks</p>']
+         parts.append(animethemes.search_result(candidate,selected))
       except Exception as exc:
        event(row['name'],'error','Theme Browser manual search failed: '+repr(exc)[:600])
        parts+=['<p role="alert">Manual AnimeThemes search failed. The details were recorded in Activity.</p><p><button type="button" data-tp-retry>Try again</button></p>',('<p class="muted">'+html.escape(animethemes.status_note())+'</p>' if animethemes.status_note() else '')]
@@ -2329,7 +2323,7 @@ class Handler(httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, s
         themes=list_available_themes(show)
         parts+=['<section class="panel" id="themearr-smart-themes">',
                 '<h3>Available Opening &amp; Ending Themes</h3>',
-                '<p>',str(len(themes)),' available audio versions</p>',_match_evidence(selected,row,show,via)]
+                '<p>',str(len(themes)),' available audio versions</p>',animethemes.anime_page_link(show.get('slug')),_match_evidence(selected,row,show,via)]
         if themes:
          groups={}
          for track in themes:

@@ -155,3 +155,34 @@ def stats():
     with _CACHE_LOCK:
         size = len(_CACHE)
     return {'remembered': size, 'requests': _STATE['requests'], 'reused': _STATE['hits']}
+
+
+def anime_page_link(slug):
+    """Render a read-only website link from an AnimeThemes API anime slug.
+
+    Callers must pass the provider's slug, never a folder or search title.
+    Missing or malformed provider identifiers have no website link.
+    """
+    import html
+    import re
+    if not isinstance(slug, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,120}', slug):
+        return ''
+    url = 'https://animethemes.moe/anime/' + slug
+    return ('<a class="animethemes-page-link" style="display:inline-block;max-width:100%;'
+            'overflow-wrap:anywhere;text-decoration:underline" href="' + html.escape(url, quote=True) +
+            '" target="_blank" rel="noopener noreferrer">View on AnimeThemes</a>')
+
+
+def search_result(candidate, selected):
+    """One manual result; the preview route is distinct from the external link."""
+    import html
+    import urllib.parse
+    slug = str(candidate.get('slug') or '')
+    if not slug:
+        return ''
+    preview = '/themes?' + urllib.parse.urlencode({'path': selected, 'theme_slug': slug})
+    year = ' (' + html.escape(str(candidate['year'])) + ')' if candidate.get('year') else ''
+    external = anime_page_link(candidate.get('slug'))
+    return ('<p style="overflow-wrap:anywhere"><a href="' + html.escape(preview, quote=True) + '">' +
+            html.escape(str(candidate.get('name') or slug)) + '</a>' + year +
+            ' — Preview OP/ED tracks' + (' · ' + external if external else '') + '</p>')
