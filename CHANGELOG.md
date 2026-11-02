@@ -9,14 +9,14 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
-## [Unreleased]
+## [1.14.0] — 2026-11-02
 
-These changes improve connection checks, first-time poster setup and troubleshooting.
+This release simplifies poster setup, fixes slow Radarr connection checks and improves theme readability.
 
 ### ✨ Highlights
 - New installs automatically process missing posters after folders and a provider key are configured.
 - Radarr connection checks allow more time for slow root-folder responses.
-- Trace logging adds request timings for troubleshooting.
+- Clearer text across appearance themes and more useful troubleshooting logs.
 
 ### ➕ Added
 - **Automatic posters for new installs.** Missing library posters enter the existing background queue once roots are scanned and a TMDB or TVDB key is available. Processing respects pause controls, retry cooldowns and rate limits, retains cached posters and does not install theme music.
@@ -32,6 +32,8 @@ These changes improve connection checks, first-time poster setup and troubleshoo
 - **Slow Radarr root-folder checks.** The root-folder request now allows 30 seconds instead of 12, so a measured 15-second response can complete without reporting a connection failure. The status check retains its shorter timeout.
 - **Direct Sonarr/Radarr connections.** Connection requests no longer inherit outbound proxy settings. Timeout guidance now explains that the server must be reachable from the Preludarr container.
 - **Poster recovery status.** The dashboard reports when background processing is off instead of showing it as running.
+
+Docker image: `ghcr.io/shedman214/preludarr:1.14.0` (also `:1.14`, `:latest` and `:beta`) · Unraid: update when it shows "update ready" · [Full changelog](https://github.com/shedman214/preludarr/compare/v1.13.0...v1.14.0)
 
 ## [1.13.0] — 2026-11-02
 
