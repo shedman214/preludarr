@@ -22,13 +22,24 @@ secondary = 'html body main .tm-btn.tm-btn.tm-btn.tm-secondary'
 sources = [(poster_filters.modal_script(), modal_base), (poster_filters.modal_script(), modal_secondary),
            (filters, 'button,.back'), (filters, '.back'), (picker, '.tp-secondary'),
            (app_css, 'button'), (app_css, '.view-toggle button'), (ui.UI_CSS, primary),
-           (ui.UI_CSS, primary+':hover'), (ui.UI_CSS, secondary), (ui.UI_CSS, secondary+':hover')]
+           (ui.UI_CSS, primary+':hover'), (ui.UI_CSS, secondary), (ui.UI_CSS, secondary+':hover'),
+           (ap.PREVIEW_CSS, '.pl-preview'), (ap.PREVIEW_CSS, '.pv-stats div'),
+           (ap.PREVIEW_CSS, '.pv-stats strong'), (ap.PREVIEW_CSS, '#pl-preview .pv-stats small'),
+           (ap.PREVIEW_CSS, '#pl-preview .pv-primary'), (ap.PREVIEW_CSS, '#pl-preview .pv-secondary'),
+           (ap.PREVIEW_CSS, '#pl-preview .pv-btns a')]
 css = ''.join(rule(source, selector) for source, selector in sources)
+css += '.audit-panel{background:#1b2840}.audit-link{color:#9fd0ff}'
 pairs = [('Modal confirm', [modal_base]), ('Modal cancel', [modal_base, modal_secondary]),
          ('Fallback cancel', ['button,.back', '.back']), ('Picker cancel', ['button', '.tp-secondary']),
          ('Grid/List', ['button', '.view-toggle button']), ('Settings primary', [primary]),
          ('Settings primary hover', [primary, primary+':hover']), ('Settings secondary', [secondary]),
-         ('Settings secondary hover', [secondary, secondary+':hover'])]
+         ('Settings secondary hover', [secondary, secondary+':hover']),
+         ('Preview primary', ['#pl-preview .pv-primary']),
+         ('Preview secondary', ['#pl-preview .pv-secondary']),
+         ('Preview link', ['.pl-preview', '#pl-preview .pv-btns a']),
+         ('Preview count', ['.pl-preview', '.pv-stats div', '.pv-stats strong']),
+         ('Preview caption', ['.pl-preview', '.pv-stats div', '#pl-preview .pv-stats small']),
+         ('Link inherited panel background', ['.audit-panel', '.audit-link'])]
 failures = []
 count = 0
 for theme in list(ap.STANDARD)+list(ap.IMMERSIVE):

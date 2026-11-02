@@ -27,7 +27,7 @@ These changes improve connection checks, first-time poster setup and troubleshoo
 - **Background poster defaults.** The Unraid template uses `auto`: enabled for new installs and unchanged for existing installs. Explicit `true` and `false` choices still take priority.
 
 ### 🔧 Fixed
-- **Theme readability.** Poster confirmation and picker buttons, Library view controls, and Settings buttons retain readable text across appearance themes, including light and OLED modes.
+- **Theme readability.** Poster confirmation and picker buttons, Library view controls, Settings buttons and links retain readable text across appearance themes, including light and OLED modes. Live preview text follows the preview palette instead of inheriting conflicting colors from the saved theme.
 - **Slow Radarr root-folder checks.** The root-folder request now allows 30 seconds instead of 12, so a measured 15-second response can complete without reporting a connection failure. The status check retains its shorter timeout.
 - **Direct Sonarr/Radarr connections.** Connection requests no longer inherit outbound proxy settings. Timeout guidance now explains that the server must be reachable from the Preludarr container.
 - **Poster recovery status.** The dashboard reports when background processing is off instead of showing it as running.
