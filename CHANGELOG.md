@@ -9,7 +9,7 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
-## [Unreleased]
+## [1.12.3] — 2026-11-01
 - Theme Browser candidates now link directly to their AnimeThemes anime page for visual verification, including manual and low-confidence suggestions. Opening the link never remembers a match or installs a theme.
 
 ## [1.12.2] — 2026-11-01
