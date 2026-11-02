@@ -9,6 +9,28 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [Unreleased]
+
+These changes improve connection checks, first-time poster setup and troubleshooting.
+
+### ✨ Highlights
+- New installs automatically process missing posters after folders and a provider key are configured.
+- Radarr connection checks allow more time for slow root-folder responses.
+- Trace logging adds request timings for troubleshooting.
+
+### ➕ Added
+- **Automatic posters for new installs.** Missing library posters enter the existing background queue once roots are scanned and a TMDB or TVDB key is available. Processing respects pause controls, retry cooldowns and rate limits, retains cached posters and does not install theme music.
+- **Trace logging.** Settings → General → Logging includes Trace, which adds HTTP method, response status and elapsed time to the log without including URLs, headers or request bodies in the new timing entries. The setting applies immediately and survives restarts.
+
+### 🔄 Changed
+- **Unraid installation instructions.** Community Applications installation is now the primary path, with manual template installation retained as an alternative.
+- **Background poster defaults.** The Unraid template uses `auto`: enabled for new installs and unchanged for existing installs. Explicit `true` and `false` choices still take priority.
+
+### 🔧 Fixed
+- **Slow Radarr root-folder checks.** The root-folder request now allows 30 seconds instead of 12, so a measured 15-second response can complete without reporting a connection failure. The status check retains its shorter timeout.
+- **Direct Sonarr/Radarr connections.** Connection requests no longer inherit outbound proxy settings. Timeout guidance now explains that the server must be reachable from the Preludarr container.
+- **Poster recovery status.** The dashboard reports when background processing is off instead of showing it as running.
+
 ## [1.13.0] — 2026-11-02
 
 This release adds Language & Region settings and updates the YouTube downloader.

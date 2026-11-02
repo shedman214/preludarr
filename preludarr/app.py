@@ -41,6 +41,7 @@ import jellyfin_quickconnect  # 1.12: Jellyfin Quick Connect
 import emby_signin  # 1.12: sign in to Emby
 import appearance  # 1.12: Settings → Appearance
 import theme_queue
+import poster_background
 
 CONFIG=Path(os.getenv('CONFIG_DIR','/config')); CONFIG.mkdir(parents=True,exist_ok=True)
 DB=CONFIG/'library.db'
@@ -566,9 +567,8 @@ def poster_job_status(path):
           else 'Poster provider temporarily unavailable. Try again later.'}
  return {'state':'idle','message':'No poster search has run yet.'}
 
-POSTER_BACKGROUND_ENABLED=os.getenv(
- 'POSTER_BACKGROUND_ENABLED','false'
-).lower()=='true'
+# Resolved from the persisted first-install default before starting any workers.
+POSTER_BACKGROUND_ENABLED=False
 
 POSTER_BACKGROUND_DELAY=max(
  30,int(os.getenv('POSTER_BACKGROUND_DELAY','180'))
@@ -589,7 +589,7 @@ def background_poster_worker():
     time.sleep(5)
     continue
    if not poster_connect.has_provider(CONFIG):
-    time.sleep(300)
+    poster_background.wait(300)
     continue
 
    current=time.time()
@@ -606,6 +606,7 @@ def background_poster_worker():
     time.sleep(10)
     continue
 
+   poster_background.enqueue_missing(sys.modules[__name__])
    with db() as conn:
     rows=conn.execute("""
      SELECT s.path,s.library,s.name,p.checked
@@ -624,7 +625,7 @@ def background_poster_worker():
      break
 
    if selected is None:
-    time.sleep(300)
+    poster_background.wait(300)
     continue
 
    with POSTER_LOCK:
@@ -1237,6 +1238,10 @@ def discover(only=None):
   for (p,) in c.execute('SELECT path FROM shows').fetchall():
    if str(Path(p).parent) not in current:c.execute('DELETE FROM shows WHERE path=?',(p,))
  auto_themes.record_new(sys.modules[__name__])  # V1.7.3: 'Recently added' dates for newly found folders
+ if POSTER_BACKGROUND_ENABLED:
+  poster_v2_init()
+  poster_background.enqueue_missing(sys.modules[__name__])
+  poster_background.wake()
  return count
 
 def process(path):
@@ -1660,6 +1665,7 @@ def poster_v2_snapshot():
     with POSTER_LOCK:
         stats['in_progress'] = len(POSTER_BUSY)
     stats['paused'] = poster_v2_paused()
+    stats['enabled'] = POSTER_BACKGROUND_ENABLED
     stats['delay_seconds'] = POSTER_BACKGROUND_DELAY
     stats['hourly_limit'] = POSTER_BACKGROUND_LIMIT
     stats['percent'] = round(100.0 * stats['cached'] / stats['total'], 1) if stats['total'] else 0.0
@@ -1697,11 +1703,11 @@ def poster_v2_panel():
     esc = html.escape
     labels = [('cached', 'Cached posters'), ('missing', 'Missing'),
               ('never_attempted', 'Not attempted'), ('failed', 'Failed match'),
-              ('queued', 'Queued retries'), ('in_progress', 'In progress')]
+              ('queued', 'Queued posters'), ('in_progress', 'In progress')]
     output = ['<section class="panel" id="poster-recovery">',
               '<h2>Poster Recovery</h2>',
               '<p id="poster-v2-state" role="status">',
-              ('Paused' if s['paused'] else 'Running'),
+              ('Paused' if s['paused'] else ('Running' if POSTER_BACKGROUND_ENABLED else 'Background processing off')),
               ' · ', str(s['delay_seconds']), ' seconds between attempts · ',
               str(s['hourly_limit']), ' attempts/hour maximum</p>',
               '<div class="stats">']
@@ -1743,7 +1749,7 @@ def poster_v2_panel():
                'const p=document.getElementById("poster-v2-progress");',
                'if(p){p.max=Math.max(1,s.total);p.value=s.cached;}',
                'const state=document.getElementById("poster-v2-state");',
-               'if(state)state.textContent=(s.paused?"Paused":"Running")+',
+               'if(state)state.textContent=(s.paused?"Paused":(s.enabled?"Running":"Background processing off"))+' ,
                '" · "+s.delay_seconds+" seconds between attempts · "+',
                's.hourly_limit+" attempts/hour maximum";',
                '}catch(e){}}const v2Timer=setInterval(refresh,5000);})();</script>',
@@ -2702,7 +2708,9 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
   if self.path=='/anidb-settings':
    return anidb.settings_post(self,CONFIG,auth.redirect)
   if self.path=='/poster-connect-action':
-   return poster_connect.post(self,CONFIG)
+   result=poster_connect.post(self,CONFIG)
+   poster_background.wake()
+   return result
   if self.path in ('/poster-v2-pause','/poster-v2-resume','/poster-v2-retry-failed'):
    return poster_v2_control_post(self,self.path.removeprefix('/poster-v2-'))
   if self.path in ('/v4-save-match','/v4-remove-match'):
@@ -2998,7 +3006,9 @@ def verify_theme_directory_identity(folder, folder_fd):
  return True
 
 if __name__=='__main__':
- db().close();auto_themes.init(sys.modules[__name__]);theme_queue.wake(sys.modules[__name__]);threading.Thread(target=scheduler,daemon=True).start()
+ db().close()
+ POSTER_BACKGROUND_ENABLED=poster_background.enabled(sys.modules[__name__])
+ auto_themes.init(sys.modules[__name__]);theme_queue.wake(sys.modules[__name__]);threading.Thread(target=scheduler,daemon=True).start()
  __import__('youtube_search').start_background(sys.modules[__name__])  # Preludarr 1.11: idles unless background search is on
  __import__('updates').start_background(APP_VERSION)  # Preludarr 1.12: once a day, can be turned off
  if __import__('general_settings').migrate_api_scan(EXISTING_INSTALL):event('API','info','Kept "API key may start library scans" for this existing install (new installs are read-only since 1.12). Change it in Settings → General.')
