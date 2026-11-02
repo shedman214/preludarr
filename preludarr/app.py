@@ -1207,7 +1207,7 @@ def activity_time(value):
   if stamp.tzinfo is None:
    # Before V1.9.14 a few writers stored LOCAL time as 'YYYY-MM-DD HH:MM:SS' (space, no zone); everything else is UTC ISO.
    stamp=stamp.astimezone() if ' ' in str(value) else stamp.replace(tzinfo=timezone.utc)
-  return stamp.astimezone().strftime('%b %d, %Y · %I:%M %p %Z').replace(' 0',' ')
+  return __import__('region').when(stamp)
  except (TypeError,ValueError):
   return str(value)
 
@@ -2199,7 +2199,7 @@ class Handler(httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, s
     if allowed and folder.is_dir() and not folder.is_symlink() and not target.is_symlink() and target.is_file() and target.stat().st_size>0:
      info=target.stat()
      size=info.st_size
-     changed=datetime.fromtimestamp(info.st_mtime).strftime('%Y-%m-%d %H:%M')
+     changed=__import__('region').when(info.st_mtime)
      url='/current-theme?'+urllib.parse.urlencode({'path':selected})
      parts+=['<div class="panel" id="themearr-current-theme"><h3>Currently Installed Theme</h3>',
              '<p>Installed — theme.mp3 (',f'{size/1048576:.2f}',' MB, last changed ',changed,')</p>',

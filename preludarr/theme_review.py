@@ -630,7 +630,7 @@ def recycle_text(config):
     spec = parse_cron(s['cron']) if s['cron'] else None
     nxt = next_run(spec) if spec else None
     text = f"Removed files go to the recycle bin and are kept for {s['days']} day{'s' if s['days'] != 1 else ''}, then deleted automatically."
-    text += (f" It is also emptied on the schedule “{s['cron']}” (next: {nxt.strftime('%Y-%m-%d %H:%M')})." if nxt else ' No emptying schedule is set.')
+    text += (f" It is also emptied on the schedule “{s['cron']}” (next: {__import__('region').when(nxt.astimezone())})." if nxt else ' No emptying schedule is set.')
     return text
 
 
@@ -670,7 +670,7 @@ def settings_panel(config, notice=''):
             '<details class="tm-help"><summary>Cron format &amp; examples</summary><p class="help">Five fields: <code>minute hour day-of-month month day-of-week</code> (server time). '
             'Examples: <code>0 3 * * 0</code> Sundays 03:00 · <code>30 4 1 * *</code> the 1st of every month 04:30 · <code>0 */12 * * *</code> every 12 hours. '
             'Day names (<code>sun</code>, <code>mon-fri</code>) and steps (<code>*/15</code>) work too.</p></details>'
-            + ('<p class="help tr-next">Next scheduled emptying: <strong>' + nxt.strftime('%Y-%m-%d %H:%M') + '</strong> (server time).</p>' if nxt else '') +
+            + ('<p class="help tr-next">Next scheduled emptying: <strong>' + __import__('region').when(nxt.astimezone()) + '</strong> (display time zone).</p>' if nxt else '') +
             '<button type="submit">Save Recycle Bin</button></form></section>')
 
 
@@ -761,7 +761,7 @@ def trash_page(app, handler):
                                else '<br>'.join('<code>' + _e(f) + '</code>' for f in files) or '—'), '</td><td>',
                       ('the new theme' if m.get('kind') == 'replaced' else '<code>' + _e(m.get('kept', '')) + '</code>' + (' (converted)' if m.get('converted') else '')),
                       '</td><td>', _e(__import__('ui').when(m.get('at', 0))),
-                      '<br><small class="muted">expires ', expires.strftime('%Y-%m-%d'), '</small></td><td class="tr-row-actions">']
+                      '<br><small class="muted">expires ', __import__('region').when(expires.astimezone(), date_only=True), '</small></td><td class="tr-row-actions">']
             for action, label in (('undo', 'Undo'), ('delete', 'Delete now')):
                 parts += ['<form method="post" action="/library-health/trash"><input type="hidden" name="action" value="', action, '">',
                           '<input type="hidden" name="id" value="', _e(m['id']), '"><button type="submit"', ' class="tr-danger"' if action == 'delete' else '', '>', label,
@@ -854,7 +854,7 @@ def post(app, handler, redirect):
                 spec = parse_cron(cron)
                 _write_json(Path(app.CONFIG) / SETTINGS, {'days': int(raw), 'cron': cron})
                 nxt = next_run(spec) if spec else None
-                msg = ('Recycle bin saved: keep files ' + raw + ' days' + ('; empty on schedule “' + cron + '” — next run ' + nxt.strftime('%Y-%m-%d %H:%M') if nxt else '; no schedule') + '.')
+                msg = ('Recycle bin saved: keep files ' + raw + ' days' + ('; empty on schedule “' + cron + '” — next run ' + __import__('region').when(nxt.astimezone()) if nxt else '; no schedule') + '.')
             elif action == 'undo':
                 msg = undo(app, f('id'))
             elif action == 'delete':

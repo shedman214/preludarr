@@ -9,6 +9,18 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [Unreleased]
+
+### ✨ Highlights
+- Choose your display language, date format, clock and time zone under Settings → General → Language & Region.
+
+### ➕ Added
+- **Language & Region.** Saved instance-wide preferences for short and long dates, 12/24-hour time, display time zone and Today/Yesterday labels, with a preview.
+- **Interface languages.** Spanish, French, German, Portuguese (Brazil) and Japanese translations for core navigation and common controls. Untranslated text falls back to English; media titles and provider data retain their original language.
+
+### 🔄 Changed
+- **Displayed dates.** Activity, backup/system dates, log-file dates, current-theme dates and recycle-bin schedules/expiry use the display preferences. Stored timestamps and job schedules are unchanged.
+
 ## [1.12.3] — 2026-11-01
 - Theme Browser candidates now link directly to their AnimeThemes anime page for visual verification, including manual and low-confidence suggestions. Opening the link never remembers a match or installs a theme.
 
