@@ -15,6 +15,7 @@ the last copy keeps working; without any copy the feature simply stays quiet.
 import difflib
 import gzip
 import html
+import animethemes
 import json
 import os
 import re
@@ -295,6 +296,7 @@ def panel_body(app, anime_path, name, library):
                     '<p><strong style="color:', color, '">', _e(r['confidence']), ' confidence</strong> · ', _e(r['why']), '</p>',
                     '<div class="sm-actions"><a style="color:#b8efff;font-weight:700;text-decoration:underline" href="',
                     _e('/themes?' + urllib.parse.urlencode({'path': anime_path, 'theme_slug': r['slug']})), '">Preview OP/ED</a>',
+                    animethemes.anime_page_link(r['slug']),
                     '<form method="post" action="/v4-save-match"><input type="hidden" name="path" value="', _e(anime_path), '">',
                     '<input type="hidden" name="slug" value="', _e(r['slug']), '"><button type="submit">Remember this anime</button></form>',
                     '</div></div></div>']
