@@ -10,7 +10,7 @@
 
 ![backend: Python](https://img.shields.io/badge/backend-Python-3776AB) ![db: SQLite](https://img.shields.io/badge/db-SQLite-003B57) ![docker: ghcr.io](https://img.shields.io/badge/docker-ghcr.io-2496ED) ![licence: GPL-3.0](https://img.shields.io/badge/licence-GPL--3.0-BD0000)
 
-> **Status: stable.** `1.12.0` is the first stable release: `ghcr.io/shedman214/preludarr:latest`. Make a backup (System → Backup & Restore) before each update.
+> **Status: stable.** Use `ghcr.io/shedman214/preludarr:latest` for the current stable release. See the [release notes](https://github.com/shedman214/preludarr/releases) for changes. Make a backup (System → Backup & Restore) before each update.
 
 | Library | Theme review |
 |---|---|
@@ -24,26 +24,28 @@
 
 ## Features
 
-**Available in 1.13**
+**Available now**
 - **Anime TV and anime movies:** openings and endings from [AnimeThemes](https://animethemes.moe), matched by title and year through AniList and the AniDB title list. Preview every version, then install the one you choose.
 - **TV shows and movies:** suggestions from Plex TV Themes and ThemerrDB. Optional YouTube search (your own API key and cookies; preview only until you install). For shows and movies it looks on the [MainThemeSoundtracks](https://www.youtube.com/@mainthemesoundtracks) channel first, which costs none of your daily searches, then searches all of YouTube.
 - **Library:** a tab per root folder, search and filters, a Theme Queue for reviewing many titles at once, automatic installs for anime (off by default), and Library Health (folders Preludarr cannot write to, extra theme files).
-- **Connect (optional):** Sonarr, Radarr, Plex, Jellyfin and Emby, to match titles by their ids and refresh the media server after an install.
+- **Connect (optional):** Sonarr, Radarr, Plex, Jellyfin and Emby, to match titles by their ids and refresh the media server after an install. Sonarr/Radarr connections go directly to the configured server; root-folder checks allow up to 30 seconds for slower responses.
 - **Sign in with Plex:** connect Plex without copying a token. Sign in in Plex's own window, approve Preludarr, and pick your server (local address first). Several Plex servers can be connected; one is the main server (title links, refresh after installs), and every server gets its own Collections tab. Your Plex account token is used only to list your servers and is never saved.
 - **Jellyfin Quick Connect:** enter your Jellyfin address, then approve the code Preludarr shows in Jellyfin (profile → Quick Connect, as an administrator). Quick Connect must be turned on in Jellyfin (Dashboard → General).
 - **Sign in to Emby:** enter your Emby address, username and password once. The password goes only to your Emby server and is not saved; Preludarr keeps the access token Emby returns.
 - **Collections:** a theme for each movie collection, using the theme of one of its movies (the first movie by default). Instead of a movie's theme you can also use a YouTube link, your own audio file (with manual installs on), or Smart YouTube search suggestions (your API key; preview first, you choose). The Collections page has a tab per movie root folder, like the Library, and shows only collections from your root folders (others sit under "Other libraries"). A search bar finds collections by their name or their movies' names. Collections show their own artwork from Plex, Jellyfin or Emby. Plex: uploaded to the collection, and removable. Jellyfin and Emby: **experimental**, written into the server's own collection folder, which you map into Preludarr; those servers do not officially support collection themes, so some apps may not play them.
+- **Posters:** your own TMDB or TVDB key enables poster lookups. New installs automatically queue and cache missing artwork after root folders are scanned; existing installs retain their background setting. Poster Recovery provides pause, progress and retry controls, with cooldowns and rate limits. Existing cached posters are kept.
+- **Logging:** Settings → General → Logging offers Info, Debug and Trace, with rotating logs under System → Logs. Trace adds HTTP method, status and request duration; its timing entries exclude URLs, headers and request bodies. Enable Debug or Trace only while troubleshooting.
 - **Backups:** manual and scheduled backups of the database and settings, and a guarded restore with automatic rollback.
 - **Language & Region:** Settings → General — choose English, Spanish, French, German, Portuguese (Brazil), Japanese, Simplified Chinese, or Arabic for core navigation and common controls. Other text falls back to English. Choose short/long date formats, 12/24-hour time, a display time zone, and Today/Yesterday labels. Preferences apply to the whole instance; schedules keep using server time. An English recovery link and button help you switch back.
-- **Appearance:** Settings → Appearance — Dark, Light or Auto (follows each device), OLED mode, six accent colours and eight immersive themes (Winamp, Terminal, Vaporwave, Y2K Cyber, Film Noir, VHS, Synthwave, Amber CRT), with a live preview. Text stays readable (WCAG AA contrast) in every theme.
+- **Appearance:** Settings → Appearance — Dark, Light or Auto (follows each device), OLED mode, six accent colours and eight immersive themes (Winamp, Terminal, Vaporwave, Y2K Cyber, Film Noir, VHS, Synthwave, Amber CRT), with a live preview. Contrast checks cover common controls across all themes. The live preview keeps its own text palette when you try another scheme.
 - **Safety:** first-run account setup, sign-in on every page, protection against cross-site requests, a read-only API key by default, and a container that runs as a normal user.
 
 **Current limitations**
-- Posters for shows and movies need your own TMDB (or TheTVDB) API key.
+- Poster lookups need your own TMDB or TVDB API key. Automatic poster processing does not enable automatic theme downloads.
 - YouTube search needs your own YouTube Data API key and a cookies.txt file, and has a daily quota.
 - One user account. There are no separate users or roles.
 - Tested mainly on Unraid with Plex. Jellyfin and Emby connections are less tested.
-- Images are planned for amd64 and arm64. The arm64 build has not been tested on real ARM hardware yet.
+- Images are published for amd64 and arm64. The arm64 build has not been tested on real ARM hardware yet.
 
 ## Install
 
@@ -100,7 +102,7 @@ If you prefer to add the template manually:
 | Tag | Contents |
 |---|---|
 | `latest` | The newest stable release. **Recommended.** |
-| `1.12`, `1.12.0`, … | A release line or one exact version. Use it to stay on a version or to go back. |
+| `1.14`, `1.14.0`, … | A release line or one exact version. Use it to stay on a version or to go back. |
 | `beta` | The newest beta, or the newest stable release if that is newer. A beta never changes `latest`. |
 
 ### Build it yourself
@@ -115,7 +117,8 @@ Then use `preludarr:local` as the image in the examples above.
 1. Open the container log (Unraid: Docker → Preludarr → Logs; elsewhere `docker logs preludarr`). It shows a **setup code** such as `K7QM-3XRP`.
 2. Open `http://<server-ip>:8788`, enter the code, and create your account (password: 16 characters or more).
 3. Go to **Settings → Media Management** and add your library folders as root folders. Choose a type for each: Anime TV, Anime Movies, Shows or Movies.
-4. Preludarr scans them. Open a title to review its themes, use the **Theme Queue** for many titles, or choose **Automatic Themes** (Settings → Media Management) to install anime themes automatically.
+4. Add a TMDB or TVDB key under **Settings → Connect → Poster Providers** if you want posters. On a new install, missing posters are queued automatically once roots are scanned and a key is configured. Pause processing in **Poster Recovery**, or use `POSTER_BACKGROUND_ENABLED=false` to disable it. Existing installs keep their previous setting.
+5. Preludarr scans your folders. Open a title to review its themes, use the **Theme Queue** for many titles, or choose **Automatic Themes** (Settings → Media Management) to install anime themes automatically.
 
 The setup code changes every time the container restarts, and it is only ever shown in the log.
 
@@ -164,6 +167,11 @@ Older `THEMEARR_*` and `SPLICARR_*` names of the `PRELUDARR_*` settings still wo
 `GET /api/v1/status` and `GET /api/v1/activity` with the key from Settings → General in the `X-Api-Key` header. `POST /api/v1/command/scan` starts a library scan (at most once every 5 minutes) **only if** you allow it under Settings → General → API key & security. Requests are limited to 60 per minute.
 
 **Since 1.12 a new install's API key is read-only.** An install from before 1.12 keeps the behaviour it had (the key may start scans), and that choice is saved once so it appears in Settings; a choice you saved yourself is never changed.
+
+## Troubleshooting connections and posters
+- **Sonarr/Radarr timeout:** the address must be reachable from inside the Preludarr container. Check the port, Docker routing and the target server's firewall. A browser on another device can work even when the container cannot connect. Status checks allow 12 seconds; root-folder checks allow 30 seconds.
+- **Poster folder unavailable:** a saved Library entry can point to an old folder name after a rename or move. Rescan the registered root, reload the Library, and retry the entry matching the current folder. Preludarr will not create a replacement folder or automatically discard saved history.
+- **Logs:** use Debug or Trace temporarily under Settings → General → Logging. Normal logs can still contain private paths or hostnames despite credential redaction; review downloads before sharing them.
 
 ## Backups and updates
 - **System → Backup & Restore** makes backups of the database and settings (manual, or automatic on a schedule). They are stored in `/config/system_backups` and contain your saved API keys and tokens, so keep downloads private.
