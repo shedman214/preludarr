@@ -50,12 +50,13 @@ html body main .tm-btn,html body main button.tm-btn,html body main a.tm-btn,html
  display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:8px 16px;border-radius:8px!important;
  font:inherit;font-size:14.5px;font-weight:700;line-height:1.2;cursor:pointer;text-decoration:none!important;box-shadow:none!important;filter:none!important;white-space:nowrap}
 html body main .tm-btn.tm-btn.tm-btn.tm-secondary{background:#253552!important;color:#e3edfc!important;border:1px solid #5a6f94!important}
-html body main .tm-btn.tm-btn.tm-btn.tm-secondary:hover{background:#2f4366!important}
-html body main .tm-btn.tm-btn.tm-btn.tm-primary{background:var(--tm-accent)!important;color:#fff!important;border:1px solid var(--tm-accent)!important}
-html body main .tm-btn.tm-btn.tm-btn.tm-primary:hover{background:var(--tm-accent2)!important}
+html body main .tm-btn.tm-btn.tm-btn.tm-secondary:hover{background:#2f4366!important;color:#e3edfc!important}
+html body main .tm-btn.tm-btn.tm-btn.tm-primary{background:#4f8ff7!important;color:#0b1424!important;border:1px solid var(--tm-accent)!important}
+html body main .tm-btn.tm-btn.tm-btn.tm-primary:hover{background:#3a77df!important;color:#000000!important}
 html body main .tm-btn.tm-btn.tm-btn.tm-danger{background:transparent!important;color:#ffb3bd!important;border:1px solid #c2475a!important}
 html body main .tm-btn.tm-btn.tm-btn.tm-danger:hover{background:#4a2430!important}
 html body main .tm-btn[disabled]{opacity:.55;cursor:not-allowed}
+/* Explicit button foreground/background pairs let Appearance calculate contrast together. */
 /* focus: always visible */
 html body a:focus-visible,html body button:focus-visible,html body input:focus-visible,html body select:focus-visible,html body textarea:focus-visible,html body summary:focus-visible{
  outline:3px solid var(--tm-focus)!important;outline-offset:2px}

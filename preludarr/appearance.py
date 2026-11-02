@@ -220,7 +220,10 @@ def _block(text, mode, oled, theme):
         if prop.lower() == 'color':
             c = _COLOUR.search(newval)
             if c and not c.group(0).startswith('rgba'):
-                newval = newval.replace(c.group(0), readable(_value_to_hex(c.group(0))[0], bg or page_bg), 1)
+                # Inherited backgrounds may be panels rather than the page.
+                # Leave extra contrast headroom when the rule has no solid fill.
+                newval = newval.replace(c.group(0), readable(_value_to_hex(c.group(0))[0], bg or page_bg,
+                                                            4.5 if bg else 5.5), 1)
         return prop + ':' + newval
     return _DECL.sub(decl, text)
 
@@ -281,11 +284,11 @@ PREVIEW = ('<div class="pl-preview" id="pl-preview"><div class="pv-side"><b>Prel
 PREVIEW_CSS = ('.pl-preview{display:flex;border:1px solid #3b4b6b;border-radius:12px;overflow:hidden;background:#101c30;color:#eef4ff;min-height:230px;max-width:640px}'
                '.pv-side{width:150px;background:#0b1424;padding:12px;display:flex;flex-direction:column;gap:6px;font-size:13px;color:#cfe0f8}.pv-side b{margin-bottom:6px}'
                '.pv-side span{padding:6px 8px;border-radius:7px}.pv-side span.on{background:#2a4a7a;color:#ffffff}.pv-main{flex:1;padding:14px;display:grid;gap:10px}'
-               '.pv-stats{display:flex;gap:8px}.pv-stats div{flex:1;background:#16243b;border:1px solid #2b3a55;border-radius:9px;padding:8px}.pv-stats strong{display:block;font-size:18px}'
-               '.pv-stats small{color:#9fb0cc}.pv-row{display:flex;justify-content:space-between;padding:8px 10px;background:#16243b;border-radius:8px;border:1px solid #2b3a55;font-size:14px}'
+               '.pv-stats{display:flex;gap:8px}.pv-stats div{flex:1;background:#16243b;border:1px solid #2b3a55;border-radius:9px;padding:8px}.pv-stats strong{display:block;font-size:18px;color:#eef4ff}'
+               '#pl-preview .pv-stats small{color:#9fb0cc!important}.pv-row{display:flex;justify-content:space-between;padding:8px 10px;background:#16243b;border-radius:8px;border:1px solid #2b3a55;font-size:14px}'
                '.pv-ok{background:#1f4532;color:#bff0d2;padding:1px 8px;border-radius:999px;font-size:12px}.pv-warn{background:#4a3a1a;color:#ffd36b;padding:1px 8px;border-radius:999px;font-size:12px}'
-               '.pv-btns{display:flex;gap:8px;align-items:center}.pv-primary{background:#4f8cff;color:#ffffff;border:0;border-radius:8px;padding:8px 14px;font-weight:700}'
-               '.pv-secondary{background:#22324f;color:#eef4ff;border:1px solid #3e5174;border-radius:8px;padding:8px 14px}.pv-btns a{color:#9fd0ff}.pv-cap{margin:0;color:#9fb0cc;font-size:13px}')
+               '.pv-btns{display:flex;gap:8px;align-items:center}#pl-preview .pv-primary{background:#4f8cff!important;color:#0b1424!important;border:0;border-radius:8px;padding:8px 14px;font-weight:700}'
+               '#pl-preview .pv-secondary{background:#22324f!important;color:#eef4ff!important;border:1px solid #3e5174;border-radius:8px;padding:8px 14px}#pl-preview .pv-btns a{color:#9fd0ff!important}.pv-cap{margin:0;color:#9fb0cc;font-size:13px}')
 
 
 def _choice(name, value, label, current, swatch=''):

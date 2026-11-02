@@ -36,7 +36,9 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-_OPENER = urllib.request.build_opener(_NoRedirect)
+# These are explicit server connections, like media_servers: do not send LAN
+# requests (or their API keys) through a container's inherited outbound proxy.
+_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect)
 
 
 def _e(value):
@@ -91,7 +93,12 @@ def _error_text(error, inst=None):
     """V1.9.2: plain reason + what to do (neterrors), never the raw exception name only."""
     import neterrors
     app = KINDS[inst['kind']][0] if inst and inst.get('kind') in KINDS else 'Sonarr/Radarr'
-    return neterrors.text(error, app, (inst or {}).get('url', ''))
+    reason, todo = neterrors.explain(error, app, (inst or {}).get('url', ''))
+    if isinstance(neterrors._root(error), TimeoutError):
+        todo = ('Check that this address and port are reachable from the Preludarr container, '
+                'including Docker routing and the server firewall. A working browser connection '
+                'on another device does not confirm container access.')
+    return reason + ' ' + todo
 
 
 def _set_status(config, iid, ok, text):
@@ -111,7 +118,9 @@ def test(inst):
     found = str(status.get('appName') or '') if isinstance(status, dict) else ''
     if found.lower() != expected.lower():
         raise neterrors.WrongApp('This address is ' + (found or 'not ' + expected) + (', not ' + expected + '.' if found else '.'))
-    roots = _get(inst, 'rootfolder', timeout=12)
+    # Root-folder space/health checks can be slower than system/status on large
+    # libraries. Keep this bounded, without slowing failure detection for status.
+    roots = _get(inst, 'rootfolder', timeout=30)
     try:
         naming = _get(inst, 'config/naming', timeout=12)
     except Exception:

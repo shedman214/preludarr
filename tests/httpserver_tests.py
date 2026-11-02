@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Hardened HTTP server (1.12 review, priority 1): slow clients, size limits, bounded concurrency. Run in a Preludarr image, --network none."""
+import ast
 import socket
 import sys
 import threading
@@ -20,7 +21,10 @@ hs.HEADER_DEADLINE, hs.BODY_GRACE, hs.MIN_BODY_RATE, hs.MAX_PER_CLIENT, hs.MAX_B
 hs.MAX_CONNECTIONS = 6
 
 
-class H(hs.Hardened, BaseHTTPRequestHandler):
+import app_logs
+
+
+class H(app_logs.RequestTrace, hs.Hardened, BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
@@ -90,7 +94,10 @@ check('Slots are released after the idle connections time out or close', raw(b'G
 check('Responses are HTTP/1.0 (no keep-alive slots)', raw(b'GET / HTTP/1.1\r\nHost: x\r\n\r\n').startswith(b'HTTP/1.0 200'))
 
 src = open('/src/preludarr/app.py').read()
-check('The app uses the hardened server and handler', 'httpserver.Server((' in src and 'class Handler(httpserver.Hardened, BaseHTTPRequestHandler)' in src)
+handler = next(node for node in ast.parse(src).body if isinstance(node, ast.ClassDef) and node.name == 'Handler')
+bases = [ast.unparse(base) for base in handler.bases]
+check('The app uses the hardened server and handler', 'httpserver.Server((' in src and 'httpserver.Hardened' in bases and bases.index('httpserver.Hardened') < bases.index('BaseHTTPRequestHandler'))
+check('Trace wraps the hardened handler', 'app_logs.RequestTrace' in bases and bases.index('app_logs.RequestTrace') < bases.index('httpserver.Hardened'))
 srv.shutdown()
 print(f'\n{sum(results)}/{len(results)} passed')
 sys.exit(0 if all(results) else 1)

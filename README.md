@@ -78,7 +78,16 @@ docker run -d --name preludarr --restart unless-stopped \
 ```
 
 ### Unraid
-Preludarr is on its way to Community Applications. Until it is listed there, add it from the template:
+Preludarr is available in **Community Applications**:
+1. Open Unraid's **Apps** tab and search for **Preludarr**.
+2. Select **Preludarr** from **animeking1987's Repository** and click **Install**.
+3. Set **TV shows** and **Movies** to your shares (for example `/mnt/user/tv` and `/mnt/user/movies`), keep **PUID 99 / PGID 100**, and click **Apply**.
+4. Open Preludarr's **WebUI** from the Docker tab and follow [First start](#first-start) below.
+
+Already installed? Update your existing container from the Docker tab when Unraid shows an update is ready; there is no need to reinstall it from Apps.
+
+#### Manual template installation
+If you prefer to add the template manually:
 1. Open the Unraid terminal and run:
    ```sh
    wget -O /boot/config/plugins/dockerMan/templates-user/my-Preludarr.xml \
@@ -142,7 +151,7 @@ Most settings live in the web interface. These optional variables are read at st
 | `AUTO_DOWNLOAD`, `SCAN_INTERVAL_HOURS`, `MAX_DOWNLOADS_PER_SCAN` | `false`, `12`, `5` | Starting values for Automatic Themes (on/off, hours between scans, installs per scan). After the first start, change them in Settings → Media Management. |
 | `TMDB_API_KEY` | – | Your own [TMDB](https://www.themoviedb.org/settings/api) key, for movie and show posters and ids. Can also be set in Settings → Connect. |
 | `TVDB_API_KEY`, `TVDB_SUBSCRIBER_PIN` | – | Your own TheTVDB key (optional). |
-| `POSTER_BACKGROUND_ENABLED` | `false` | `true`: fetch missing posters in the background. |
+| `POSTER_BACKGROUND_ENABLED` | `auto` | New installs automatically queue and cache missing posters after root folders and a TMDB or TVDB key are configured. Existing installs keep background processing off unless already enabled. `true` enables it explicitly; `false` disables it. Existing posters, pause controls, retry cooldowns and rate limits are respected. This does not install theme music. |
 | `PRELUDARR_EXTRA_ALLOWED_HOSTS` | – | Host names you open Preludarr by, e.g. `preludarr.lan:8788`. Private IP addresses always work. Also in Settings → General. |
 | `PRELUDARR_PUBLIC_URL` | – | The HTTPS address when you use a reverse proxy or tunnel. Also in Settings → General. |
 | `PRELUDARR_MANUAL_INSTALL_ENABLED` | `0` | `1`: allow installing your own uploaded audio and YouTube links. |

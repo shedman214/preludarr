@@ -27,16 +27,44 @@ _INSTALLED = False
 _LOGDIR = None
 _LOGGER = None
 _LOCK = threading.RLock()
-_SETTINGS = {'access': True}
+TRACE = 5
+logging.addLevelName(TRACE, 'TRACE')
+_SETTINGS = {'access': True, 'trace': False}
 _HANDLERS = []
 
 
 def apply_settings(level='info', max_mb=2, keep=5):
     """V1.9.7 Settings → General → Logging: Info hides successful web requests; size limit and archive count apply live."""
-    _SETTINGS['access'] = level == 'debug'
+    _SETTINGS['access'] = level in ('debug', 'trace')
+    _SETTINGS['trace'] = level == 'trace'
+    if _LOGGER is not None:
+        _LOGGER.setLevel(TRACE if level == 'trace' else logging.INFO)
     for handler in list(_HANDLERS):
         handler.maxBytes = max(1, min(50, int(max_mb))) * 1024 * 1024
         handler.backupCount = max(1, min(5, int(keep)))
+
+
+class RequestTrace:
+    """Opt-in request duration diagnostics; never record URLs, headers or bodies."""
+
+    def handle_one_request(self):
+        enabled = _SETTINGS['trace']
+        started = time.monotonic() if enabled else None
+        self._trace_status = None
+        try:
+            return super().handle_one_request()
+        finally:
+            if enabled and _SETTINGS['trace'] and _LOGGER is not None:
+                method = getattr(self, 'command', None)
+                if method in ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'):
+                    elapsed = max(0, (time.monotonic() - started) * 1000)
+                    status = self._trace_status or 'none'
+                    _LOGGER.log(TRACE, 'HTTP request method=%s status=%s duration_ms=%.2f',
+                                method, status, elapsed)
+
+    def send_response(self, code, *args, **kwargs):
+        self._trace_status = code
+        return super().send_response(code, *args, **kwargs)
 
 
 def _poster_message(line):

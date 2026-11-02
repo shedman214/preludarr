@@ -41,6 +41,7 @@ import jellyfin_quickconnect  # 1.12: Jellyfin Quick Connect
 import emby_signin  # 1.12: sign in to Emby
 import appearance  # 1.12: Settings → Appearance
 import theme_queue
+import poster_background
 
 CONFIG=Path(os.getenv('CONFIG_DIR','/config')); CONFIG.mkdir(parents=True,exist_ok=True)
 DB=CONFIG/'library.db'
@@ -415,6 +416,17 @@ def queue_poster(path,library,name):
  threading.Thread(target=fetch_poster,args=(path,library,name),daemon=True).start()
  return ''
 
+POSTER_FOLDER_UNAVAILABLE='Poster folder is unavailable. Check root-folder mappings and rescan the library.'
+POSTER_LINKED_FOLDER='Poster retry cannot use a linked folder. Check the root-folder mapping.'
+POSTER_RETRY_ERRORS={
+ 'Invalid poster request':'The poster retry form could not be read. Reload the page and try again.',
+ 'Invalid anime path':'The poster path is invalid. Reload the Library and try again.',
+ 'Invalid anime destination':'The title is not in an available registered root folder. Check root-folder mappings.',
+ 'Unknown anime':'This title is no longer in the Library. Rescan and reload the page.',
+ POSTER_FOLDER_UNAVAILABLE:POSTER_FOLDER_UNAVAILABLE,
+ POSTER_LINKED_FOLDER:POSTER_LINKED_FOLDER,
+}
+
 POSTER_RETRY_SCRIPT='''<script>/* themearr-retry-poster-v2 (V1.6.2): poster-only retries that follow the real job status */
 (function () {
   "use strict";
@@ -505,7 +517,11 @@ POSTER_RETRY_SCRIPT='''<script>/* themearr-retry-poster-v2 (V1.6.2): poster-only
       });
       if (new URL(response.url, window.location.href).pathname === '/login') throw new Error('Session expired. Log in again.');
       if (response.status === 429) throw new Error('Poster retry limit reached (6 per hour). Try again later.');
-      if (!response.ok) throw new Error('Retry could not be started (HTTP ' + response.status + ').');
+      if (!response.ok) {
+        const errors = __POSTER_RETRY_ERRORS__;
+        const reason = (await response.text()).trim();
+        throw new Error(Object.prototype.hasOwnProperty.call(errors, reason) ? errors[reason] : ('Retry could not be started (HTTP ' + response.status + ').'));
+      }
       const statusUrl = '/poster-status?' + new URLSearchParams({path}).toString();
       for (let poll = 0; poll < MAX_POLLS; poll++) {
         if (!document.contains(form)) return;
@@ -537,7 +553,7 @@ POSTER_RETRY_SCRIPT='''<script>/* themearr-retry-poster-v2 (V1.6.2): poster-only
     }
   }, true);
 })();
-</script>'''
+</script>'''.replace('__POSTER_RETRY_ERRORS__',json.dumps(POSTER_RETRY_ERRORS))
 
 def poster_job_status(path):
  """Job state for one anime, for the Retry button (V1.6.2). (Not named poster_status: do_GET uses that local name.)"""
@@ -566,9 +582,8 @@ def poster_job_status(path):
           else 'Poster provider temporarily unavailable. Try again later.'}
  return {'state':'idle','message':'No poster search has run yet.'}
 
-POSTER_BACKGROUND_ENABLED=os.getenv(
- 'POSTER_BACKGROUND_ENABLED','false'
-).lower()=='true'
+# Resolved from the persisted first-install default before starting any workers.
+POSTER_BACKGROUND_ENABLED=False
 
 POSTER_BACKGROUND_DELAY=max(
  30,int(os.getenv('POSTER_BACKGROUND_DELAY','180'))
@@ -589,7 +604,7 @@ def background_poster_worker():
     time.sleep(5)
     continue
    if not poster_connect.has_provider(CONFIG):
-    time.sleep(300)
+    poster_background.wait(300)
     continue
 
    current=time.time()
@@ -606,6 +621,7 @@ def background_poster_worker():
     time.sleep(10)
     continue
 
+   poster_background.enqueue_missing(sys.modules[__name__])
    with db() as conn:
     rows=conn.execute("""
      SELECT s.path,s.library,s.name,p.checked
@@ -624,7 +640,7 @@ def background_poster_worker():
      break
 
    if selected is None:
-    time.sleep(300)
+    poster_background.wait(300)
     continue
 
    with POSTER_LOCK:
@@ -1237,6 +1253,10 @@ def discover(only=None):
   for (p,) in c.execute('SELECT path FROM shows').fetchall():
    if str(Path(p).parent) not in current:c.execute('DELETE FROM shows WHERE path=?',(p,))
  auto_themes.record_new(sys.modules[__name__])  # V1.7.3: 'Recently added' dates for newly found folders
+ if POSTER_BACKGROUND_ENABLED:
+  poster_v2_init()
+  poster_background.enqueue_missing(sys.modules[__name__])
+  poster_background.wake()
  return count
 
 def process(path):
@@ -1561,7 +1581,7 @@ audio::-webkit-media-controls-panel{background:#16233a}
 body{font:15px system-ui;background:#0e1422;color:#e7ecf6;margin:0}header{background:#172238;padding:22px 5%;border-bottom:1px solid #324158}h1{margin:0}main{max-width:1200px;margin:25px auto;padding:0 18px}.panel{background:#19243a;border:1px solid #324158;border-radius:12px;padding:18px;margin-bottom:18px}button{background:#477df2;border:0;border-radius:6px;color:white;padding:10px 14px;cursor:pointer}button:disabled{opacity:.5}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #324158;word-break:break-word}small{color:#9baac5}.installed{color:#5ed0a1}.review{color:#ffbb70}.missing{color:#a5b3c9}input,select{padding:10px;background:#0e1422;color:white;border:1px solid #4b5a75;border-radius:6px}.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.filters input{flex:1;min-width:180px}.pager{display:flex;gap:14px;align-items:center;margin:16px 0}.pager a{color:#9fc1ff}.muted{color:#9baac5}.stats{display:flex;gap:14px;flex-wrap:wrap}.stat{background:#0e1422;border:1px solid #324158;padding:12px 18px;border-radius:8px}.stat strong{font-size:20px;display:block;line-height:1.2}.stat .stat-sub{display:block;margin-top:2px;font-size:12.5px;color:#9fb0cc}.notice{border:1px solid #477df2;background:#102744;padding:12px;border-radius:8px;margin:12px 0}.filters a{color:#9fc1ff}.anime-cell{display:flex;align-items:center;gap:12px}.poster{width:52px;height:76px;object-fit:cover;border-radius:5px;background:#0e1422;flex-shrink:0}.poster-empty{display:flex;align-items:center;justify-content:center;color:#6f84a4;font-size:11px;text-align:center;border:1px solid #324158}.anime-info{min-width:0}
 .view-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
 .view-toggle{display:flex;gap:6px}
-.view-toggle button{background:#263650;border:1px solid #405574}
+.view-toggle button{background:#263650;color:#e7ecf6;border:1px solid #405574}
 .view-toggle button.active{background:#477df2;border-color:#477df2}
 
 /* Themearr adjustable poster sizes */
@@ -1660,6 +1680,7 @@ def poster_v2_snapshot():
     with POSTER_LOCK:
         stats['in_progress'] = len(POSTER_BUSY)
     stats['paused'] = poster_v2_paused()
+    stats['enabled'] = POSTER_BACKGROUND_ENABLED
     stats['delay_seconds'] = POSTER_BACKGROUND_DELAY
     stats['hourly_limit'] = POSTER_BACKGROUND_LIMIT
     stats['percent'] = round(100.0 * stats['cached'] / stats['total'], 1) if stats['total'] else 0.0
@@ -1697,11 +1718,11 @@ def poster_v2_panel():
     esc = html.escape
     labels = [('cached', 'Cached posters'), ('missing', 'Missing'),
               ('never_attempted', 'Not attempted'), ('failed', 'Failed match'),
-              ('queued', 'Queued retries'), ('in_progress', 'In progress')]
+              ('queued', 'Queued posters'), ('in_progress', 'In progress')]
     output = ['<section class="panel" id="poster-recovery">',
               '<h2>Poster Recovery</h2>',
               '<p id="poster-v2-state" role="status">',
-              ('Paused' if s['paused'] else 'Running'),
+              ('Paused' if s['paused'] else ('Running' if POSTER_BACKGROUND_ENABLED else 'Background processing off')),
               ' · ', str(s['delay_seconds']), ' seconds between attempts · ',
               str(s['hourly_limit']), ' attempts/hour maximum</p>',
               '<div class="stats">']
@@ -1743,7 +1764,7 @@ def poster_v2_panel():
                'const p=document.getElementById("poster-v2-progress");',
                'if(p){p.max=Math.max(1,s.total);p.value=s.cached;}',
                'const state=document.getElementById("poster-v2-state");',
-               'if(state)state.textContent=(s.paused?"Paused":"Running")+',
+               'if(state)state.textContent=(s.paused?"Paused":(s.enabled?"Running":"Background processing off"))+' ,
                '" · "+s.delay_seconds+" seconds between attempts · "+',
                's.hourly_limit+" attempts/hour maximum";',
                '}catch(e){}}const v2Timer=setInterval(refresh,5000);})();</script>',
@@ -1834,10 +1855,13 @@ def poster_v1_retry_single(handler):
     if not selected or len(selected) > 4096:
         return handler.send(400, 'Invalid anime path', 'text/plain')
     folder = Path(selected)
-    if (folder.is_symlink() or not folder.is_dir() or
-            not any(folder.parent == root and root.is_dir() and
-                    not root.is_symlink() for _, root in ROOTS)):
+    if not any(folder.parent == root and root.is_dir() and
+               not root.is_symlink() for _, root in ROOTS):
         return handler.send(400, 'Invalid anime destination', 'text/plain')
+    if folder.is_symlink():
+        return handler.send(400, POSTER_LINKED_FOLDER, 'text/plain')
+    if not folder.is_dir():
+        return handler.send(400, POSTER_FOLDER_UNAVAILABLE, 'text/plain')
     with db() as conn:
         row = conn.execute('SELECT library,name FROM shows WHERE path=?',
                            (selected,)).fetchone()
@@ -1965,7 +1989,7 @@ def poster_manual_post(handler):
 # THEMEARR SMART MATCHING V4 / MEDIA SERVERS V1
 import media_servers
 
-class Handler(httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, size limits, bounded concurrency
+class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, size limits, bounded concurrency
  def send(self,code,body,ctype='text/html'):
   if ctype=='text/html':body=auth.decorate(self,body)
   body=body.encode();self.send_response(code);self.send_header('Content-Type',ctype+'; charset=utf-8');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
@@ -2702,7 +2726,9 @@ class Handler(httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, s
   if self.path=='/anidb-settings':
    return anidb.settings_post(self,CONFIG,auth.redirect)
   if self.path=='/poster-connect-action':
-   return poster_connect.post(self,CONFIG)
+   result=poster_connect.post(self,CONFIG)
+   poster_background.wake()
+   return result
   if self.path in ('/poster-v2-pause','/poster-v2-resume','/poster-v2-retry-failed'):
    return poster_v2_control_post(self,self.path.removeprefix('/poster-v2-'))
   if self.path in ('/v4-save-match','/v4-remove-match'):
@@ -2998,7 +3024,9 @@ def verify_theme_directory_identity(folder, folder_fd):
  return True
 
 if __name__=='__main__':
- db().close();auto_themes.init(sys.modules[__name__]);theme_queue.wake(sys.modules[__name__]);threading.Thread(target=scheduler,daemon=True).start()
+ db().close()
+ POSTER_BACKGROUND_ENABLED=poster_background.enabled(sys.modules[__name__])
+ auto_themes.init(sys.modules[__name__]);theme_queue.wake(sys.modules[__name__]);threading.Thread(target=scheduler,daemon=True).start()
  __import__('youtube_search').start_background(sys.modules[__name__])  # Preludarr 1.11: idles unless background search is on
  __import__('updates').start_background(APP_VERSION)  # Preludarr 1.12: once a day, can be turned off
  if __import__('general_settings').migrate_api_scan(EXISTING_INSTALL):event('API','info','Kept "API key may start library scans" for this existing install (new installs are read-only since 1.12). Change it in Settings → General.')

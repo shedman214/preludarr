@@ -698,7 +698,7 @@ PICKER_ASSETS = r'''<style>
 #themearr-picker .tp-big dt{color:#9baac5;font-size:.8rem;margin-top:10px}
 #themearr-picker .tp-big dd{margin:2px 0 0;overflow-wrap:anywhere}
 #themearr-picker .tp-error{color:#ffb4b4}
-.tp-secondary{background:#52617c!important}
+.tp-secondary{background:#52617c!important;color:#ffffff!important}
 .tp-noart{display:flex;align-items:center;justify-content:center;text-align:center;color:#9baac5;font-size:.85rem;padding:8px;box-sizing:border-box;background:#1c263b;border-radius:6px}
 .poster-tools{display:flex;flex-direction:column;gap:8px;margin:0 0 8px}
 .poster-tools form{margin:0}
