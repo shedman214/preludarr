@@ -146,7 +146,11 @@ check('Size limit + archives applied live', hand.maxBytes == 3 * 1024 * 1024 and
 post({'section': 'logging', 'log_level': 'debug', 'log_max_mb': '1', 'log_keep': '5'})
 tee.write('10.0.0.9 - - [27/Oct/2026 03:00:02] "GET /queue HTTP/1.1" 200 -\n'); hand.flush()
 check('Debug: every web request logged', '"GET /queue' in (logdir / 'themearr.log').read_text())
-for bad in ({'log_level': 'trace', 'log_max_mb': '1', 'log_keep': '1'}, {'log_level': 'info', 'log_max_mb': '0', 'log_keep': '1'}, {'log_level': 'info', 'log_max_mb': '1', 'log_keep': '9'}):
+post({'section': 'logging', 'log_level': 'trace', 'log_max_mb': '2', 'log_keep': '3'})
+check('Trace saved and applied live', g.settings()['log_level'] == 'trace' and lg._SETTINGS['trace'] and lg._SETTINGS['access'])
+check('Trace survives settings reload', g.settings()['log_level'] == 'trace')
+check('Trace option selected in UI', '<option value="trace" selected>' in auth.settings(H('/settings?section=logging')))
+for bad in ({'log_level': 'invalid', 'log_max_mb': '1', 'log_keep': '1'}, {'log_level': 'info', 'log_max_mb': '0', 'log_keep': '1'}, {'log_level': 'info', 'log_max_mb': '1', 'log_keep': '9'}):
     msg, _ = post(dict(section='logging', **bad))
     check('Logging refuses ' + str(bad), msg.startswith('✗'), msg)
 

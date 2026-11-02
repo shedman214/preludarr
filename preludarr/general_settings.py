@@ -55,7 +55,7 @@ def settings():
                 data['instance_name'] = name  # a saved old default name (Themearr, Preludarr) now shows Preludarr; custom names are kept
             data['allowed_hosts'] = [h for h in saved.get('allowed_hosts', [])[:10] if isinstance(h, str) and _HOST.fullmatch(h)]
             data['trusted_proxies'] = [p for p in saved.get('trusted_proxies', [])[:10] if isinstance(p, str) and _net(p)]
-            if saved.get('log_level') in ('info', 'debug'):
+            if saved.get('log_level') in ('info', 'debug', 'trace'):
                 data['log_level'] = saved['log_level']
             if isinstance(saved.get('log_max_mb'), int) and 1 <= saved['log_max_mb'] <= 50:
                 data['log_max_mb'] = saved['log_max_mb']
@@ -319,8 +319,9 @@ def panels(h):
                      '<form method="post" action="/settings/general"><input type="hidden" name="section" value="logging">'
                      '<label for="g-level">Log level<select id="g-level" name="log_level">'
                      '<option value="info"' + (' selected' if level == 'info' else '') + '>Info — events, warnings and errors</option>'
-                     '<option value="debug"' + (' selected' if level == 'debug' else '') + '>Debug — also every web request</option></select></label>'
-                     '<p class="help">Use Debug only while troubleshooting; it makes the log grow faster.</p>'
+                     '<option value="debug"' + (' selected' if level == 'debug' else '') + '>Debug — also every web request</option>'
+                     '<option value="trace"' + (' selected' if level == 'trace' else '') + '>Trace — web requests and request timings</option></select></label>'
+                     '<p class="help">Use Debug or Trace only while troubleshooting; they make the log grow faster. Trace adds request timings without headers or request bodies.</p>'
                      '<label for="g-size">Log size limit (MB)<input id="g-size" name="log_max_mb" type="number" min="1" max="50" required value="' + str(s['log_max_mb']) + '"></label>'
                      '<p class="help">Maximum size of a log file before it is archived. Default 2 MB.</p>'
                      '<label for="g-keep">Old logs to keep<input id="g-keep" name="log_keep" type="number" min="1" max="5" required value="' + str(s['log_keep']) + '"></label>'
@@ -380,7 +381,7 @@ def post(h, redirect):
             key, msg = 'region_notice', 'Language and region saved.'
         elif section == 'logging':
             lvl = f('log_level')
-            if lvl not in ('info', 'debug'):
+            if lvl not in ('info', 'debug', 'trace'):
                 raise ValueError('Choose a log level.')
             mb, keep = f('log_max_mb'), f('log_keep')
             if not (mb.isdigit() and 1 <= int(mb) <= 50):

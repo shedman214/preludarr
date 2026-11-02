@@ -1965,7 +1965,7 @@ def poster_manual_post(handler):
 # THEMEARR SMART MATCHING V4 / MEDIA SERVERS V1
 import media_servers
 
-class Handler(httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, size limits, bounded concurrency
+class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler):  # 1.12: timeouts, size limits, bounded concurrency
  def send(self,code,body,ctype='text/html'):
   if ctype=='text/html':body=auth.decorate(self,body)
   body=body.encode();self.send_response(code);self.send_header('Content-Type',ctype+'; charset=utf-8');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
