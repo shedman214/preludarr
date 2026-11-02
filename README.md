@@ -102,7 +102,7 @@ If you prefer to add the template manually:
 | Tag | Contents |
 |---|---|
 | `latest` | The newest stable release. **Recommended.** |
-| `1.14`, `1.14.0`, … | A release line or one exact version. Use it to stay on a version or to go back. |
+| `1.14`, `1.14.1`, … | A release line or one exact version. Use it to stay on a version or to go back. |
 | `beta` | The newest beta, or the newest stable release if that is newer. A beta never changes `latest`. |
 
 ### Build it yourself
@@ -157,7 +157,7 @@ Most settings live in the web interface. These optional variables are read at st
 | `POSTER_BACKGROUND_ENABLED` | `auto` | New installs automatically queue and cache missing posters after root folders and a TMDB or TVDB key are configured. Existing installs keep background processing off unless already enabled. `true` enables it explicitly; `false` disables it. Existing posters, pause controls, retry cooldowns and rate limits are respected. This does not install theme music. |
 | `PRELUDARR_EXTRA_ALLOWED_HOSTS` | – | Host names you open Preludarr by, e.g. `preludarr.lan:8788`. Private IP addresses always work. Also in Settings → General. |
 | `PRELUDARR_PUBLIC_URL` | – | The HTTPS address when you use a reverse proxy or tunnel. Also in Settings → General. |
-| `PRELUDARR_MANUAL_INSTALL_ENABLED` | `0` | `1`: allow installing your own uploaded audio and YouTube links. |
+| `PRELUDARR_MANUAL_INSTALL_ENABLED` | `0` | Initial default: `1` allows your uploaded audio and YouTube links. Change **Allow manual installs** under Settings → Download Clients → Download engines → YouTube → Configure without restarting. The saved choice overrides this default; review and confirmation are still required. |
 | `PRELUDARR_UPDATE_CHECK` | on | `0`: never check GitHub for new versions. |
 | `PRELUDARR_HTTP_MAX_CONNECTIONS`, `PRELUDARR_HTTP_MAX_PER_CLIENT` | `64`, `16` | Most requests handled at once, overall and per client address. |
 

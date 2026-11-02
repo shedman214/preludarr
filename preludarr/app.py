@@ -2254,7 +2254,9 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
             '<input type="hidden" name="path" value="',esc(selected,quote=True),'">',
             '<input type="file" name="audio" accept=".mp3,.ogg,.flac,.wav" required>',
             '<button type="submit">Review Custom Upload</button></form></div>']
-     section('upload','Upload custom audio','MP3, OGG, FLAC or WAV — reviewed before install',upload,False)
+     manual_enabled=custom_upload._enabled()
+     if not manual_enabled:upload=__import__('manual_settings').notice()
+     section('upload','Upload custom audio','MP3, OGG, FLAC or WAV — reviewed before install' if manual_enabled else 'Manual installs disabled — enable in Settings',upload,False)
      youtube=['<div class="panel"><h3>Download from YouTube</h3>',
     '<p>Paste one YouTube URL (10-minute maximum). Review before installing.</p>',
     '<form id="themearr-youtube-form" method="post" action="/review-youtube-theme">',
@@ -2265,7 +2267,8 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
     'style="width:100%" required>',
     '<button type="submit">Download and Review Audio</button>',
     '</form></div>']
-     section('youtube','YouTube','Paste one video link — reviewed before install',youtube,False)
+     if not manual_enabled:youtube=__import__('manual_settings').notice()
+     section('youtube','YouTube','Paste one video link — reviewed before install' if manual_enabled else 'Manual installs disabled — enable in Settings',youtube,False)
     # V1.7.3 faster first visits: the AnimeThemes lookup runs only when the page asks for it
     # (/themes?...&fragment=match); the page itself appears at once with a placeholder.
     match_start=len(parts)
@@ -2697,6 +2700,8 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    return sources.post(CONFIG,self,auth.redirect)
   if self.path in ('/system/updates/check','/system/updates/settings'):  # Preludarr 1.12: update-available check
    return __import__('updates').post(self,auth.redirect,APP_VERSION)
+  if self.path=='/download-clients/manual-installs':
+   return __import__('manual_settings').post(self,auth.redirect)
   if self.path=='/download-clients/youtube-search':  # Preludarr 1.11
    return __import__('youtube_search').post(self,auth.redirect)
   if self.path=='/download-clients/youtube-search-test':  # Preludarr 1.11.3: test the API key (never saves it)

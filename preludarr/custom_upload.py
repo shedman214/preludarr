@@ -26,7 +26,7 @@ _PENDING_LOCK = threading.Lock()
 
 
 def _enabled():
- return os.getenv('THEMEARR_MANUAL_INSTALL_ENABLED', '0') == '1'
+ return __import__('manual_settings').enabled()
 
 
 def _probe(path):

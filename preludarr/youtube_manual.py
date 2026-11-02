@@ -23,7 +23,7 @@ TOKEN_PATTERN = re.compile(r"[A-Za-z0-9_-]{20,128}\Z")
 
 
 def enabled():
-    return os.getenv("THEMEARR_MANUAL_INSTALL_ENABLED", "0") == "1"
+    return __import__('manual_settings').enabled()
 
 
 def read_form(handler, limit=4096):

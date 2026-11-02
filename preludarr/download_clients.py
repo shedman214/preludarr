@@ -96,7 +96,7 @@ def page(app, handler):
               '<div>Engine: <strong>', _e('yt-dlp ' + version if version else 'yt-dlp missing'), '</strong></div>',
               '<div>Cookies: <strong>', _e(cookie_text), '</strong></div>',
               '<div>Used by: <strong>Theme Browser → Download from YouTube</strong></div></div>',
-              '<details class="dc-config"', ' open' if q.get('cookies') else '', '><summary class="btn ghost">Configure</summary>', youtube_ui.panel(app.CONFIG), '</details>',
+              '<details class="dc-config"', ' open' if q.get('cookies') else '', '><summary class="btn ghost">Configure</summary>', __import__('manual_settings').panel(), youtube_ui.panel(app.CONFIG), '</details>',
               '</section></div>',
               '</section><section class="dc-sec" id="dc-sec-sources"><h2 id="dc-sources" class="dc-h">Theme sources</h2>',
               '<p class="muted">A root folder&#8217;s <strong>type</strong> decides where Preludarr looks for a theme, in this order. Each source is only asked when the ones before it '
