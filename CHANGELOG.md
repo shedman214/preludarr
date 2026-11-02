@@ -16,6 +16,7 @@ Each release says what changed for users. Upgrades keep your data, settings and 
 
 ### ➕ Added
 - **Language & Region.** Saved instance-wide preferences for short and long dates, 12/24-hour time, display time zone and Today/Yesterday labels, with a preview.
+- **English recovery.** A permanent “Language / English” navigation link and “Switch back to English” button keep the language setting accessible without resetting date/time preferences.
 - **Interface languages.** Spanish, French, German, Portuguese (Brazil) and Japanese translations for core navigation and common controls. Untranslated text falls back to English; media titles and provider data retain their original language.
 
 ### 🔄 Changed

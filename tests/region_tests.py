@@ -104,12 +104,12 @@ class LanguageRegion(unittest.TestCase):
         self.assertEqual(outside.read_text(), '{"language":"ja"}')
 
     def test_interface_safety_and_entities(self):
-        body = '<!doctype html><html lang="en"><head><script>const x="Settings";</script><style>.Library{color:red}</style></head><body><nav><a href="/settings?x=1&amp;y=2">⚙️ Settings</a><a href="/settings?section=region">Language &amp; Region</a></nav><main><h3>Library</h3><table><tr><td>Settings</td></tr></table><input value="Settings"><textarea>Settings</textarea><button>Save Changes</button><code>Library</code><div translate="no"><button>Search</button></div>&lt;script&gt;</main></body></html>'
+        body = '<!doctype html><html lang="en"><head><script>const x="Settings";</script><style>.Library{color:red}</style></head><body><nav><a href="/settings?x=1&amp;y=2">⚙️ Settings</a><a href="/settings?section=region">Language &amp; Region</a></nav><main><h3>Library</h3><label>Library</label><nav id="library-tabs"><a>Library</a></nav><table><tr><td>Settings</td></tr></table><input value="Settings"><textarea>Settings</textarea><button>Save Changes</button><code>Library</code><div translate="no"><button>Search</button></div>&lt;script&gt;</main></body></html>'
         self.assertEqual(region.apply(body), body)
         for lang in region.LANGUAGES:
             self.path.write_text(json.dumps(self.prefs(language=lang)))
             out = region.apply(body)
-            for original in ('<h3>Library</h3>', '<td>Settings</td>', '<input value="Settings">', '<textarea>Settings</textarea>', '<script>const x="Settings";</script>', '<style>.Library{color:red}</style>', '<code>Library</code>', '<button>Search</button>', '&lt;script&gt;', 'href="/settings?x=1&amp;y=2"'):
+            for original in ('<h3>Library</h3>', '<label>Library</label>', '<nav id="library-tabs"><a>Library</a></nav>', '<td>Settings</td>', '<input value="Settings">', '<textarea>Settings</textarea>', '<script>const x="Settings";</script>', '<style>.Library{color:red}</style>', '<code>Library</code>', '<button>Search</button>', '&lt;script&gt;', 'href="/settings?x=1&amp;y=2"'):
                 self.assertIn(original, out)
             if lang != 'en':
                 self.assertIn('lang="'+lang+'"', out)

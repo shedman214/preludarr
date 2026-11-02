@@ -154,8 +154,8 @@ def panel(query):
             '<form method="post" action="/settings/general"><input type="hidden" name="section" value="region">' +
             select('language', 'Interface language', LANGUAGES) +
             '<p class="help">Core navigation and common controls are translated. Untranslated text falls back to English. Media titles and provider data keep their original language.</p>' +
-            select('short_date', 'Short date format', {'month': 'November 2, 2026', 'iso': '2026-11-02', 'dmy': '02/11/2026', 'mdy': '11/02/2026'}) +
-            select('long_date', 'Long date format', {'weekday': 'Monday, November 2, 2026', 'date': 'November 2, 2026'}) +
+            select('short_date', 'Short date format', {'month': when(sample, date_only=True, prefs=dict(s, short_date='month', relative_dates=False)), 'iso': '2026-11-02', 'dmy': '02/11/2026', 'mdy': '11/02/2026'}) +
+            select('long_date', 'Long date format', {'weekday': when(sample, long=True, date_only=True, prefs=dict(s, long_date='weekday', relative_dates=False)), 'date': when(sample, long=True, date_only=True, prefs=dict(s, long_date='date', relative_dates=False))}) +
             select('clock', 'Time format', {'12': '5:30 PM (12-hour)', '24': '17:30 (24-hour)'}) +
             select('timezone', 'Display time zone', zones) +
             '<p class="help">Display only. Scheduled jobs, stored timestamps and Docker TZ are unchanged.</p>'
@@ -214,15 +214,18 @@ class _Interface(HTMLParser):
         blocked = any(t in tags for t in ('script', 'style', 'code', 'pre', 'textarea', 'output'))
         blocked = blocked or any('tm-brand' in attrs.get('class', '').split() or attrs.get('translate') == 'no'
                                  for tag, attrs in self.stack)
-        controls = region or any(t in tags for t in ('nav', 'button', 'label'))
+        settings_page = any(attrs.get('id') == 'settings-general' for tag, attrs in self.stack)
+        dynamic_tabs = any(attrs.get('id') == 'library-tabs' for tag, attrs in self.stack)
+        controls = region or 'button' in tags or ('nav' in tags and not dynamic_tabs) or (settings_page and any(t in tags for t in ('label', 'h1', 'h2')))
         if blocked or not controls:
             self.out.append(raw)
             return
         data = html.unescape(raw)
         stripped = data.strip()
-        match = re.match(r'^([^\w]*)(.*)$', stripped, flags=re.S)
+        match = re.match(r'^([^\w]*)(.*?)(?:[ \t]*[▾▼])?$', stripped, flags=re.S)
         prefix, label = match.groups() if match else ('', stripped)
-        translated = self.words.get(stripped, prefix + self.words[label] if label in self.words else None)
+        suffix = ' ▾' if stripped.endswith('▾') else ' ▼' if stripped.endswith('▼') else ''
+        translated = self.words.get(stripped, prefix + self.words[label] + suffix if label in self.words else None)
         if translated is None:
             self.out.append(raw)
         else:

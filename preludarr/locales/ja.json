@@ -90,5 +90,12 @@
   "Display only. Scheduled jobs, stored timestamps and Docker TZ are unchanged.": "表示のみに適用されます。スケジュール、保存済みタイムスタンプ、DockerのTZ設定は変更されません。",
   "Save to apply your choices and refresh the preview. No restart is needed.": "保存すると設定が適用され、プレビューが更新されます。再起動は不要です。",
   "January February March April May June July August September October November December": "1月|2月|3月|4月|5月|6月|7月|8月|9月|10月|11月|12月",
-  "Monday Tuesday Wednesday Thursday Friday Saturday Sunday": "月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日曜日"
+  "Monday Tuesday Wednesday Thursday Friday Saturday Sunday": "月曜日|火曜日|水曜日|木曜日|金曜日|土曜日|日曜日",
+  "Authentication": "認証",
+  "Your titles, a tab per root folder": "ルートフォルダーごとにタイトルを表示",
+  "Theme songs for movie collections": "映画コレクションのテーマ曲",
+  "Find and preview themes for a title": "タイトルのテーマを検索・試聴",
+  "Titles that have no theme yet": "テーマが未設定のタイトル",
+  "Themes already installed": "インストール済みのテーマ",
+  "Proposed installs waiting for approval": "確認待ちのインストール候補"
 }

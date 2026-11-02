@@ -90,5 +90,12 @@
   "Display only. Scheduled jobs, stored timestamps and Docker TZ are unchanged.": "Nur für die Anzeige. Geplante Aufgaben, gespeicherte Zeitstempel und Docker TZ bleiben unverändert.",
   "Save to apply your choices and refresh the preview. No restart is needed.": "Speichern Sie, um die Auswahl anzuwenden und die Vorschau zu aktualisieren. Ein Neustart ist nicht erforderlich.",
   "January February March April May June July August September October November December": "Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember",
-  "Monday Tuesday Wednesday Thursday Friday Saturday Sunday": "Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Samstag|Sonntag"
+  "Monday Tuesday Wednesday Thursday Friday Saturday Sunday": "Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Samstag|Sonntag",
+  "Authentication": "Authentifizierung",
+  "Your titles, a tab per root folder": "Ihre Titel, ein Tab pro Stammordner",
+  "Theme songs for movie collections": "Themes für Filmsammlungen",
+  "Find and preview themes for a title": "Themes für einen Titel suchen und anhören",
+  "Titles that have no theme yet": "Titel ohne Theme",
+  "Themes already installed": "Bereits installierte Themes",
+  "Proposed installs waiting for approval": "Vorgeschlagene Installationen zur Bestätigung"
 }
