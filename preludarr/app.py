@@ -416,6 +416,17 @@ def queue_poster(path,library,name):
  threading.Thread(target=fetch_poster,args=(path,library,name),daemon=True).start()
  return ''
 
+POSTER_FOLDER_UNAVAILABLE='Poster folder is unavailable. Check root-folder mappings and rescan the library.'
+POSTER_LINKED_FOLDER='Poster retry cannot use a linked folder. Check the root-folder mapping.'
+POSTER_RETRY_ERRORS={
+ 'Invalid poster request':'The poster retry form could not be read. Reload the page and try again.',
+ 'Invalid anime path':'The poster path is invalid. Reload the Library and try again.',
+ 'Invalid anime destination':'The title is not in an available registered root folder. Check root-folder mappings.',
+ 'Unknown anime':'This title is no longer in the Library. Rescan and reload the page.',
+ POSTER_FOLDER_UNAVAILABLE:POSTER_FOLDER_UNAVAILABLE,
+ POSTER_LINKED_FOLDER:POSTER_LINKED_FOLDER,
+}
+
 POSTER_RETRY_SCRIPT='''<script>/* themearr-retry-poster-v2 (V1.6.2): poster-only retries that follow the real job status */
 (function () {
   "use strict";
@@ -506,7 +517,11 @@ POSTER_RETRY_SCRIPT='''<script>/* themearr-retry-poster-v2 (V1.6.2): poster-only
       });
       if (new URL(response.url, window.location.href).pathname === '/login') throw new Error('Session expired. Log in again.');
       if (response.status === 429) throw new Error('Poster retry limit reached (6 per hour). Try again later.');
-      if (!response.ok) throw new Error('Retry could not be started (HTTP ' + response.status + ').');
+      if (!response.ok) {
+        const errors = __POSTER_RETRY_ERRORS__;
+        const reason = (await response.text()).trim();
+        throw new Error(Object.prototype.hasOwnProperty.call(errors, reason) ? errors[reason] : ('Retry could not be started (HTTP ' + response.status + ').'));
+      }
       const statusUrl = '/poster-status?' + new URLSearchParams({path}).toString();
       for (let poll = 0; poll < MAX_POLLS; poll++) {
         if (!document.contains(form)) return;
@@ -538,7 +553,7 @@ POSTER_RETRY_SCRIPT='''<script>/* themearr-retry-poster-v2 (V1.6.2): poster-only
     }
   }, true);
 })();
-</script>'''
+</script>'''.replace('__POSTER_RETRY_ERRORS__',json.dumps(POSTER_RETRY_ERRORS))
 
 def poster_job_status(path):
  """Job state for one anime, for the Retry button (V1.6.2). (Not named poster_status: do_GET uses that local name.)"""
@@ -1840,10 +1855,13 @@ def poster_v1_retry_single(handler):
     if not selected or len(selected) > 4096:
         return handler.send(400, 'Invalid anime path', 'text/plain')
     folder = Path(selected)
-    if (folder.is_symlink() or not folder.is_dir() or
-            not any(folder.parent == root and root.is_dir() and
-                    not root.is_symlink() for _, root in ROOTS)):
+    if not any(folder.parent == root and root.is_dir() and
+               not root.is_symlink() for _, root in ROOTS):
         return handler.send(400, 'Invalid anime destination', 'text/plain')
+    if folder.is_symlink():
+        return handler.send(400, POSTER_LINKED_FOLDER, 'text/plain')
+    if not folder.is_dir():
+        return handler.send(400, POSTER_FOLDER_UNAVAILABLE, 'text/plain')
     with db() as conn:
         row = conn.execute('SELECT library,name FROM shows WHERE path=?',
                            (selected,)).fetchone()
