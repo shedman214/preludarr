@@ -24,7 +24,9 @@ Before an update, make a backup (System, Backup &amp; Restore).</Overview>
   <Requires>Your TV and movie shares mapped read/write. Anime themes work out of the box; shows and movies use the free theme sources (Settings, Download Clients) and your own TMDB key.</Requires>
   <ExtraSearchTerms>theme themes theme.mp3 anime opening plex jellyfin emby sonarr radarr</ExtraSearchTerms>
   <License>GPL-3.0-or-later</License>
-  <Changes>### 1.14.1&#xD;
+  <Changes>### 1.14.2&#xD;
+Turn background poster processing on or off from Activity → Poster recovery without restarting; Preludarr explains when queued posters are waiting because it is off.&#xD;
+### 1.14.1&#xD;
 Enable manual installs from YouTube settings without restarting; disabled upload and YouTube tools show setup guidance. Review and confirmation remain required.&#xD;
 ### 1.14.0&#xD;
 Automatic missing posters for new installs; Trace logging; slower Radarr root-folder checks; clearer poster retry feedback and readable appearance themes.&#xD;
@@ -36,7 +38,7 @@ Dashboard shows Activity (choose how many events per page); the Library remember
 Sonarr/Radarr on Windows: path mappings accept Windows paths (G:\ =&gt; /mnt/media).&#xD;
 ### 1.12.0&#xD;
 First stable release. Changes: https://github.com/shedman214/preludarr/blob/main/CHANGELOG.md</Changes>
-  <Date>2026-11-02</Date>
+  <Date>2026-11-04</Date>
   <MinVer>6.12.0</MinVer>
   <Screenshot>https://raw.githubusercontent.com/shedman214/preludarr/main/.github/screenshots/library.png</Screenshot>
   <Screenshot>https://raw.githubusercontent.com/shedman214/preludarr/main/.github/screenshots/theme-review.png</Screenshot>
@@ -57,7 +59,7 @@ First stable release. Changes: https://github.com/shedman214/preludarr/blob/main
   <Config Name="TMDB API key" Target="TMDB_API_KEY" Default="" Mode="" Description="Optional: your own TMDB API key (themoviedb.org, Settings, API) for posters and movie ids. Can also be set in Settings, Connect." Type="Variable" Display="advanced" Required="false" Mask="true"/>
   <Config Name="Allowed host names" Target="PRELUDARR_EXTRA_ALLOWED_HOSTS" Default="" Mode="" Description="Optional: host names you open Preludarr by, e.g. preludarr.lan:8788. Private IP addresses always work." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Public HTTPS address" Target="PRELUDARR_PUBLIC_URL" Default="" Mode="" Description="Optional: the HTTPS address when you use a reverse proxy or tunnel, e.g. https://preludarr.example.com" Type="Variable" Display="advanced" Required="false" Mask="false"/>
-  <Config Name="Background posters" Target="POSTER_BACKGROUND_ENABLED" Default="auto|false|true" Mode="" Description="auto: enabled for new installs, keeps existing installs unchanged. true: enable missing-poster processing. false: disable. Needs a TMDB or TVDB key; respects Poster Recovery pause and rate limits." Type="Variable" Display="advanced" Required="false" Mask="false">auto</Config>
+  <Config Name="Background posters" Target="POSTER_BACKGROUND_ENABLED" Default="auto|false|true" Mode="" Description="Starting value for background poster fetching. auto: on for new installs, existing installs unchanged. true: on. false: off. You can also switch it in the app under Activity, Poster recovery (that choice overrides this). Needs a TMDB or TVDB key; respects pause and rate limits." Type="Variable" Display="advanced" Required="false" Mask="false">auto</Config>
   <Config Name="Manual installs" Target="PRELUDARR_MANUAL_INSTALL_ENABLED" Default="0|1" Mode="" Description="Initial default: 1 allows your uploaded audio and YouTube links. The saved Allow manual installs choice under Settings, Download Clients, YouTube, Configure overrides this default without restarting." Type="Variable" Display="advanced" Required="false" Mask="false">0</Config>
   <Config Name="Update check" Target="PRELUDARR_UPDATE_CHECK" Default="1|0" Mode="" Description="0 = never check GitHub for new versions." Type="Variable" Display="advanced" Required="false" Mask="false">1</Config>
 </Container>

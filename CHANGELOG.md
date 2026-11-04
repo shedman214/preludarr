@@ -9,6 +9,23 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.14.2] — 2026-11-04
+
+This release lets you turn background poster processing on or off from inside Preludarr and explains why queued posters are waiting when it is off.
+
+### ✨ Highlights
+- Switch background poster processing on or off from Poster recovery, with no restart.
+- Preludarr now tells you when queued posters are waiting because background processing is off.
+
+### ➕ Added
+- **Background poster switch.** Activity → Poster recovery shows whether background poster processing is on and where that setting comes from, with a button to change it. The saved choice applies immediately, survives restarts and overrides the `POSTER_BACKGROUND_ENABLED` Docker value. Processing still fetches at most one poster every 180 seconds and 20 per hour, never replaces existing posters and never installs theme music.
+
+### 🔧 Fixed
+- **Posters waiting with no explanation.** When background processing was off, queued posters were never fetched and nothing said why. Bulk poster review now warns before queuing work that will not run and points to the switch. Poster recovery says that queued posters wait until processing is on.
+
+### ⚠️ Upgrade notes
+- If your container sets `POSTER_BACKGROUND_ENABLED=false`, queued posters stay waiting. Turn processing on under Activity → Poster recovery; the Docker value no longer needs changing.
+
 ## [1.14.1] — 2026-11-02
 
 This release makes it easier to enable YouTube links and custom audio uploads, with clear guidance when manual installs are off.

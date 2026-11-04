@@ -120,7 +120,10 @@ def _page(handler, content, status=200):
     return handler.send(status, content, 'text/html; charset=utf-8')
 
 
-def review(handler, db, poster_file):
+OFF_NOTE = 'Background poster processing is off, so these posters will be queued but not downloaded until you turn it on under Poster Recovery (Activity → Poster recovery → Turn on background posters).'
+
+
+def review(handler, db, poster_file, background_on=None):
     try:
         filters = selection(**_parse_form(handler, ('q','library','state','poster')))
         with db() as conn:
@@ -146,8 +149,13 @@ def review(handler, db, poster_file):
     detail=' · '.join([f"Search: {filters['q'] or 'Any title'}", f"Library: {filters['library']}",
                        f"Theme status: {filters['state']}", f"Poster status: {filters['poster']}"])
     page = '''<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Confirm poster retry | Preludarr</title><style>body{background:#111c30;color:#f5f8ff;font:16px system-ui;margin:0;padding:40px 20px}.panel{max-width:740px;margin:auto;background:#1d2a42;border:1px solid #476186;border-radius:14px;padding:30px}p{line-height:1.5}button,.back{display:inline-block;background:#3867e7;color:white;border:0;border-radius:7px;padding:12px 18px;text-decoration:none;font-weight:700;cursor:pointer}.back{background:#44556c;color:#ffffff}small{color:#bfcde8}</style></head><body><main class="panel"><h1>Review filtered poster retry</h1><p><strong>%s missing posters</strong> match your filters across all pages.</p><p><small>%s</small></p><p>This only queues missing artwork. Downloading remains subject to Poster Recovery's existing rate limits; cached artwork and theme files will not be changed.</p><form method="post" action="/poster-filtered-confirm"><input type="hidden" name="token" value="%s"><button type="submit">Confirm: Queue %s missing posters</button></form><p><a class="back" href="/">Cancel — no changes</a></p></main></body></html>''' % (name(count),name(detail),name(token),name(count))
+    off = background_on is not None and not background_on()  # 1.14.2: say so before queuing work that will not run
     if handler.headers.get("X-Themearr-Modal") == "1":
-        return handler.send(200, json.dumps({"count": count, "details": detail, "token": token}), "application/json")
+        return handler.send(200, json.dumps({"count": count, "details": detail, "token": token, "background_off": off,
+                                             "background_note": OFF_NOTE if off else ""}), "application/json")
+    if off:
+        page = page.replace('</h1>', '</h1><p role="status" style="border:1px solid #c9a227;padding:10px;border-radius:8px">'
+                            + html.escape(OFF_NOTE) + '</p>', 1)
     return _page(handler,page)
 
 
@@ -433,7 +441,7 @@ const row=document.createElement('div');const button=document.createElement('but
 historyEntries.appendChild(entry);}
 }catch(e){historyEntries.textContent='Queue history temporarily unavailable: '+e.message;}}
 reopen.addEventListener('click',async function(){try{const data=await getStatus('recent=1');if(data.jobs&&data.jobs.length)track(data.jobs[0].job);else{open();ui('Poster Queue','No tracked requests yet.','Newly confirmed retries will appear here and on Activity.',false);}}catch(e){open();ui('Poster Queue unavailable',e.message,'No new request was started.',false);}});
-form.addEventListener('submit',async function(e){e.preventDefault();if(busy)return;clearPoll();activeJob=null;open();ui('Review poster retry','Checking all matching titles across the selected filters…','',false);busy=true;try{const data=await post('/poster-filtered-review',new URLSearchParams(new FormData(form)));pendingToken=data.token||null;if(!data.count){ui('No missing posters','No missing artwork matches these filters. No changes made.','',false);return;}ui('Review filtered poster retry',data.count+' missing posters match the filters. '+data.details,'Only missing artwork is queued. Existing rate limits apply.',true);confirm.textContent='Confirm: Queue '+data.count+' missing posters';}catch(e){ui('Unable to review',e.message,'Nothing queued.',false)}finally{busy=false;}});
+form.addEventListener('submit',async function(e){e.preventDefault();if(busy)return;clearPoll();activeJob=null;open();ui('Review poster retry','Checking all matching titles across the selected filters…','',false);busy=true;try{const data=await post('/poster-filtered-review',new URLSearchParams(new FormData(form)));pendingToken=data.token||null;if(!data.count){ui('No missing posters','No missing artwork matches these filters. No changes made.','',false);return;}ui('Review filtered poster retry',data.count+' missing posters match the filters. '+data.details+(data.background_off?' — '+data.background_note:''),'Only missing artwork is queued. Existing rate limits apply.',true);confirm.textContent='Confirm: Queue '+data.count+' missing posters';}catch(e){ui('Unable to review',e.message,'Nothing queued.',false)}finally{busy=false;}});
 confirm.addEventListener('click',async function(){if(!pendingToken||busy)return;busy=true;confirm.disabled=true;close.disabled=true;progress.textContent='Queuing approved request…';try{const data=await post('/poster-filtered-confirm',new URLSearchParams({token:pendingToken}));pendingToken=null;activeJob=data.job;ui('Poster retry queued',data.queued+' missing posters queued; '+data.skipped+' skipped. Downloading is not finished.'+(data.tracked?'':' Queue history could not be saved; this browser session can still track it.'),'Waiting for the rate-limited Poster Recovery worker.',false);await refreshHistory();if(activeJob){await poll();if(activeJob&&!polling)polling=setInterval(poll,15000);}}catch(e){pendingToken=null;ui('Poster retry not queued',e.message,'No new batch confirmed.',false)}finally{busy=false;close.disabled=false;}});
 close.addEventListener('click',dismiss);
 modal.addEventListener('click',function(e){if(e.target===modal)dismiss();});

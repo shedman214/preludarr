@@ -600,6 +600,9 @@ def background_poster_worker():
 
  while True:
   try:
+   if not POSTER_BACKGROUND_ENABLED:  # 1.14.2: switched off in the app; check again shortly
+    time.sleep(5)
+    continue
    if poster_v2_paused():
     time.sleep(5)
     continue
@@ -1725,6 +1728,7 @@ def poster_v2_panel():
               ('Paused' if s['paused'] else ('Running' if POSTER_BACKGROUND_ENABLED else 'Background processing off')),
               ' · ', str(s['delay_seconds']), ' seconds between attempts · ',
               str(s['hourly_limit']), ' attempts/hour maximum</p>',
+              poster_background.switch_html(sys.modules[__name__]),
               '<div class="stats">']
     for key, label in labels:
         output += ['<div class="stat"><strong data-poster-v2="', key, '">',
@@ -2734,6 +2738,14 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    result=poster_connect.post(self,CONFIG)
    poster_background.wake()
    return result
+  if self.path=='/poster-v2-background':  # 1.14.2: background poster processing on/off, applies immediately
+   form=poster_v1_form(self)
+   if form is None or set(form)!={'enabled'} or form['enabled'] not in (['0'],['1']):
+    return self.send(400,'Invalid background poster setting','text/plain')
+   turn_on=form['enabled']==['1']
+   poster_background.set_enabled(sys.modules[__name__],turn_on)
+   event('Poster Recovery','info','Background poster processing turned '+('on' if turn_on else 'off')+' in Poster Recovery.')
+   return auth.redirect(self,'/?view=activity#poster-recovery')
   if self.path in ('/poster-v2-pause','/poster-v2-resume','/poster-v2-retry-failed'):
    return poster_v2_control_post(self,self.path.removeprefix('/poster-v2-'))
   if self.path in ('/v4-save-match','/v4-remove-match'):
@@ -2751,7 +2763,7 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
   if self.path in ('/poster-choose','/poster-search','/poster-reset','/poster-upload','/poster-upload-confirm','/poster-upload-cancel'):
    return poster_manual_post(self)
   if self.path=='/poster-filtered-review':
-   return poster_filters.review(self,db,poster_file)
+   return poster_filters.review(self,db,poster_file,background_on=lambda:POSTER_BACKGROUND_ENABLED)
   if self.path=='/poster-filtered-confirm':
    return poster_filters.outcome(self,db,poster_file,poster_v2_paused,poster_filtered_submit)
   if self.path=='/poster-retry-missing':
@@ -3039,9 +3051,6 @@ if __name__=='__main__':
  theme_review.start(sys.modules[__name__])  # V1.9.4: theme trash age limit + cron schedule
  auto_backup.start(sys.modules[__name__])  # V1.9.13: automatic backups (every N days, retention)
  if POSTER_BACKGROUND_ENABLED:
-  threading.Thread(
-   target=background_poster_worker,
-   daemon=True
-  ).start()
+  poster_background.ensure_worker(sys.modules[__name__])  # 1.14.2: also started later when switched on in the app
  print(f'Preludarr listening on {PORT}, auto-download={AUTO}',flush=True)
  httpserver.Server(('0.0.0.0',PORT),Handler).serve_forever()

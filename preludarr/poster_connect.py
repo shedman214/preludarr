@@ -280,7 +280,7 @@ def panel_html(config, notice=""):
 <input type="hidden" name="provider" value="priority"><label for="pc-priority">Try this provider first</label>
 <select id="pc-priority" name="preferred">%s</select>
 <div class="pc-actions"><button type="submit" name="action" value="save">Save preference</button></div>
-</form><p>New installs automatically queue missing library posters once root folders and a provider key are configured. Existing installs keep their background poster setting. Poster Recovery pause controls, retry cooldowns and rate limits still apply; cached posters are retained.</p></div>
+</form><p>New installs fetch missing posters automatically in the background once root folders and a provider key are configured. To turn this on or off, or to pause it, open <a href="/?view=activity#poster-recovery">Activity → Poster recovery</a>; the switch there applies immediately. Existing posters are never replaced and theme music is never installed.</p></div>
 <p style="font-size:.9em">TMDB and TVDB have their own licensing and access requirements. Do not share API credentials.</p>
 </section>''' % (warning, note_html, ''.join(cards), options) + _INLINE_TEST_JS)
 
