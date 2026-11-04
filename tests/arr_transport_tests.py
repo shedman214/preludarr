@@ -33,7 +33,7 @@ def response(status=200, body=b'{"appName":"Radarr"}', extra=b''):
     return (b'HTTP/1.1 ' + str(status).encode() + b' Result\r\nContent-Length: '
             + str(len(body)).encode() + b'\r\n' + extra + b'\r\n' + body)
 
-inst = {'kind': 'radarr', 'url': 'http://192.168.1.134:7878/radarr', 'api_key': 'test-key-only'}
+inst = {'kind': 'radarr', 'url': 'http://192.168.1.40:7878/radarr', 'api_key': 'test-key-only'}
 with patch.dict(os.environ, {'http_proxy': 'http://proxy.invalid:9999', 'https_proxy': 'http://proxy.invalid:9999',
                             'HTTP_PROXY': 'http://proxy.invalid:9999', 'HTTPS_PROXY': 'http://proxy.invalid:9999',
                             'no_proxy': '', 'NO_PROXY': ''}):
@@ -41,7 +41,7 @@ with patch.dict(os.environ, {'http_proxy': 'http://proxy.invalid:9999', 'https_p
     wire = Wire(response())
     with patch('socket.create_connection', return_value=wire) as connect:
         result = arr._get(inst, 'system/status', timeout=12)
-    check('LAN API bypasses inherited proxy', connect.call_args.args[0] == ('192.168.1.134', 7878))
+    check('LAN API bypasses inherited proxy', connect.call_args.args[0] == ('192.168.1.40', 7878))
     check('URL prefix and API response preserved', b'GET /radarr/api/v3/system/status HTTP/1.1' in wire.sent and result['appName'] == 'Radarr')
     check('API key stays in header, not URL', b'X-Api-Key: test-key-only' in wire.sent and b'test-key-only' not in wire.sent.split(b'\r\n')[0])
     wire = Wire(response(302, b'', b'Location: http://192.168.1.9:7777/steal\r\n'))
