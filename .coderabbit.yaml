@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit AI review settings for Preludarr (https://docs.coderabbit.ai/reference/configuration)
+language: en-US
+early_access: false
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+  path_filters:
+    - "!**/*.png"
+    - "!**/*.jpg"
+    - "!**/*.webp"
+    - "!**/*.gz"
+    - "!.github/screenshots/**"
+  path_instructions:
+    - path: "preludarr/**/*.py"
+      instructions: |
+        Preludarr runs on users' home servers. Check that:
+        - secrets (API keys, tokens, passwords, cookies) are never logged, shown in HTML or returned in responses;
+        - user input is escaped in HTML and paths are confined to their configured roots (no traversal, no following symlinks out);
+        - existing installs and saved choices keep working after upgrade;
+        - posters and theme music stay separate: automatic posters must not start theme downloads, replace cached posters,
+          or bypass pause, cooldown and rate limits;
+        - provider verification links use real provider data and never install or remember a match by following a link.
+    - path: "tests/**"
+      instructions: "Tests must stay offline and deterministic: no real network calls, no real user data, no private hostnames or addresses."
+    - path: "templates/**"
+      instructions: "Unraid templates must not contain real credentials, private paths or LAN addresses; Default values must be safe for new users."
+    - path: "CHANGELOG.md"
+      instructions: |
+        Release notes use these sections in order, only when relevant: ### ✨ Highlights, ### ➕ Added, ### 🔄 Changed,
+        ### 🔧 Fixed, ### ⚠️ Upgrade notes. Bullets start with a bold feature label and describe the resulting behavior.
+        Flag placeholders, unverified issue numbers or credits.
+    - path: ".github/workflows/**"
+      instructions: "Workflows must not expose secrets to pull requests from forks, and image publication must stay gated on the required checks."
+chat:
+  auto_reply: true
