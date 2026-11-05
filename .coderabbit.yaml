@@ -13,8 +13,6 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
-    base_branches:
-      - main
   path_filters:
     - "!**/*.png"
     - "!**/*.jpg"
@@ -38,7 +36,8 @@ reviews:
     - path: "CHANGELOG.md"
       instructions: |
         Release notes use these sections in order, only when relevant: ### ✨ Highlights, ### ➕ Added, ### 🔄 Changed,
-        ### 🔧 Fixed, ### ⚠️ Upgrade notes. Bullets start with a bold feature label and describe the resulting behavior.
+        ### 🔧 Fixed, ### ⚠️ Upgrade notes. Bullets under Added, Changed and Fixed start with a bold feature label and
+        describe the resulting behavior; Highlights are short benefits and Upgrade notes plain actions (no labels needed).
         Flag placeholders, unverified issue numbers or credits.
     - path: ".github/workflows/**"
       instructions: "Workflows must not expose secrets to pull requests from forks, and image publication must stay gated on the required checks."
