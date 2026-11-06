@@ -124,6 +124,35 @@ for _ in range(5):
 h = reset(auth4, real)
 check('Guessing is throttled: after 5 wrong codes even the right one waits', h.sent[0] == 429 and auth4.verify('a brand new pass phrase', 'theowner'))
 
+# ---- the code is used up atomically (CodeRabbit, CWE-367) ----
+import threading  # noqa: E402
+auth7 = tl.Auth()
+_, c7, _ = request_code(auth7)
+h = reset(auth7, c7, password='short')
+check('A too-short password does not use up the code', h.sent[0] == 400 and auth7.reset_code == c7)
+real_write = auth7.write_account
+auth7.write_account = lambda *a: (_ for _ in ()).throw(ValueError('disk full'))
+h = reset(auth7, c7, password='survives a failed write ok')
+auth7.write_account = real_write
+check('A failed save keeps the code valid', h.sent[0] == 500 and auth7.reset_code == c7)
+slow = auth7.write_account
+
+def slow_write(*a):
+    time_sleep(0.2); return slow(*a)
+from time import sleep as time_sleep  # noqa: E402
+auth7.write_account = slow_write
+outcomes = []
+barrier = threading.Barrier(2)
+
+def racer(pw):
+    barrier.wait(); outcomes.append(reset(auth7, c7, password=pw))
+threads = [threading.Thread(target=racer, args=(pw,)) for pw in ('first racing password!', 'second racing password')]
+[t.start() for t in threads]; [t.join() for t in threads]
+ok = [h for h in outcomes if h.status == 303]
+check('Two simultaneous resets with one code: exactly one succeeds', len(ok) == 1 and sum(1 for h in outcomes if h.sent and h.sent[0] == 403) == 1
+      and (auth7.verify('first racing password!', 'theowner') != auth7.verify('second racing password', 'theowner')))
+auth7.write_account = real_write
+
 fresh = Path(tempfile.mkdtemp())
 os.environ['CONFIG_DIR'] = str(fresh / 'config')
 auth5 = tl.Auth()

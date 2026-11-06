@@ -620,20 +620,22 @@ class Auth:
   if form is None:return h.send(400,'Invalid reset form','text/plain')
   f=lambda k:form.get(k,[''])[0]
   code,password,confirm=f('code').strip().upper().replace(' ',''),f('password'),f('confirm')
+  if password!=confirm or not 16<=len(password)<=128:  # checked first, so a typo does not use up the code
+   return h.send(400,self.reset_page('The passwords must match and be 16–128 characters long.'))
+  salt=secrets.token_bytes(16)
+  stored=salt.hex()+':'+hashlib.pbkdf2_hmac('sha256',password.encode(),salt,240000).hex()
+  # One transaction under the lock: check the code, write the account, then use up the code and sign
+  # everyone out. Two simultaneous requests can never both succeed with the same code (no TOCTOU), and
+  # a failed write keeps the code valid.
   with self.lock:
-   expected=self.reset_code if self.reset_code and now<self.reset_expires else None
+   expected=self.reset_code if self.reset_code and time.monotonic()<self.reset_expires else None
    # compare bytes: hmac.compare_digest raises TypeError for non-ASCII str (e.g. a pasted zero-width space)
    if expected is None or not hmac.compare_digest(code.encode('utf-8'),expected.encode('utf-8')):
     self.reset_failures.append(now)
     return h.send(403,self.reset_page('That reset code is not right or has expired. Request a new one and copy it from the container log.'))
-  if password!=confirm or not 16<=len(password)<=128:
-   return h.send(400,self.reset_page('The passwords must match and be 16–128 characters long.'))
-  username=self.credentials()[0] or 'admin'
-  salt=secrets.token_bytes(16)
-  stored=salt.hex()+':'+hashlib.pbkdf2_hmac('sha256',password.encode(),salt,240000).hex()
-  try:self.write_account(username,stored)
-  except ValueError as error:return h.send(500,str(error),'text/plain')
-  with self.lock:
+   username=self.credentials()[0] or 'admin'
+   try:self.write_account(username,stored)
+   except ValueError as error:return h.send(500,str(error),'text/plain')
    self.reset_code=None;self.reset_expires=0.0;self.reset_failures=[];self.reset_requests=[]
    self.sessions.clear();self.born.clear()
   print('Preludarr password reset completed for account "'+username+'"; all other sessions were signed out.',flush=True)
