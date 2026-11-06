@@ -135,6 +135,12 @@ auth7.write_account = lambda *a: (_ for _ in ()).throw(ValueError('disk full'))
 h = reset(auth7, c7, password='survives a failed write ok')
 auth7.write_account = real_write
 check('A failed save keeps the code valid', h.sent[0] == 500 and auth7.reset_code == c7)
+calls = []
+real_hash = tl.hashlib.pbkdf2_hmac
+tl.hashlib.pbkdf2_hmac = lambda *a, **k: calls.append(1) or real_hash(*a, **k)
+reset(auth7, 'WRNG-CODE', password='wrong code long password')
+tl.hashlib.pbkdf2_hmac = real_hash
+check('A wrong code never runs the slow password hash (no CPU flooding)', calls == [])
 slow = auth7.write_account
 
 def slow_write(*a):
@@ -145,9 +151,11 @@ outcomes = []
 barrier = threading.Barrier(2)
 
 def racer(pw):
-    barrier.wait(); outcomes.append(reset(auth7, c7, password=pw))
+    h = AH('/reset', body=urllib.parse.urlencode({'code': c7, 'password': pw, 'confirm': pw}))
+    barrier.wait(); auth7.post(h); outcomes.append(h)
 threads = [threading.Thread(target=racer, args=(pw,)) for pw in ('first racing password!', 'second racing password')]
-[t.start() for t in threads]; [t.join() for t in threads]
+with contextlib.redirect_stdout(io.StringIO()):  # once, outside the threads (redirect_stdout is not thread-safe)
+    [t.start() for t in threads]; [t.join() for t in threads]
 ok = [h for h in outcomes if h.status == 303]
 check('Two simultaneous resets with one code: exactly one succeeds', len(ok) == 1 and sum(1 for h in outcomes if h.sent and h.sent[0] == 403) == 1
       and (auth7.verify('first racing password!', 'theowner') != auth7.verify('second racing password', 'theowner')))
