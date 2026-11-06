@@ -24,7 +24,9 @@ Before an update, make a backup (System, Backup &amp; Restore).</Overview>
   <Requires>Your TV and movie shares mapped read/write. Anime themes work out of the box; shows and movies use the free theme sources (Settings, Download Clients) and your own TMDB key.</Requires>
   <ExtraSearchTerms>theme themes theme.mp3 anime opening plex jellyfin emby sonarr radarr</ExtraSearchTerms>
   <License>GPL-3.0-or-later</License>
-  <Changes>### 1.14.2&#xD;
+  <Changes>### 1.14.3&#xD;
+Forgot password? Reset it from the sign-in page with a one-time code from the container log.&#xD;
+### 1.14.2&#xD;
 Turn background poster processing on or off from Activity → Poster recovery without restarting; Preludarr explains when queued posters are waiting because it is off.&#xD;
 ### 1.14.1&#xD;
 Enable manual installs from YouTube settings without restarting; disabled upload and YouTube tools show setup guidance. Review and confirmation remain required.&#xD;
@@ -38,7 +40,7 @@ Dashboard shows Activity (choose how many events per page); the Library remember
 Sonarr/Radarr on Windows: path mappings accept Windows paths (G:\ =&gt; /mnt/media).&#xD;
 ### 1.12.0&#xD;
 First stable release. Changes: https://github.com/shedman214/preludarr/blob/main/CHANGELOG.md</Changes>
-  <Date>2026-11-04</Date>
+  <Date>2026-11-05</Date>
   <MinVer>6.12.0</MinVer>
   <Screenshot>https://raw.githubusercontent.com/shedman214/preludarr/main/.github/screenshots/library.png</Screenshot>
   <Screenshot>https://raw.githubusercontent.com/shedman214/preludarr/main/.github/screenshots/theme-review.png</Screenshot>

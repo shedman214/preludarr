@@ -9,6 +9,19 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.14.3] — 2026-11-05
+
+This release lets you reset a forgotten password from the sign-in page, using a one-time code that only appears in the container log.
+
+### ✨ Highlights
+- Forgot your password? Reset it from the sign-in page; no reinstall or file editing needed.
+
+### ➕ Added
+- **Password reset.** The sign-in page links to **Forgot password?**. *Send a reset code to the container log* writes a one-time code only to the container log (Unraid: Docker → Preludarr → Logs); enter it with a new password of 16 or more characters. The code works once for 15 minutes, requests and wrong codes are rate-limited, your username stays the same, and every signed-in browser is signed out.
+
+### 🔧 Fixed
+- **Setup and reset codes with unusual characters.** A code pasted with an invisible or non-ASCII character is now rejected with a clear message instead of causing an error.
+
 ## [1.14.2] — 2026-11-04
 
 This release lets you turn background poster processing on or off from inside Preludarr and explains why queued posters are waiting when it is off.

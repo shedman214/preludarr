@@ -36,7 +36,8 @@ check('Movies root but no free theme source on: a short tip instead', 'Tip:' in 
 check('…and nothing once a source is on', ob.box(app) == '')
 
 lg = Path('/src/preludarr/login.py').read_text()
-check('Setup and sign-in cards fit a phone screen (padding counted in the width)', lg.count('main{box-sizing:border-box;width:min(') == 2)
+check('Setup, sign-in and password-reset cards fit a phone screen (padding counted in the width)',
+      lg.count('main{box-sizing:border-box;width:min(') == 3)
 check('Pages declare a dark colour scheme unless Appearance already set one (dark scrollbars)', 'content="dark"></head>' in lg)
 check('No old version names in the Automatic Themes text', 'V1.7.3' not in Path('/src/preludarr/auto_themes.py').read_text().split('def ', 1)[1])
 check('Empty base-image folders (cdrom, floppy, usb) are not in /media', not any(Path('/media', d).exists() for d in ('cdrom', 'floppy', 'usb')))
