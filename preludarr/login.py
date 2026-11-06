@@ -232,6 +232,8 @@ class Auth:
   self.migrated_marker=base/'.migrated'
   self.setup_code=None  # 1.12 first-run setup: one-time code, printed to the container log, kept only in memory
   self.setup_failures=[]
+  self.reset_code=None;self.reset_expires=0.0  # 1.14.3 forgotten password: one-time code, container log only
+  self.reset_failures=[];self.reset_requests=[]
 
  def hash_text(self):
   path=self.password_file
@@ -335,7 +337,8 @@ class Auth:
    '</head><body><main><h1>'+brand_html('login')+'</h1><p>Sign in to theme your library.</p>'
    +msg+'<form method="post" action="/login"><label>Username<input name="username" '
    'autocomplete="username" maxlength="32" required></label><label>Password<input name="password" type="password" '
-   'autocomplete="current-password" required></label><button>Sign in</button></form></main></body></html>')
+   'autocomplete="current-password" required></label><button>Sign in</button></form>'
+   '<p style="margin:4px 0 0;text-align:center"><a href="/reset" style="color:#9cc0ff">Forgot password?</a></p></main></body></html>')
 
  def form(self,h):
   try:
@@ -566,6 +569,76 @@ class Auth:
   cookie='themearr_session='+self.issue()+'; Path=/; HttpOnly; SameSite=Strict'+('; Secure' if via_https(h) else '')
   return self.redirect(h,'/',cookie)
 
+ # ------------------------------------------------------------------ forgotten password (1.14.3) ----
+ # Same idea as first-run setup: a one-time code that appears ONLY in the container log, so only someone
+ # who controls the server (Unraid: Docker → Preludarr → Logs) can set a new password.
+ RESET_SECONDS=900
+
+ def reset_page(self,error='',sent=False):
+  msg=('<p role="alert" style="color:#ff9c9c">'+html.escape(error)+'</p>') if error else ''
+  done=('<p role="status" style="color:#9be59b">A reset code is now in the container log. It works once, for 15 minutes.</p>') if sent and not error else ''
+  return ('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">'
+   '<title>Preludarr Password Reset</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;'
+   'background:#0b1424;color:#eaf2ff;font:16px system-ui}main{box-sizing:border-box;width:min(440px,calc(100vw - 24px));background:#15223b;'
+   'border:1px solid #344564;border-radius:15px;padding:30px}input,button{display:block;box-sizing:border-box;'
+   'width:100%;padding:12px;margin:8px 0 14px;border-radius:8px}button{background:#457bf2;color:white;border:0;cursor:pointer;font-weight:700}'
+   'button.secondary{background:#26385a}input{background:#0b1424;color:white;border:1px solid #637189}.hint{color:#b7c7df;font-size:.9em;line-height:1.5}'
+   'code{color:#ffd38a}a{color:#9cc0ff}</style>'
+   '</head><body><main><h1>'+brand_html('login')+'</h1><h2 style="margin:0 0 6px">Reset your password</h2>'
+   '<p class="hint">To prove this is your server, Preludarr writes a one-time <strong>reset code</strong> to the container log '
+   '(Unraid: Docker → Preludarr → Logs; other systems: <code>docker logs preludarr</code>). Your username stays the same, '
+   'and every signed-in browser is signed out.</p>'+msg+done+
+   '<form method="post" action="/reset-request"><button class="secondary">Send a reset code to the container log</button></form>'
+   '<form method="post" action="/reset"><label>Reset code<input name="code" autocomplete="one-time-code" maxlength="9" placeholder="XXXX-XXXX" required></label>'
+   '<label>New password<input name="password" type="password" autocomplete="new-password" minlength="16" maxlength="128" required></label>'
+   '<label>Confirm new password<input name="confirm" type="password" autocomplete="new-password" minlength="16" maxlength="128" required></label>'
+   '<p class="hint" style="margin:-8px 0 10px">At least 16 characters — a passphrase of a few words is easy to remember.</p>'
+   '<button>Set new password</button></form><p style="text-align:center;margin:0"><a href="/login">Back to sign in</a></p></main></body></html>')
+
+ def reset_request(self,h):
+  if not self.same_origin(h):return h.send(403,'Request origin rejected','text/plain')
+  now=time.monotonic()
+  with self.lock:
+   self.reset_requests=[t for t in self.reset_requests if now-t<900]
+   if len(self.reset_requests)>=3:return h.send(429,self.reset_page('Too many reset codes requested. Use the newest code from the log, or try again in 15 minutes.'))
+   self.reset_requests.append(now)
+   alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+   raw=''.join(secrets.choice(alphabet) for _ in range(8))
+   self.reset_code=raw[:4]+'-'+raw[4:];self.reset_expires=now+self.RESET_SECONDS
+   code=self.reset_code
+  print('='*64+'\nPreludarr password reset requested: enter this reset code on the reset page: '+code+
+        '\n(It works once, for 15 minutes. If you did not ask for it, ignore it; nothing changes without the code.)\n'+'='*64,flush=True)
+  return self.redirect(h,'/reset?sent=1')
+
+ def reset_post(self,h):
+  if not self.same_origin(h):return h.send(403,'Request origin rejected','text/plain')
+  now=time.monotonic()
+  with self.lock:
+   self.reset_failures=[t for t in self.reset_failures if now-t<300]
+   if len(self.reset_failures)>=5:return h.send(429,self.reset_page('Too many attempts. Try again in five minutes.'))
+  form=self.form(h)
+  if form is None:return h.send(400,'Invalid reset form','text/plain')
+  f=lambda k:form.get(k,[''])[0]
+  code,password,confirm=f('code').strip().upper().replace(' ',''),f('password'),f('confirm')
+  with self.lock:
+   expected=self.reset_code if self.reset_code and now<self.reset_expires else None
+   if expected is None or not hmac.compare_digest(code,expected):
+    self.reset_failures.append(now)
+    return h.send(403,self.reset_page('That reset code is not right or has expired. Request a new one and copy it from the container log.'))
+  if password!=confirm or not 16<=len(password)<=128:
+   return h.send(400,self.reset_page('The passwords must match and be 16–128 characters long.'))
+  username=self.credentials()[0] or 'admin'
+  salt=secrets.token_bytes(16)
+  stored=salt.hex()+':'+hashlib.pbkdf2_hmac('sha256',password.encode(),salt,240000).hex()
+  try:self.write_account(username,stored)
+  except ValueError as error:return h.send(500,str(error),'text/plain')
+  with self.lock:
+   self.reset_code=None;self.reset_expires=0.0;self.reset_failures=[];self.reset_requests=[]
+   self.sessions.clear();self.born.clear()
+  print('Preludarr password reset completed for account "'+username+'"; all other sessions were signed out.',flush=True)
+  cookie='themearr_session='+self.issue()+'; Path=/; HttpOnly; SameSite=Strict'+('; Secure' if via_https(h) else '')
+  return self.redirect(h,'/',cookie)
+
  def get(self,h):
   path=urllib.parse.urlsplit(h.path).path
   if path=='/health':return True
@@ -587,6 +660,11 @@ class Auth:
    if path.startswith('/api/'):h.send(503,'{"error":"First-run setup is not finished"}','application/json');return False
    self.redirect(h,'/setup');return False
   if path=='/setup':self.redirect(h,'/login');return False
+  if path=='/reset':  # 1.14.3 forgotten password
+   if not host_ok(h):h.send(403,'Invalid host','text/plain');return False
+   if self.active(h):self.redirect(h,'/')
+   else:h.send(200,self.reset_page(sent='sent=1' in urllib.parse.urlsplit(h.path).query))
+   return False
   if path=='/login':
    if self.active(h):self.redirect(h,'/')
    else:h.send(200,self.page())
@@ -613,6 +691,11 @@ class Auth:
    return False
   if path=='/login':
    self.login(h)
+   return False
+  if path in ('/reset-request','/reset'):  # 1.14.3 forgotten password (no session needed; code from the container log)
+   if not host_ok(h):h.send(403,'Invalid host','text/plain');return False
+   if path=='/reset-request':self.reset_request(h)
+   else:self.reset_post(h)
    return False
   import general_settings  # V1.9.7: API key (header only) for the few API commands; V1.9.14: scope + cooldown + rate limit
   r=general_settings.api_auth(h,path,'POST')

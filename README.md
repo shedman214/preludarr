@@ -122,6 +122,8 @@ Then use `preludarr:local` as the image in the examples above.
 
 The setup code changes every time the container restarts, and it is only ever shown in the log.
 
+**Forgot your password?** On the sign-in page choose **Forgot password?** → **Send a reset code to the container log**, copy the code from the container log (same place as the setup code), and set a new password (16 characters or more). The code works once, for 15 minutes; your username stays the same and every signed-in browser is signed out. Codes can be requested at most 3 times per 15 minutes, and wrong codes are throttled.
+
 ## What Preludarr changes on disk
 
 **Inside `/config` (Preludarr's own data):** the database, settings files, logs, poster cache, backups (`system_backups/`), the theme recycle bin (`theme-trash/`) and the YouTube cookies file. On first start Preludarr changes the owner of `/config` and everything in it to `PUID:PGID`.
