@@ -25,13 +25,13 @@ def check(name, ok, detail=''):
 
 
 class AH:
-    def __init__(self, path, body='', host='192.168.5.9:8788', origin=None, cookie=None):
+    def __init__(self, path, body='', host='localhost:8788', origin=None, cookie=None):
         b = body.encode()
         self.headers = {'Host': host, 'Origin': origin or 'http://' + host, 'Content-Length': str(len(b)),
                         'Content-Type': 'application/x-www-form-urlencoded'}
         if cookie:
             self.headers['Cookie'] = cookie
-        self.path = path; self.rfile = io.BytesIO(b); self.client_address = ('192.168.5.20', 5000)
+        self.path = path; self.rfile = io.BytesIO(b); self.client_address = ('127.0.0.1', 5000)
         self.sent = None; self.status = None; self.hdrs = {}
 
     def send(self, code, body, ctype='text/html'):
@@ -90,6 +90,9 @@ check('…and the page says the code is in the log', 'now in the container log' 
 
 h = reset(auth, 'ZZZZ-ZZZZ')
 check('A wrong code is refused', h.sent[0] == 403 and auth.verify('the original password', 'theowner'))
+h = reset(auth, code + '\u200b')
+check('A code with a pasted invisible character is refused normally (no crash)', h.sent and h.sent[0] == 403
+      and 'not right' in h.sent[1] and auth.verify('the original password', 'theowner'))
 h = reset(auth, code, password='short')
 check('A short password is refused', h.sent[0] == 400 and '16–128' in h.sent[1])
 h = reset(auth, code, origin='http://evil.example')
@@ -126,6 +129,15 @@ os.environ['CONFIG_DIR'] = str(fresh / 'config')
 auth5 = tl.Auth()
 h = AH('/reset'); auth5.get(h)
 check('Before any account exists, /reset leads to first-run setup instead', h.status == 303 and h.hdrs.get('Location') == '/setup')
+fresh2 = Path(tempfile.mkdtemp())
+os.environ['CONFIG_DIR'] = str(fresh2 / 'config')
+auth6 = tl.Auth()
+with contextlib.redirect_stdout(io.StringIO()):
+    setup_code = auth6.ensure_setup_code()
+h = AH('/setup', body=urllib.parse.urlencode({'code': setup_code + '\u00e9', 'username': 'someone', 'password': 'p' * 20, 'confirm': 'p' * 20}))
+with contextlib.redirect_stdout(io.StringIO()):
+    auth6.post(h)
+check('First-run setup also refuses a non-ASCII code normally (no crash)', h.sent and h.sent[0] == 403 and auth6.needs_setup())
 check('No LAN address is hard-coded in the sign-in code', not re.search(r'192\.168\.\d+\.\d+', (Path(tl.__file__)).read_text()))
 
 print(f'\n{sum(results)}/{len(results)} passed')

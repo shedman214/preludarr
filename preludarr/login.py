@@ -553,7 +553,7 @@ class Auth:
   f=lambda k:form.get(k,[''])[0]
   code,username,password,confirm=f('code').strip().upper(),f('username').strip(),f('password'),f('confirm')
   expected=self.ensure_setup_code()
-  if not hmac.compare_digest(code.replace(' ',''),expected):
+  if not hmac.compare_digest(code.replace(' ','').encode('utf-8'),expected.encode('utf-8')):  # bytes: non-ASCII input must not raise
    with self.lock:self.setup_failures.append(now)
    return h.send(403,self.setup_page('That setup code is not right. Copy it from the container log (it changes on every restart).',username))
   if not self.valid_username(username):
@@ -622,7 +622,8 @@ class Auth:
   code,password,confirm=f('code').strip().upper().replace(' ',''),f('password'),f('confirm')
   with self.lock:
    expected=self.reset_code if self.reset_code and now<self.reset_expires else None
-   if expected is None or not hmac.compare_digest(code,expected):
+   # compare bytes: hmac.compare_digest raises TypeError for non-ASCII str (e.g. a pasted zero-width space)
+   if expected is None or not hmac.compare_digest(code.encode('utf-8'),expected.encode('utf-8')):
     self.reset_failures.append(now)
     return h.send(403,self.reset_page('That reset code is not right or has expired. Request a new one and copy it from the container log.'))
   if password!=confirm or not 16<=len(password)<=128:
