@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Datadog Code Security on the repository's source (not the app: Preludarr itself sends
+# nothing to Datadog or anyone else). Two jobs, results shown in Datadog:
+#   static-analysis   Datadog Static Analysis: bugs, security and quality rules
+#   sca               Datadog Software Composition Analysis: known-vulnerable dependencies
+# Both skip with a notice until the DD_API_KEY and DD_APP_KEY repository secrets exist
+# (the application key needs the code_analysis_read scope). Set the repository variable
+# DD_SITE when the Datadog site is not datadoghq.com. Pull requests from forks do not
+# trigger push runs in this repository, so they are not scanned.
+name: Datadog Code Security
+
+# Datadog runs these actions on push events only (pull_request is not supported):
+# every push, to main and to the branches pull requests come from, is scanned.
+on:
+  push:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: datadog-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-analysis:
+    name: Datadog Static Analysis
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      DD_READY: ${{ secrets.DD_API_KEY != '' && secrets.DD_APP_KEY != '' }}
+    steps:
+      - name: Skip until the Datadog keys are added
+        if: env.DD_READY != 'true'
+        run: echo "::notice::DD_API_KEY / DD_APP_KEY are not set; Datadog Static Analysis skipped."
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        if: env.DD_READY == 'true'
+        with:
+          fetch-depth: 0  # diff-aware scanning compares with the default branch
+          persist-credentials: false
+      - uses: DataDog/datadog-static-analyzer-github-action@8340f18875fcefca86844b5f947ce2431387e552  # v3.0.0
+        if: env.DD_READY == 'true'
+        with:
+          dd_api_key: ${{ secrets.DD_API_KEY }}
+          dd_app_key: ${{ secrets.DD_APP_KEY }}
+          dd_site: ${{ vars.DD_SITE || 'datadoghq.com' }}
+          cpu_count: 2
+          enable_performance_statistics: false
+
+  sca:
+    name: Datadog Software Composition Analysis
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      DD_READY: ${{ secrets.DD_API_KEY != '' && secrets.DD_APP_KEY != '' }}
+    steps:
+      - name: Skip until the Datadog keys are added
+        if: env.DD_READY != 'true'
+        run: echo "::notice::DD_API_KEY / DD_APP_KEY are not set; Datadog SCA skipped."
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        if: env.DD_READY == 'true'
+        with:
+          persist-credentials: false
+      - uses: DataDog/datadog-sca-github-action@37d973e751cff3de3d5dd4fc46160262688e1fa7  # v4.5.0
+        if: env.DD_READY == 'true'
+        with:
+          dd_api_key: ${{ secrets.DD_API_KEY }}
+          dd_app_key: ${{ secrets.DD_APP_KEY }}
+          dd_site: ${{ vars.DD_SITE || 'datadoghq.com' }}
