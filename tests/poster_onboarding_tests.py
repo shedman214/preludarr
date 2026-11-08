@@ -41,8 +41,21 @@ with patch.object(app.poster_connect, 'has_provider', return_value=False), patch
         pass
     check('Worker idles without a provider', idle.call_args.args == (300,))
 
+check('1.15 defaults: one lookup every 10 s, at most 360 an hour',
+      (app.POSTER_BACKGROUND_DELAY, app.POSTER_BACKGROUND_LIMIT) == (10, 360))
+app.POSTER_BACKGROUND_LIMIT = 20  # keep the hourly-cap check below small
+
+# a show whose folder was deleted after the scan is skipped, not looked up
+gone = root/'Title 00'
+gone.rmdir()
+
 fetched = []
 sleeps = []
+scans = []
+real_enqueue = bg.enqueue_missing
+def enqueue(app_module):
+    scans.append(1)
+    return real_enqueue(app_module)
 def fetch(path, library, name):
     fetched.append((path, library, name))
     app.poster_file(path).write_bytes(b'offline-test-poster')
@@ -54,13 +67,15 @@ def sleep(seconds):
     sleeps.append(seconds)
     if seconds == 60:
         raise StopWorker
-with patch.object(app.poster_connect, 'has_provider', return_value=True), patch.object(app, 'fetch_poster', side_effect=fetch), patch.object(app.time, 'time', return_value=1000000), patch.object(app.time, 'sleep', side_effect=sleep):
+with patch.object(app.poster_connect, 'has_provider', return_value=True), patch.object(app, 'fetch_poster', side_effect=fetch), patch.object(app.time, 'time', return_value=1000000), patch.object(app.time, 'sleep', side_effect=sleep), patch.object(bg, 'enqueue_missing', side_effect=enqueue):
     try:
         app.background_poster_worker()
     except StopWorker:
         pass
 check('Adding provider after scan automatically processes posters', bool(fetched))
 check('Hourly limit is enforced', len(fetched) == app.POSTER_BACKGROUND_LIMIT == 20)
+check('A deleted show folder is skipped', all(path != str(gone) for path, _, _ in fetched))
+check('The to-do list is read once, not before every lookup', len(scans) == 1)
 check('Normal delay remains between attempts', sleeps[:-1] == [app.POSTER_BACKGROUND_DELAY]*20 and sleeps[-1] == 60)
 with app.db() as conn:
     check('Remaining work stays durably queued', conn.execute("SELECT COUNT(*) FROM posters WHERE status='queued'").fetchone()[0] == 5)
