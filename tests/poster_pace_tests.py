@@ -49,6 +49,8 @@ date = eu.formatdate(_t.time() + 90, usegmt=True)
 check('Retry-After as an HTTP-date', 80 <= rl.retry_after_seconds(date) <= 91)
 check('Unreadable or missing Retry-After falls back to 30 s',
       rl.retry_after_seconds('soon') == rl.retry_after_seconds(None) == 30.0)
+check('NaN, infinite or negative Retry-After falls back to 30 s',
+      [rl.retry_after_seconds(v) for v in ('NaN', 'inf', '-5')] == [30.0, 30.0, 30.0])
 rl._PAUSED.pop('tvdb', None)
 rl.backoff('tvdb', date)
 check('A date-form Retry-After still pauses TVDB', rl._PAUSED.get('tvdb', 0) > _t.monotonic() + 60)

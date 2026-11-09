@@ -13,6 +13,7 @@ import datetime
 import email.utils
 import html
 import json
+import math
 import os
 import threading
 import time
@@ -115,7 +116,9 @@ def retry_after_seconds(value, default=30.0):
     if value is None or value == '':
         return default
     try:
-        return float(value)
+        number = float(value)
+        # NaN, infinity or a negative wait is not a real delay: use the default
+        return number if math.isfinite(number) and number >= 0 else default
     except (TypeError, ValueError):
         pass
     try:
