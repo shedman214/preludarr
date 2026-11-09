@@ -40,5 +40,17 @@ with patch.object(app.poster_connect, 'effective_values', return_value=('', 'k',
         print('fetch_poster raised', type(exc).__name__)
 check('TVDB 429 pauses TVDB via the rate limiter (Retry-After kept)', backoffs == [('tvdb', '42')])
 check('No poster file written on a 429', not app.poster_file(str(show)).is_file())
+
+import email.utils as eu
+import time as _t
+rl = app.ratelimit
+check('Retry-After in seconds', rl.retry_after_seconds('42') == 42.0)
+date = eu.formatdate(_t.time() + 90, usegmt=True)
+check('Retry-After as an HTTP-date', 80 <= rl.retry_after_seconds(date) <= 91)
+check('Unreadable or missing Retry-After falls back to 30 s',
+      rl.retry_after_seconds('soon') == rl.retry_after_seconds(None) == 30.0)
+rl._PAUSED.pop('tvdb', None)
+rl.backoff('tvdb', date)
+check('A date-form Retry-After still pauses TVDB', rl._PAUSED.get('tvdb', 0) > _t.monotonic() + 60)
 print('%s/%s passed' % (sum(results), len(results)))
 sys.exit(0 if all(results) else 1)
