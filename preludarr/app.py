@@ -311,8 +311,12 @@ def fetch_poster(path,library,name):
        'https://api4.thetvdb.com/v4/search?'+q,
        headers={'Authorization':'Bearer '+token,'Accept':'application/json','User-Agent':'Preludarr/1.12 (self-hosted theme manager)'})
       ratelimit.wait('tvdb')  # V1.9.14
-      with urllib.request.urlopen(req,timeout=18) as response:
-       items=json.load(response).get('data') or []
+      try:
+       with urllib.request.urlopen(req,timeout=18) as response:
+        items=json.load(response).get('data') or []
+      except urllib.error.HTTPError as error:  # 1.15: a 429 pauses TVDB like every other provider call
+       if error.code==429:ratelimit.backoff('tvdb',(error.headers or {}).get('Retry-After') if hasattr(error,'headers') else 30)
+       raise
       for item in items:
        candidate=item.get('name') or ''
        first=str(item.get('first_air_time') or item.get('year') or '')
@@ -647,9 +651,13 @@ def background_poster_worker():
    while todo:
     row=todo.popleft()
     # 1.15: skip shows whose folder is gone (deleted or moved) — a lookup would be wasted
-    if not poster_file(row['path']).is_file() and os.path.isdir(row['path']):
-     selected=row
-     break
+    if poster_file(row['path']).is_file() or not os.path.isdir(row['path']):continue
+    # 1.15: the list may be minutes old — a lookup since then (e.g. a manual one) restarts the cooldown
+    with db() as conn:
+     now_checked=conn.execute('SELECT checked FROM posters WHERE path=?',(row['path'],)).fetchone()
+    if now_checked and now_checked[0] and now_checked[0]>=int(current)-7*86400:continue
+    selected=row
+    break
 
    if selected is None:
     todo_at=0.0
@@ -658,6 +666,7 @@ def background_poster_worker():
 
    with POSTER_LOCK:
     if POSTER_BUSY:
+     todo.appendleft(selected)  # 1.15: still eligible — keep it for the next pass
      time.sleep(10)
      continue
     POSTER_BUSY.add(selected['path'])

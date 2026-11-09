@@ -11,6 +11,8 @@ config = work/'config'; config.mkdir()
 root = work/'library'; root.mkdir()
 os.environ.update(CONFIG_DIR=str(config), TV_ROOT=str(root), MOVIE_ROOT=str(work/'absent'),
                   POSTER_BACKGROUND_ENABLED='auto', AUTO_DOWNLOAD='false')
+for name in ('POSTER_BACKGROUND_DELAY', 'POSTER_BACKGROUND_LIMIT'):  # the defaults are checked below
+    os.environ.pop(name, None)
 import anidb
 import app_logs
 with patch.object(anidb, 'enabled', return_value=False), patch.object(app_logs, 'install', return_value=False):
@@ -56,7 +58,11 @@ real_enqueue = bg.enqueue_missing
 def enqueue(app_module):
     scans.append(1)
     return real_enqueue(app_module)
+manual = str(root/'Title 02')
 def fetch(path, library, name):
+    if not fetched:  # while the first lookup runs, a manual lookup of Title 02 fails and restarts its cooldown
+        with app.db() as conn:
+            conn.execute('UPDATE posters SET checked=? WHERE path=?', (1000000, manual))
     fetched.append((path, library, name))
     app.poster_file(path).write_bytes(b'offline-test-poster')
     with app.db() as conn:
@@ -75,6 +81,7 @@ with patch.object(app.poster_connect, 'has_provider', return_value=True), patch.
 check('Adding provider after scan automatically processes posters', bool(fetched))
 check('Hourly limit is enforced', len(fetched) == app.POSTER_BACKGROUND_LIMIT == 20)
 check('A deleted show folder is skipped', all(path != str(gone) for path, _, _ in fetched))
+check('A title looked up since the list was built waits out its cooldown', all(path != manual for path, _, _ in fetched))
 check('The to-do list is read once, not before every lookup', len(scans) == 1)
 check('Normal delay remains between attempts', sleeps[:-1] == [app.POSTER_BACKGROUND_DELAY]*20 and sleeps[-1] == 60)
 with app.db() as conn:
