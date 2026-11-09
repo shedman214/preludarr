@@ -9,8 +9,11 @@ user saves is clamped to [minimum, maximum], so a setting can never push Themear
   * backoff(source, seconds): a provider said "slow down" (HTTP 429) — pause that source (capped).
 Settings: /config/themearr_rate_limits.json (0600). Nothing here makes a request itself.
 """
+import datetime
+import email.utils
 import html
 import json
+import math
 import os
 import threading
 import time
@@ -107,11 +110,32 @@ def take_hourly(source):
         _HOURLY[source] = recent
 
 
+def retry_after_seconds(value, default=30.0):
+    """Retry-After as seconds: a number of seconds or an HTTP-date (both are allowed); anything
+    unreadable means the default, so a 'slow down' always pauses the source (1.15)."""
+    if value is None or value == '':
+        return default
+    try:
+        number = float(value)
+        # NaN, infinity or a negative wait is not a real delay: use the default
+        return number if math.isfinite(number) and number >= 0 else default
+    except (TypeError, ValueError):
+        pass
+    try:
+        when = email.utils.parsedate_to_datetime(str(value))
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=datetime.timezone.utc)
+        return max(0.0, (when - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
+    except (TypeError, ValueError, IndexError):
+        return default
+
+
 def backoff(source, seconds):
     """A provider answered 429 / 'slow down': pause this source (Retry-After honoured, capped)."""
     if source in SOURCES:
         with _LOCK:
-            _PAUSED[source] = max(_PAUSED.get(source, 0.0), time.monotonic() + max(1.0, min(float(seconds or 30), MAX_BACKOFF)))
+            _PAUSED[source] = max(_PAUSED.get(source, 0.0),
+                                  time.monotonic() + max(1.0, min(retry_after_seconds(seconds), MAX_BACKOFF)))
 
 
 HOSTS = {'graphql.anilist.co': 'anilist', 'api.themoviedb.org': 'tmdb', 'api4.thetvdb.com': 'tvdb'}

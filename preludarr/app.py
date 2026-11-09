@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Preludarr (formerly Splicarr and Themearr): self-hosted theme songs for your library. Run: python3 app.py"""
-import os, sys, json, sqlite3, threading, time, re, urllib.request, urllib.parse, subprocess, tempfile, shutil, html, hashlib, contextlib, unicodedata
+import os, sys, collections, json, sqlite3, threading, time, re, urllib.request, urllib.parse, subprocess, tempfile, shutil, html, hashlib, contextlib, unicodedata
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 # Settings may use PRELUDARR_* (1.12), SPLICARR_* (1.10/1.11) or the original THEMEARR_* names; an existing THEMEARR_* value wins
 # (THEMEARR_* wins if both are set, so an existing template is never overridden).
@@ -311,8 +311,12 @@ def fetch_poster(path,library,name):
        'https://api4.thetvdb.com/v4/search?'+q,
        headers={'Authorization':'Bearer '+token,'Accept':'application/json','User-Agent':'Preludarr/1.12 (self-hosted theme manager)'})
       ratelimit.wait('tvdb')  # V1.9.14
-      with urllib.request.urlopen(req,timeout=18) as response:
-       items=json.load(response).get('data') or []
+      try:
+       with urllib.request.urlopen(req,timeout=18) as response:
+        items=json.load(response).get('data') or []
+      except urllib.error.HTTPError as error:  # 1.15: a 429 pauses TVDB like every other provider call
+       if error.code==429:ratelimit.backoff('tvdb',(error.headers or {}).get('Retry-After') if hasattr(error,'headers') else 30)
+       raise
       for item in items:
        candidate=item.get('name') or ''
        first=str(item.get('first_air_time') or item.get('year') or '')
@@ -585,18 +589,23 @@ def poster_job_status(path):
 # Resolved from the persisted first-install default before starting any workers.
 POSTER_BACKGROUND_ENABLED=False
 
+# 1.15: one lookup every 10 s, up to 360 an hour (was 180 s / 20 an hour, ~8 days for 3,700 shows).
+# Every provider call still goes through ratelimit (AniList 20/min by default, TMDB, TVDB) and
+# backs off on HTTP 429, so this only stops the queue from idling between lookups.
 POSTER_BACKGROUND_DELAY=max(
- 30,int(os.getenv('POSTER_BACKGROUND_DELAY','180'))
+ 5,int(os.getenv('POSTER_BACKGROUND_DELAY','10'))
 )
 
 POSTER_BACKGROUND_LIMIT=max(
- 1,min(20,int(os.getenv('POSTER_BACKGROUND_LIMIT','20')))
+ 1,min(600,int(os.getenv('POSTER_BACKGROUND_LIMIT','360')))
 )
+POSTER_QUEUE_REFRESH=600  # 1.15: re-read the to-do list at most every 10 minutes
 
 def background_poster_worker():
  poster_v2_init()
  print('Background poster worker started (V2)',flush=True)
  attempts=[]
+ todo=collections.deque();todo_at=0.0  # 1.15: built once, worked through, re-read every POSTER_QUEUE_REFRESH s
 
  while True:
   try:
@@ -624,30 +633,40 @@ def background_poster_worker():
     time.sleep(10)
     continue
 
-   poster_background.enqueue_missing(sys.modules[__name__])
-   with db() as conn:
-    rows=conn.execute("""
-     SELECT s.path,s.library,s.name,p.checked
-     FROM shows s
-     LEFT JOIN posters p ON p.path=s.path
-     WHERE p.checked IS NULL OR p.checked < ?
-     ORDER BY CASE WHEN p.status='queued' THEN 0 ELSE 1 END,COALESCE(p.checked,0),s.name
-     LIMIT 5000
-    """,(int(current)-7*86400,)).fetchall()
+   if not todo or current-todo_at>=POSTER_QUEUE_REFRESH:
+    poster_background.enqueue_missing(sys.modules[__name__])
+    with db() as conn:
+     todo=collections.deque(conn.execute("""
+      SELECT s.path,s.library,s.name,p.checked
+      FROM shows s
+      LEFT JOIN posters p ON p.path=s.path
+      WHERE p.checked IS NULL OR p.checked < ?
+      ORDER BY CASE WHEN p.status='queued' THEN 0 ELSE 1 END,COALESCE(p.checked,0),s.name
+      LIMIT 5000
+     """,(int(current)-7*86400,)).fetchall())
+    todo_at=current
 
    selected=None
 
-   for row in rows:
-    if not poster_file(row['path']).is_file():
-     selected=row
-     break
+   while todo:
+    row=todo.popleft()
+    # 1.15: skip shows whose folder is gone (deleted or moved) — a lookup would be wasted
+    if poster_file(row['path']).is_file() or not os.path.isdir(row['path']):continue
+    # 1.15: the list may be minutes old — a lookup since then (e.g. a manual one) restarts the cooldown
+    with db() as conn:
+     now_checked=conn.execute('SELECT checked FROM posters WHERE path=?',(row['path'],)).fetchone()
+    if now_checked and now_checked[0] and now_checked[0]>=int(current)-7*86400:continue
+    selected=row
+    break
 
    if selected is None:
+    todo_at=0.0
     poster_background.wait(300)
     continue
 
    with POSTER_LOCK:
     if POSTER_BUSY:
+     todo.appendleft(selected)  # 1.15: still eligible — keep it for the next pass
      time.sleep(10)
      continue
     POSTER_BUSY.add(selected['path'])
