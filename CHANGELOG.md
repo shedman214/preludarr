@@ -9,6 +9,25 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.15.0] — 2026-11-08
+
+This release fetches missing posters much faster and wastes fewer lookups.
+
+### ✨ Highlights
+- Background posters arrive about 18× faster: one lookup every 10 seconds, up to 360 an hour (was one every 180 seconds, at most 20 an hour).
+
+### 🔄 Changed
+- **Faster background posters.** A library with about 3,700 missing posters now finishes in roughly 10 hours instead of about a week. Every provider still has its own rate limit (AniList 20 requests a minute by default), and Preludarr pauses a provider whenever it says "slow down" (HTTP 429). Existing posters are never replaced and theme music is never installed. `POSTER_BACKGROUND_DELAY` and `POSTER_BACKGROUND_LIMIT` still override the pace (now at least 5 seconds and at most 600 an hour).
+- **Less work per lookup.** Preludarr builds its list of shows to check once and refreshes it every 10 minutes, instead of re-reading the whole library before every lookup. Shows whose folder no longer exists are skipped.
+
+### 🔧 Fixed
+- **TVDB "slow down" ignored.** A TVDB search that answered HTTP 429 did not pause TVDB; it now does, like AniList and TMDB.
+- **Retry-After as a date.** A Retry-After value sent as a date, or one that can't be read, could stop Preludarr from pausing a provider. It now always pauses (30 seconds when the value can't be read).
+- **Cooldown after a manual lookup.** A show you looked up by hand while background processing was running now waits out its cooldown instead of being looked up again straight away.
+
+### ⚠️ Upgrade notes
+- If your container sets `POSTER_BACKGROUND_DELAY` or `POSTER_BACKGROUND_LIMIT`, those values still apply. Remove them to get the new faster defaults.
+
 ## [1.14.3] — 2026-11-05
 
 This release lets you reset a forgotten password from the sign-in page, using a one-time code that only appears in the container log.
