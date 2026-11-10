@@ -68,7 +68,7 @@ check('Overview: labels current / unavailable, nothing invented', 'tm-label curr
 check('Overview: no backups shown honestly', 'None yet' in ov)
 
 logdir = work / 'config' / 'logs'; logdir.mkdir(parents=True, exist_ok=True)
-(logdir / 'themearr.log').write_text('\n'.join([
+(logdir / 'preludarr.log').write_text('\n'.join([
     '2026-10-27 01:00:00 INFO 10.0.0.9 - - [27/Oct/2026 01:00:00] "GET /api/status HTTP/1.1" 200 -',
     '2026-10-27 01:00:01 INFO Scan finished',
     '2026-10-27 01:00:02 WARNING 10.0.0.9 - - [27/Oct/2026 01:00:02] "POST /login HTTP/1.1" 401 -',

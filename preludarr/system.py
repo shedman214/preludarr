@@ -349,6 +349,26 @@ def _cards(config):
     except Exception:
         card('Activity','/system?tab=activity','unavailable','Unknown')
     try:
+        # 1.15.1: AnimeThemes is where every anime theme comes from; say plainly when it is down and
+        # what that means. Read from Preludarr's own recent requests: this page never contacts it.
+        at=__import__('animethemes').health()
+        if at['state']=='down':
+            card('AnimeThemes','/system?tab=logs','current','\u26a0 Down',
+                 'Not answering since '+_esc(ui.when(at['since']))+' ('+_esc(at['detail'].rstrip('.'))+'). '
+                 'This is on AnimeThemes\u2019 side: anime theme searches and downloads wait and retry on their own. '
+                 'Installed themes and your library are not affected; nothing to change in Preludarr.'
+                 +('<br>Last good answer '+_esc(ui.when(at['last_ok'])) if at['last_ok'] else ''))
+        elif at['state']=='busy':
+            card('AnimeThemes','/system?tab=logs','current','Slowing down',
+                 'AnimeThemes asked Preludarr to slow down, so requests pause briefly and then continue. Nothing to do.')
+        elif at['state']=='ok':
+            card('AnimeThemes','/system?tab=logs','current','Online','Answering normally \u00b7 last answer '+_esc(ui.when(at['last_ok'])))
+        else:
+            card('AnimeThemes','/system?tab=logs','unavailable','Not checked yet',
+                 'Preludarr has not needed AnimeThemes since it started; the status appears after the first theme search.')
+    except Exception:
+        pass
+    try:
         tr=__import__('theme_review')
         b=tr.batches(app); st=tr.settings(config)
         card('Recycle bin','/library-health/trash','current',f'{len(b)} entr'+('y' if len(b)==1 else 'ies'),f"Kept {st['days']} days"+(' · emptied on schedule' if st['cron'] else ''))
@@ -499,7 +519,7 @@ def _logs_page(config,query):
         import app_logs as logger
         files=logger._files(config)
         if not files:return '<section class="panel"><h2>Application logs</h2><p>No log files yet — Preludarr writes them as it runs.</p></section>'
-        file=(query.get('file',['themearr.log'])[0])[:64]
+        file=(query.get('file',[logger.MAIN_LOG])[0])[:64]
         if not logger.permitted(file) or file not in {f[0] for f in files}:file=files[0][0]
         text=logger._read(config,file,limit=512*1024)
         q=(query.get('q',[''])[0])[:100]

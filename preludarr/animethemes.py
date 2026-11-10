@@ -33,7 +33,10 @@ _CACHE = OrderedDict()  # url -> (stored_at monotonic, data)
 _CACHE_LOCK = threading.Lock()
 _SLOTS = threading.BoundedSemaphore(2)
 _PACE_LOCK = threading.Lock()
-_STATE = {'next_at': 0.0, 'paused_until': 0.0, 'last_problem': '', 'last_problem_at': 0.0, 'requests': 0, 'hits': 0}
+_STATE = {'next_at': 0.0, 'paused_until': 0.0, 'last_problem': '', 'last_problem_at': 0.0, 'requests': 0, 'hits': 0,
+          # 1.15.1: for System → Overview — wall-clock times of the last good answer and of the
+          # first failure in the current outage (0 = none), from real requests only
+          'last_ok_wall': 0.0, 'down_since_wall': 0.0, 'down_detail': ''}
 
 
 class AnimeThemesBusy(OSError):
@@ -57,9 +60,19 @@ def _cached(url, max_age):
     return None
 
 
-def _problem(text):
+def _problem(text, down=False):
     _STATE['last_problem'] = text
     _STATE['last_problem_at'] = time.monotonic()
+    if down:  # a server error or no answer: AnimeThemes itself is not serving requests
+        if not _STATE['down_since_wall']:
+            _STATE['down_since_wall'] = time.time()
+        _STATE['down_detail'] = text
+
+
+def _answered():
+    _STATE['last_ok_wall'] = time.time()
+    _STATE['down_since_wall'] = 0.0
+    _STATE['down_detail'] = ''
 
 
 def _rate_spacing():
@@ -114,6 +127,7 @@ def get_json(url, headers, fresh=False):
                 if took >= SLOW_SECONDS:
                     _problem(f'AnimeThemes is responding slowly (last answer took {took:.0f} s).')
                 _remember(url, data)
+                _answered()
                 return copy.deepcopy(data)
             except urllib.error.HTTPError as error:
                 last_error = error
@@ -126,12 +140,13 @@ def get_json(url, headers, fresh=False):
                         continue
                     break
                 if error.code < 500:
+                    _answered()  # 404 etc.: AnimeThemes answered, so it is up
                     raise  # 404 etc.: a real answer, not a hiccup
-                _problem(f'AnimeThemes server error (HTTP {error.code}).')
+                _problem(f'AnimeThemes server error (HTTP {error.code}).', down=True)
             except (TimeoutError, urllib.error.URLError, ConnectionError, OSError) as error:
                 last_error = error
                 _problem('AnimeThemes did not answer in time.' if 'timed out' in str(error) or isinstance(error, TimeoutError)
-                         else 'AnimeThemes could not be reached.')
+                         else 'AnimeThemes could not be reached.', down=True)
         if attempt == 0:
             time.sleep(RETRY_PAUSE)
     if not fresh:
@@ -149,6 +164,20 @@ def status_note(window=900):
     if _STATE['last_problem'] and time.monotonic() - _STATE['last_problem_at'] < window:
         return _STATE['last_problem'] + ' Preludarr retries automatically and reuses recent answers.'
     return ''
+
+
+def health():
+    """1.15.1: AnimeThemes' state as Preludarr last saw it (from real requests; never checks by itself).
+    state: 'down' (server errors or no answer since `since`), 'busy' (asked us to slow down), 'ok', or
+    'unknown' (not contacted since Preludarr started)."""
+    if _STATE['down_since_wall']:
+        return {'state': 'down', 'since': _STATE['down_since_wall'], 'detail': _STATE['down_detail'],
+                'last_ok': _STATE['last_ok_wall']}
+    if _STATE['paused_until'] > time.monotonic():
+        return {'state': 'busy', 'since': 0.0, 'detail': _STATE['last_problem'], 'last_ok': _STATE['last_ok_wall']}
+    if _STATE['last_ok_wall']:
+        return {'state': 'ok', 'since': 0.0, 'detail': '', 'last_ok': _STATE['last_ok_wall']}
+    return {'state': 'unknown', 'since': 0.0, 'detail': '', 'last_ok': 0.0}
 
 
 def stats():
