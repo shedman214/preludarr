@@ -131,6 +131,8 @@ def get_json(url, headers, fresh=False):
                 return copy.deepcopy(data)
             except urllib.error.HTTPError as error:
                 last_error = error
+                if error.code < 500:
+                    _answered()  # 404, 429 …: AnimeThemes answered, so it is up
                 if error.code == 429:
                     pause = _retry_after(error)
                     with _PACE_LOCK:
@@ -140,7 +142,6 @@ def get_json(url, headers, fresh=False):
                         continue
                     break
                 if error.code < 500:
-                    _answered()  # 404 etc.: AnimeThemes answered, so it is up
                     raise  # 404 etc.: a real answer, not a hiccup
                 _problem(f'AnimeThemes server error (HTTP {error.code}).', down=True)
             except (TimeoutError, urllib.error.URLError, ConnectionError, OSError) as error:

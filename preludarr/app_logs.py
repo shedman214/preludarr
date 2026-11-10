@@ -23,7 +23,8 @@ import urllib.parse
 
 MAX_BYTES = 2 * 1024 * 1024
 BACKUPS = 5
-LOG_NAME = re.compile(r'\A(?:preludarr|poster)\.log(?:\.[1-5])?\Z')
+# themearr.log* stays readable: a copy kept by _rename_old_logs (never overwritten) must not vanish
+LOG_NAME = re.compile(r'\A(?:preludarr|themearr|poster)\.log(?:\.[1-5])?\Z')
 MAIN_LOG = 'preludarr.log'
 _INSTALLED = False
 _LOGDIR = None
@@ -252,10 +253,11 @@ def _rename_old_logs(root):
     for suffix in ('', '.1', '.2', '.3', '.4', '.5'):
         old, new = root / ('themearr.log' + suffix), root / (MAIN_LOG + suffix)
         try:
-            if old.is_file() and not old.is_symlink() and not new.exists():
-                old.rename(new)
+            if old.is_file() and not old.is_symlink():
+                os.link(old, new)  # atomic and never replaces: fails if `new` exists
+                old.unlink()
         except OSError:
-            pass
+            pass  # `new` exists (kept as is) or links are unsupported: the old file stays readable
 
 
 def _files(config):

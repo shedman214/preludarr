@@ -28,8 +28,10 @@ check('themearr.log becomes preludarr.log', (logs / 'preludarr.log').read_text()
 check('Rotated copies are renamed too', (logs / 'preludarr.log.1').read_text() == 'old rotated\n')
 check('An existing preludarr.log copy is never overwritten',
       (logs / 'preludarr.log.2').read_text() == 'already new\n' and (logs / 'themearr.log.2').exists())
-check('Log viewer accepts the new name only', app_logs.permitted('preludarr.log') and app_logs.permitted('preludarr.log.3')
-      and not app_logs.permitted('themearr.log') and app_logs.permitted('poster.log'))
+check('Log viewer reads the new name, kept legacy copies and poster.log',
+      app_logs.permitted('preludarr.log.3') and app_logs.permitted('themearr.log.2') and app_logs.permitted('poster.log')
+      and not app_logs.permitted('other.log'))
+check('A kept legacy copy is listed', 'themearr.log.2' in {f[0] for f in app_logs._files(work)})
 check('Viewer defaults to preludarr.log', app_logs.MAIN_LOG == 'preludarr.log')
 
 # --- AnimeThemes status --------------------------------------------------------------------------
@@ -53,6 +55,17 @@ with patch.object(at.urllib.request, 'urlopen', return_value=Answer(b'{"anime": 
     at.get_json('https://api.animethemes.moe/anime?x=2', {}, fresh=True)
 h = at.health()
 check('A good answer clears the outage', h['state'] == 'ok' and h['since'] == 0.0 and h['last_ok'] > 0)
+
+at._STATE.update(down_since_wall=1.0e9, down_detail='x')
+def slow_down(*args, **kwargs):
+    raise urllib.error.HTTPError('https://api.animethemes.moe/anime', 429, 'Too Many Requests', {'Retry-After': '60'}, io.BytesIO(b''))
+with patch.object(at.urllib.request, 'urlopen', side_effect=slow_down), patch.object(at, '_pace'):
+    try:
+        at.get_json('https://api.animethemes.moe/anime?x=3', {}, fresh=True)
+    except Exception:
+        pass
+check('A 429 (a real answer) ends the outage', at.health()['state'] in ('busy', 'ok') and at._STATE['down_since_wall'] == 0.0)
+at._STATE['paused_until'] = 0.0
 
 # Overview card (system._cards) explains the state in plain words
 at._STATE.update(down_since_wall=1.0e9, down_detail='AnimeThemes server error (HTTP 503).')
