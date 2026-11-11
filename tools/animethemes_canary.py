@@ -11,7 +11,6 @@ Usage: python3 tools/animethemes_canary.py [--report FILE]
 """
 import sys
 import time
-import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -25,7 +24,6 @@ API = 'https://api.animethemes.moe'
 SLUG, ANIDB_ID = 'bocchi_the_rock', 16063  # a stable, well-documented entry
 MEDIA_HOSTS = ('a.animethemes.moe', 'v.animethemes.moe')
 checks = []
-LEGACY_BUDGET = 240  # seconds; the workflow kills the run at 300, so the informational probe never risks the report
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -115,21 +113,9 @@ def main():
                   f'HTTP {response.status}, {kind or "no type"}')
         except Exception as exc:
             check('An audio file downloads', False, type(exc).__name__ + ': ' + str(exc)[:200])
-    # the old JSON:API is informational only (deprecated; Preludarr no longer needs it): short, and skipped
-    # when the required checks were slow, so it can never cost the report
-    legacy = 'not asked (checks were slow)'
-    if time.time() - started < LEGACY_BUDGET:
-        try:
-            with urllib.request.urlopen(urllib.request.Request(API + '/anime?page%5Bsize%5D=1', headers=UA), timeout=10) as r:
-                legacy = f'answers (HTTP {r.status})'
-        except urllib.error.HTTPError as exc:
-            legacy = f'HTTP {exc.code}'
-        except Exception as exc:
-            legacy = type(exc).__name__
     failed = [c for c in checks if not c[1]]
     lines = ['## AnimeThemes canary: ' + ('✅ all good' if not failed else f'❌ {len(failed)} check(s) failed'), '',
-             f'GraphQL endpoint `{g.ENDPOINT}` · {len(checks)} checks · {time.time() - started:.0f} s · '
-             f'old JSON:API (deprecated, informational): {legacy}', '',
+             f'GraphQL endpoint `{g.ENDPOINT}` · {len(checks)} checks · {time.time() - started:.0f} s', '',
              '| Check | Result | Detail |', '|---|---|---|']
     lines += [f"| {name} | {'✅' if ok else '❌'} | {detail.replace('|', '/')} |" for name, ok, detail in checks]
     if failed:
