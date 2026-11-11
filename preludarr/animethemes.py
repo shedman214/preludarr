@@ -126,6 +126,11 @@ def get_json(url, headers, fresh=False):
             _remember(url, data)
             return copy.deepcopy(data)
         except AnimeThemesBusy:
+            # slowed down: a remembered answer up to STALE_SECONDS old still serves non-fresh requests
+            stale = None if fresh else _cached(url, STALE_SECONDS)
+            if stale is not None:
+                _STATE['hits'] += 1
+                return copy.deepcopy(stale)
             raise
         except (ValueError, TimeoutError, urllib.error.URLError, ConnectionError, OSError):
             pass  # try the JSON:API below
@@ -195,7 +200,8 @@ def _graphql(planned, headers):
                 took = time.monotonic() - started
                 if took >= SLOW_SECONDS:
                     _problem(f'AnimeThemes is responding slowly (last answer took {took:.0f} s).')
-                if not isinstance(reply, dict) or reply.get('errors') and not reply.get('data'):
+                if not isinstance(reply, dict) or reply.get('errors') or reply.get('data') is None:
+                    # any error, even next to partial data, or no data at all: not an answer to keep
                     _answered()  # it answered; the query itself was refused
                     raise ValueError('AnimeThemes GraphQL refused the query: '
                                      + str((reply.get('errors') or [{}])[0].get('message', ''))[:120])

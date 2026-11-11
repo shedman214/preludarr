@@ -92,5 +92,39 @@ def refused(req, timeout=0):
 with patch.object(animethemes.urllib.request, 'urlopen', side_effect=refused), patch.object(animethemes, '_pace'):
     got = animethemes.get_json(DETAIL, {'User-Agent': 'Preludarr'}, fresh=True)
 check('A refused GraphQL query falls back too', got['anime']['slug'] == 'fallback')
+calls.clear()
+def partial(req, timeout=0):
+    calls.append(req.full_url)
+    if req.full_url == g.ENDPOINT:
+        return Answer(json.dumps({'data': {'anime': None}, 'errors': [{'message': 'resolver failed'}]}).encode())
+    return Answer(json.dumps({'anime': {'slug': 'fallback2'}}).encode())
+with patch.object(animethemes.urllib.request, 'urlopen', side_effect=partial), patch.object(animethemes, '_pace'):
+    got = animethemes.get_json(DETAIL, {'User-Agent': 'Preludarr'}, fresh=True)
+check('Errors next to partial data are not kept; the JSON:API is asked', got['anime']['slug'] == 'fallback2')
+def no_data(req, timeout=0):
+    if req.full_url == g.ENDPOINT:
+        return Answer(b'{}')
+    return Answer(json.dumps({'anime': {'slug': 'fallback3'}}).encode())
+with patch.object(animethemes.urllib.request, 'urlopen', side_effect=no_data), patch.object(animethemes, '_pace'):
+    got = animethemes.get_json(DETAIL, {'User-Agent': 'Preludarr'}, fresh=True)
+check('A reply without data falls back', got['anime']['slug'] == 'fallback3')
+
+# a GraphQL 429 still serves an older remembered answer to non-fresh requests
+STALE_URL = API + '/anime/stale_show?include=images'
+animethemes._remember(STALE_URL, {'anime': {'slug': 'stale_show'}})
+with animethemes._CACHE_LOCK:
+    stored, data = animethemes._CACHE[STALE_URL]
+    animethemes._CACHE[STALE_URL] = (stored - animethemes.FRESH_SECONDS - 60, data)  # past fresh, within stale
+def too_many(req, timeout=0):
+    raise urllib.error.HTTPError(g.ENDPOINT, 429, 'Too Many Requests', {'Retry-After': '5'}, io.BytesIO(b''))
+with patch.object(animethemes.urllib.request, 'urlopen', side_effect=too_many), patch.object(animethemes, '_pace'):
+    got = animethemes.get_json(STALE_URL, {'User-Agent': 'Preludarr'})
+    check('A GraphQL 429 serves an older remembered answer', got['anime']['slug'] == 'stale_show')
+    try:
+        animethemes.get_json(STALE_URL, {'User-Agent': 'Preludarr'}, fresh=True)
+        check('A fresh request is still refused when slowed down', False)
+    except animethemes.AnimeThemesBusy:
+        check('A fresh request is still refused when slowed down', True)
+animethemes._STATE['paused_until'] = 0.0
 print('%s/%s passed' % (sum(results), len(results)))
 sys.exit(0 if all(results) else 1)
