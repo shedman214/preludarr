@@ -84,23 +84,28 @@ def anidb(data):
 
 
 def images(data):
-    facets = [i.get('facet') for i in (data.get('anime') or {}).get('images') or []]
-    check('Cover images (Large Cover) are listed', 'Large Cover' in facets, str(facets))
+    found = [i for i in (data.get('anime') or {}).get('images') or [] if isinstance(i, dict)]
+    large = [i.get('link') or '' for i in found if i.get('facet') == 'Large Cover']
+    check('Cover images (Large Cover) are listed with a link', any(link.startswith('https://') for link in large),
+          str([i.get('facet') for i in found]))
 
 
 def main():
     report = sys.argv[sys.argv.index('--report') + 1] if '--report' in sys.argv else None
     started = time.time()
     step('Search', API + '/anime?q=Bocchi%20the%20Rock&page%5Bsize%5D=20&include=animesynonyms', search)
-    step('Anime detail', API + '/anime/' + SLUG + '?include=animethemes.animethemeentries.videos.audio%2Canimethemes.song', detail)
-    step('AniDB look-up', API + '/anime?filter%5Bhas%5D=resources&filter%5Bsite%5D=AniDB&filter%5Bexternal_id%5D=' + str(ANIDB_ID), anidb)
-    step('Cover images', API + '/anime/' + SLUG + '?include=images', images)
+    step('Anime detail', f'{API}/anime/{SLUG}?include=animethemes.animethemeentries.videos.audio%2Canimethemes.song', detail)
+    step('AniDB look-up', f'{API}/anime?filter%5Bhas%5D=resources&filter%5Bsite%5D=AniDB&filter%5Bexternal_id%5D={ANIDB_ID}', anidb)
+    step('Cover images', f'{API}/anime/{SLUG}?include=images', images)
     for link in audio_links[:1]:
         try:
             req = urllib.request.Request(link, headers={**UA, 'Range': 'bytes=0-1023'})
             with urllib.request.urlopen(req, timeout=30) as response:
                 body = response.read(1024)
-            check('An audio file downloads', response.status in (200, 206) and len(body) > 0, f'HTTP {response.status}')
+                kind = response.headers.get('Content-Type', '')
+            # a real Ogg audio file, not an error page served with 200
+            check('An audio file downloads', response.status in (200, 206) and body.startswith(b'OggS'),
+                  f'HTTP {response.status}, {kind or "no type"}')
         except Exception as exc:
             check('An audio file downloads', False, type(exc).__name__ + ': ' + str(exc)[:200])
     # the old JSON:API is informational only (deprecated; Preludarr no longer needs it)
