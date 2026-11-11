@@ -33,6 +33,9 @@ check('Log viewer reads the new name, kept legacy copies and poster.log',
       and not app_logs.permitted('other.log'))
 check('A kept legacy copy is listed', 'themearr.log.2' in {f[0] for f in app_logs._files(work)})
 check('Viewer defaults to preludarr.log', app_logs.MAIN_LOG == 'preludarr.log')
+names = {f[0] for f in app_logs._files(work)}
+check('A saved themearr.log.1 link opens preludarr.log.1', app_logs.resolve_name('themearr.log.1', names) == 'preludarr.log.1')
+check('A kept legacy file of that name still wins', app_logs.resolve_name('themearr.log.2', names) == 'themearr.log.2')
 
 # --- AnimeThemes status --------------------------------------------------------------------------
 import animethemes as at

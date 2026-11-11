@@ -260,6 +260,15 @@ def _rename_old_logs(root):
             pass  # `new` exists (kept as is) or links are unsupported: the old file stays readable
 
 
+def resolve_name(name, names):
+    """1.15.1: a saved link to a renamed log (themearr.log[.N]) opens preludarr.log[.N]; a kept legacy
+    file of that exact name still wins."""
+    if name in names or not isinstance(name, str) or not name.startswith('themearr.log'):
+        return name
+    migrated = MAIN_LOG + name[len('themearr.log'):]
+    return migrated if migrated in names else name
+
+
 def _files(config):
     root = log_dir(config)
     if not root.is_dir() or root.is_symlink():

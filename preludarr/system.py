@@ -520,6 +520,7 @@ def _logs_page(config,query):
         files=logger._files(config)
         if not files:return '<section class="panel"><h2>Application logs</h2><p>No log files yet — Preludarr writes them as it runs.</p></section>'
         file=(query.get('file',[logger.MAIN_LOG])[0])[:64]
+        file=logger.resolve_name(file,{f[0] for f in files})  # 1.15.1: old themearr.log links
         if not logger.permitted(file) or file not in {f[0] for f in files}:file=files[0][0]
         text=logger._read(config,file,limit=512*1024)
         q=(query.get('q',[''])[0])[:100]
