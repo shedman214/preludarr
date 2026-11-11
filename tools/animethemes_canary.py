@@ -25,6 +25,13 @@ API = 'https://api.animethemes.moe'
 SLUG, ANIDB_ID = 'bocchi_the_rock', 16063  # a stable, well-documented entry
 MEDIA_HOSTS = ('a.animethemes.moe', 'v.animethemes.moe')
 checks = []
+LEGACY_BUDGET = 240  # seconds; the workflow kills the run at 300, so the informational probe never risks the report
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Preludarr's downloader refuses redirects, so the canary must too."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ValueError(f'redirected (HTTP {code}) to {newurl}')
 
 
 def check(name, ok, detail=''):
@@ -100,7 +107,7 @@ def main():
     for link in audio_links[:1]:
         try:
             req = urllib.request.Request(link, headers={**UA, 'Range': 'bytes=0-1023'})
-            with urllib.request.urlopen(req, timeout=30) as response:
+            with urllib.request.build_opener(NoRedirect).open(req, timeout=30) as response:
                 body = response.read(1024)
                 kind = response.headers.get('Content-Type', '')
             # a real Ogg audio file, not an error page served with 200
@@ -108,14 +115,17 @@ def main():
                   f'HTTP {response.status}, {kind or "no type"}')
         except Exception as exc:
             check('An audio file downloads', False, type(exc).__name__ + ': ' + str(exc)[:200])
-    # the old JSON:API is informational only (deprecated; Preludarr no longer needs it)
-    try:
-        with urllib.request.urlopen(urllib.request.Request(API + '/anime?page%5Bsize%5D=1', headers=UA), timeout=30) as r:
-            legacy = f'answers (HTTP {r.status})'
-    except urllib.error.HTTPError as exc:
-        legacy = f'HTTP {exc.code}'
-    except Exception as exc:
-        legacy = type(exc).__name__
+    # the old JSON:API is informational only (deprecated; Preludarr no longer needs it): short, and skipped
+    # when the required checks were slow, so it can never cost the report
+    legacy = 'not asked (checks were slow)'
+    if time.time() - started < LEGACY_BUDGET:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(API + '/anime?page%5Bsize%5D=1', headers=UA), timeout=10) as r:
+                legacy = f'answers (HTTP {r.status})'
+        except urllib.error.HTTPError as exc:
+            legacy = f'HTTP {exc.code}'
+        except Exception as exc:
+            legacy = type(exc).__name__
     failed = [c for c in checks if not c[1]]
     lines = ['## AnimeThemes canary: ' + ('✅ all good' if not failed else f'❌ {len(failed)} check(s) failed'), '',
              f'GraphQL endpoint `{g.ENDPOINT}` · {len(checks)} checks · {time.time() - started:.0f} s · '
