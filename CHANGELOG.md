@@ -9,6 +9,19 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.16.0] — 2026-11-11
+
+This release brings anime themes back: Preludarr now finds them through AnimeThemes' new API, after its old one stopped answering.
+
+### ✨ Highlights
+- Anime theme searches, matches and downloads work again.
+
+### 🔄 Changed
+- **AnimeThemes' new API.** AnimeThemes retired the API Preludarr used, and it now answers every request with an error (HTTP 503), even though its website and downloads still work. Preludarr now asks AnimeThemes' current API (GraphQL), the same one its website uses. Searches, AniDB look-ups, theme lists and cover images all come from there; how titles are matched, what is checked before installing, and where audio is downloaded from are unchanged. If the new API is ever unavailable, Preludarr tries the old one.
+
+### 🔧 Fixed
+- **No anime themes found.** Anime theme searches failed with "HTTP Error 503: Service Unavailable" for every title. They work again.
+
 ## [1.15.1] — 2026-11-10
 
 This release tells you when AnimeThemes itself is down, renames the main log to preludarr.log and updates system packages in the image.
