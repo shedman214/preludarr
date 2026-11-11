@@ -9,6 +9,22 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.15.1] — 2026-11-10
+
+This release tells you when AnimeThemes itself is down, renames the main log to preludarr.log and updates system packages in the image.
+
+### ✨ Highlights
+- System → Overview now shows whether AnimeThemes is up, and explains what it means when it isn't.
+
+### ➕ Added
+- **AnimeThemes status on Overview.** A new card shows **Online**, **Slowing down**, **⚠ Down** (since when, and the reason, for example HTTP 503) or **Not checked yet**. When AnimeThemes is down, it explains that this is on AnimeThemes' side: anime theme searches and downloads wait and retry on their own, installed themes and your library aren't affected, and there's nothing to change in Preludarr. The status comes from Preludarr's own recent requests; opening the page never contacts AnimeThemes.
+
+### 🔄 Changed
+- **Main log renamed to `preludarr.log`.** System → Logs and downloads now use `preludarr.log`. On start, an existing `themearr.log` and its older copies are renamed automatically, so nothing is lost. A copy that couldn't be renamed (because a newer file already has that name) stays readable under its old name.
+
+### 🔧 Fixed
+- **Security updates in the image.** The image now installs the latest Alpine package fixes when it's built (this release: `krb5-libs` and `zlib`).
+
 ## [1.15.0] — 2026-11-08
 
 This release fetches missing posters much faster and wastes fewer lookups.
