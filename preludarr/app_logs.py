@@ -432,6 +432,7 @@ def route(handler, parsed, config):
     name = query.get('file', [''])[0]
     if not permitted(name):
         return _send(handler, 400, 'Invalid log filename')
+    name = resolve_name(name, {f[0] for f in _files(config)})  # 1.15.1: saved themearr.log links
     try:
         data = _read(config, name, MAX_BYTES + 1024)
     except OSError:

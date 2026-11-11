@@ -37,6 +37,24 @@ names = {f[0] for f in app_logs._files(work)}
 check('A saved themearr.log.1 link opens preludarr.log.1', app_logs.resolve_name('themearr.log.1', names) == 'preludarr.log.1')
 check('A kept legacy file of that name still wins', app_logs.resolve_name('themearr.log.2', names) == 'themearr.log.2')
 
+class FakeHandler:
+    def __init__(self, path):
+        self.path = path
+        self.sent = None
+        import io as _io
+        self.wfile = _io.BytesIO()
+    def send_response(self, code): self.sent = code
+    def send_header(self, *a): pass
+    def end_headers(self): pass
+import urllib.parse
+h = FakeHandler('/logs/download?file=themearr.log.1')
+try:
+    app_logs.route(h, urllib.parse.urlsplit(h.path), str(work))
+except Exception as exc:
+    print('handler error', type(exc).__name__, exc)
+check('A saved download link for themearr.log.1 downloads preludarr.log.1',
+      h.sent == 200 and b'old rotated' in h.wfile.getvalue())
+
 # --- AnimeThemes status --------------------------------------------------------------------------
 import animethemes as at
 check('Unknown before any request', at.health()['state'] == 'unknown')
