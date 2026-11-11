@@ -8,7 +8,9 @@ ARG REVISION=unknown
 ARG CREATED=unknown
 
 # ffmpeg: converts theme audio to MP3 · deno: JavaScript runtime yt-dlp needs for YouTube · su-exec: drop root at start-up (non-root runtime)
-RUN apk add --no-cache ffmpeg deno su-exec tzdata \
+# apk upgrade: the pinned base can lag behind Alpine security fixes (1.15.1: krb5-libs, zlib)
+RUN apk upgrade --no-cache \
+ && apk add --no-cache ffmpeg deno su-exec tzdata \
  && find /media -mindepth 1 -maxdepth 1 -type d -empty -delete   # cdrom/floppy/usb from the base image would show up in the folder picker
 
 # yt-dlp and its dependencies, every file checked against the hashes in requirements.txt

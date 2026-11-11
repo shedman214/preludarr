@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Themearr Settings > Logs. Stdlib only; never accepts arbitrary filesystem paths.
 
-Creates small rotating /config/logs/themearr.log files while preserving Docker stdout.
+Creates small rotating /config/logs/preludarr.log files while preserving Docker stdout.
+(1.15.1: was themearr.log; an existing themearr.log and its rotated copies are renamed on start.)
 All browser log responses are authenticated by the existing Handler.do_GET guard.
 """
 from __future__ import annotations
@@ -22,7 +23,9 @@ import urllib.parse
 
 MAX_BYTES = 2 * 1024 * 1024
 BACKUPS = 5
-LOG_NAME = re.compile(r'\A(?:themearr|poster)\.log(?:\.[1-5])?\Z')
+# themearr.log* stays readable: a copy kept by _rename_old_logs (never overwritten) must not vanish
+LOG_NAME = re.compile(r'\A(?:preludarr|themearr|poster)\.log(?:\.[1-5])?\Z')
+MAIN_LOG = 'preludarr.log'
 _INSTALLED = False
 _LOGDIR = None
 _LOGGER = None
@@ -203,7 +206,8 @@ def install(config):
         root.mkdir(parents=True, exist_ok=True, mode=0o700)
         if not root.is_dir() or root.is_symlink():
             return False
-        target = root / 'themearr.log'
+        _rename_old_logs(root)
+        target = root / MAIN_LOG
         if target.is_symlink():
             return False
         logger = logging.getLogger('themearr.private_file_v1')
@@ -242,6 +246,27 @@ def install(config):
     except (OSError, ValueError):
         # Application remains usable with its existing Docker logging.
         return False
+
+
+def _rename_old_logs(root):
+    """1.15.1: themearr.log[.1-5] → preludarr.log[.1-5], once, never over an existing file or a symlink."""
+    for suffix in ('', '.1', '.2', '.3', '.4', '.5'):
+        old, new = root / ('themearr.log' + suffix), root / (MAIN_LOG + suffix)
+        try:
+            if old.is_file() and not old.is_symlink():
+                os.link(old, new)  # atomic and never replaces: fails if `new` exists
+                old.unlink()
+        except OSError:
+            pass  # `new` exists (kept as is) or links are unsupported: the old file stays readable
+
+
+def resolve_name(name, names):
+    """1.15.1: a saved link to a renamed log (themearr.log[.N]) opens preludarr.log[.N]; a kept legacy
+    file of that exact name still wins."""
+    if name in names or not isinstance(name, str) or not name.startswith('themearr.log'):
+        return name
+    migrated = MAIN_LOG + name[len('themearr.log'):]
+    return migrated if migrated in names else name
 
 
 def _files(config):
@@ -307,17 +332,17 @@ def page(config, query=None):
     files = _files(config)
     # The combined Log Viewer always shows Themearr activity.
     # Poster files are independently downloadable; no extra viewer is added.
-    chosen = query.get('file', ['themearr.log'])[0]
+    chosen = query.get('file', [MAIN_LOG])[0]
     if not permitted(chosen) or chosen.startswith('poster.log'):
-        chosen = 'themearr.log'
+        chosen = MAIN_LOG
     search = (query.get('q', [''])[0] or '')[:100].strip()
     detail = query.get('view', [''])[0] == '1'
     if chosen not in {f[0] for f in files}:
-        general = [f[0] for f in files if f[0].startswith('themearr.log')]
+        general = [f[0] for f in files if f[0].startswith(MAIN_LOG)]
         if general:
             chosen = general[0]
         else:
-            chosen = 'themearr.log'
+            chosen = MAIN_LOG
     try:
         content = _read(config, chosen) if files else 'No log files yet. New Preludarr entries will appear here.'
     except OSError:
@@ -407,6 +432,7 @@ def route(handler, parsed, config):
     name = query.get('file', [''])[0]
     if not permitted(name):
         return _send(handler, 400, 'Invalid log filename')
+    name = resolve_name(name, {f[0] for f in _files(config)})  # 1.15.1: saved themearr.log links
     try:
         data = _read(config, name, MAX_BYTES + 1024)
     except OSError:
