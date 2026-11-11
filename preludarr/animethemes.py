@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Polite, resilient access to the AnimeThemes API (Themearr V1.6.4).
 
+1.16.0: answers come from AnimeThemes' GraphQL API (animethemes_graphql) whenever the request has a
+GraphQL equivalent; the deprecated JSON:API is only a fallback.
+
 Used by app.request_json for GET requests to api.animethemes.moe only. It never changes what the API
 returns, so matching results are identical; it only changes how often and how patiently we ask:
 
@@ -13,6 +16,7 @@ Callers receive a private copy of the data, so they cannot change the remembered
 """
 import copy
 import json
+import animethemes_graphql
 import threading
 import time
 import urllib.error
@@ -113,6 +117,23 @@ def get_json(url, headers, fresh=False):
             _STATE['hits'] += 1
             return copy.deepcopy(stale)
         raise AnimeThemesBusy('AnimeThemes asked Preludarr to slow down; try again shortly.')
+    # 1.16.0: AnimeThemes deprecated this JSON:API and it answers 503; ask its GraphQL API first
+    # (same pacing, caching and retries) and fall back to the JSON:API only if GraphQL fails.
+    planned = animethemes_graphql.plan(url)
+    if planned:
+        try:
+            data = _graphql(planned, headers)
+            _remember(url, data)
+            return copy.deepcopy(data)
+        except AnimeThemesBusy:
+            # slowed down: a remembered answer up to STALE_SECONDS old still serves non-fresh requests
+            stale = None if fresh else _cached(url, STALE_SECONDS)
+            if stale is not None:
+                _STATE['hits'] += 1
+                return copy.deepcopy(stale)
+            raise
+        except (ValueError, TimeoutError, urllib.error.URLError, ConnectionError, OSError):
+            pass  # try the JSON:API below
     last_error = None
     for attempt in range(2):
         with _SLOTS:
@@ -157,6 +178,54 @@ def get_json(url, headers, fresh=False):
             return copy.deepcopy(stale)
     if isinstance(last_error, urllib.error.HTTPError) and last_error.code == 429:
         raise AnimeThemesBusy('AnimeThemes asked Preludarr to slow down; try again shortly.') from last_error
+    raise last_error
+
+
+def _graphql(planned, headers):
+    """Run one planned GraphQL query politely and return the converted JSON:API-shaped answer."""
+    gql, variables, convert = planned
+    body = json.dumps({'query': gql, 'variables': variables}).encode()
+    gql_headers = {'User-Agent': headers.get('User-Agent', 'Preludarr'), 'Accept': 'application/json',
+                   'Content-Type': 'application/json'}
+    last_error = None
+    for attempt in range(2):
+        with _SLOTS:
+            _pace()
+            started = time.monotonic()
+            try:
+                _STATE['requests'] += 1
+                req = urllib.request.Request(animethemes_graphql.ENDPOINT, data=body, headers=gql_headers, method='POST')
+                with urllib.request.urlopen(req, timeout=TIMEOUT) as response:
+                    reply = json.load(response)
+                took = time.monotonic() - started
+                if took >= SLOW_SECONDS:
+                    _problem(f'AnimeThemes is responding slowly (last answer took {took:.0f} s).')
+                if not isinstance(reply, dict) or reply.get('errors') or reply.get('data') is None:
+                    # any error, even next to partial data, or no data at all: not an answer to keep
+                    _answered()  # it answered; the query itself was refused
+                    raise ValueError('AnimeThemes GraphQL refused the query: '
+                                     + str((reply.get('errors') or [{}])[0].get('message', ''))[:120])
+                _answered()
+                return convert(reply.get('data'))
+            except urllib.error.HTTPError as error:
+                last_error = error
+                if error.code < 500:
+                    _answered()
+                if error.code == 429:
+                    pause = _retry_after(error)
+                    with _PACE_LOCK:
+                        _STATE['paused_until'] = time.monotonic() + pause
+                    _problem(f'AnimeThemes asked Preludarr to slow down (HTTP 429); pausing {pause} s.')
+                    raise AnimeThemesBusy('AnimeThemes asked Preludarr to slow down; try again shortly.') from error
+                if error.code < 500:
+                    raise ValueError(f'AnimeThemes GraphQL answered HTTP {error.code}') from error
+                _problem(f'AnimeThemes server error (HTTP {error.code}).', down=True)
+            except (TimeoutError, urllib.error.URLError, ConnectionError, OSError) as error:
+                last_error = error
+                _problem('AnimeThemes did not answer in time.' if 'timed out' in str(error) or isinstance(error, TimeoutError)
+                         else 'AnimeThemes could not be reached.', down=True)
+        if attempt == 0:
+            time.sleep(RETRY_PAUSE)
     raise last_error
 
 
