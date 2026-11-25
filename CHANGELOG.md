@@ -9,6 +9,14 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.16.2] — 2026-11-25
+
+This update fixes ThemerrDB lookups for TV shows and movies.
+
+### 🔧 Fixed
+
+- **ThemerrDB theme suggestions.** Preludarr now uses ThemerrDB’s current address for TMDB and IMDb lookups. The old address returned 404s, making titles with themes appear to have no entry. Thanks to @supervo87 for reporting it in #25 and @bfs2021 for the fix in #26.
+
 ## [1.16.1] — 2026-11-23
 
 ### 🔧 Fixed
