@@ -28,8 +28,8 @@ SOURCES = (
     ('themerrdb', 'ThemerrDB', 'TV + movies · by TMDB id · YouTube link via the YouTube download client'),
 )
 PLEX_HOST = 'tvthemes.plexapp.com'
-THEMERR = 'https://app.lizardbyte.dev/ThemerrDB/{kind}/themoviedb/{id}.json'
-THEMERR_IMDB = 'https://app.lizardbyte.dev/ThemerrDB/movies/imdb/{id}.json'  # Preludarr 1.11: movies without a TMDB id
+THEMERR = 'https://themerr.lizardbyte.dev/ThemerrDB/{kind}/themoviedb/{id}.json'
+THEMERR_IMDB = 'https://themerr.lizardbyte.dev/ThemerrDB/movies/imdb/{id}.json'  # Preludarr 1.11: movies without a TMDB id
 MAX_AUDIO = 40 * 1024 * 1024
 UA = {'User-Agent': 'Preludarr/1.12 (self-hosted theme manager)'}
 

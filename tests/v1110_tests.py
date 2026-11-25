@@ -103,8 +103,10 @@ check('Shows: Plex TV Themes first, then ThemerrDB (TV)', [f['source'] for f in 
 calls.clear(); found, _ = src.find(app, P('films/The Matrix (1999)'), 'The Matrix (1999)', 'Movies')
 check('Movies: ThemerrDB by TMDB id, no Plex', [f['source'] for f in found] == ['themerrdb'] and all('plexapp' not in u for u in calls) and 'movies/themoviedb/603' in calls[0], calls)
 calls.clear(); found, _ = src.find(app, P('films/Amélie (2001)'), 'Amélie (2001)', 'Movies')
-check('Movies without a TMDB id: ThemerrDB by IMDb id', [f['source'] for f in found] == ['themerrdb'] and calls == ['https://app.lizardbyte.dev/ThemerrDB/movies/imdb/tt0211915.json']
+check('Movies without a TMDB id: ThemerrDB by IMDb id', [f['source'] for f in found] == ['themerrdb'] and calls == ['https://themerr.lizardbyte.dev/ThemerrDB/movies/imdb/tt0211915.json']
       and 'IMDb tt0211915' in found[0]['note'], calls)
+check('ThemerrDB lookups use the current themerr host', src.THEMERR.startswith('https://themerr.lizardbyte.dev/') and src.THEMERR_IMDB.startswith('https://themerr.lizardbyte.dev/'),
+      (src.THEMERR, src.THEMERR_IMDB))
 calls.clear(); found, notes = src.find(app, P('anime/Naruto (2002)'), 'Naruto (2002)', 'Anime TV')
 check('Anime unchanged: an IMDb-only id is not used (no lookups)', found == [] and calls == [], (found, calls))
 found, notes = src.find(app, P('shows/Friends'), 'Friends', 'Shows')
