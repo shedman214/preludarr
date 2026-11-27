@@ -33,8 +33,8 @@ def read(conn):
 
 
 def effective(path, saved):
-    path = str(path)
-    for key, scope in ((path, 'Title'), (str(Path(path).parent), 'Root folder'), ('', 'Global')):
+    title_path = str(path)
+    for key, scope in ((title_path, 'Title'), (str(Path(title_path).parent), 'Root folder'), ('', 'Global')):
         if key in saved:
             value = saved[key]
             # A malformed stored preference must not silently enable downloads.
@@ -43,11 +43,11 @@ def effective(path, saved):
 
 
 def for_title(app, path):
+    title_path = str(path)
     with app.db() as conn:
-        path = str(path)
         saved = {r['path']: r['profile'] for r in conn.execute(
-            'SELECT path,profile FROM theme_profiles WHERE path IN (?,?,?)', (path, str(Path(path).parent), ''))}
-        return effective(path, saved)
+            'SELECT path,profile FROM theme_profiles WHERE path IN (?,?,?)', (title_path, str(Path(title_path).parent), ''))}
+        return effective(title_path, saved)
 
 
 def queued_allowed(path, library, saved):
@@ -98,18 +98,18 @@ def select(tracks, profile, path='', *, review=False):
 
 
 def set_profile(app, scope, path, profile):
-    path = str(path)
+    profile_path = str(path)
     if scope == 'global':
-        if path:
+        if profile_path:
             raise ValueError('Invalid global profile.')
     elif scope == 'root':
-        if not any(str(root) == path and kinds.is_anime(kind) for kind, root in app.ROOTS):
+        if not any(str(root) == profile_path and kinds.is_anime(kind) for kind, root in app.ROOTS):
             raise ValueError('Choose a registered anime root folder.')
     elif scope == 'title':
         roots = {str(root) for kind, root in app.ROOTS if kinds.is_anime(kind)}
         with app.db() as conn:
-            row = conn.execute('SELECT library FROM shows WHERE path=?', (path,)).fetchone()
-        if not row or not kinds.is_anime(row['library']) or str(Path(path).parent) not in roots:
+            row = conn.execute('SELECT library FROM shows WHERE path=?', (profile_path,)).fetchone()
+        if not row or not kinds.is_anime(row['library']) or str(Path(profile_path).parent) not in roots:
             raise ValueError('Choose a registered anime title.')
     else:
         raise ValueError('Invalid profile scope.')
@@ -117,10 +117,10 @@ def set_profile(app, scope, path, profile):
         raise ValueError('Choose a theme profile.')
     with app.db() as conn:
         if profile == 'inherit':
-            conn.execute('DELETE FROM theme_profiles WHERE path=?', (path,))
+            conn.execute('DELETE FROM theme_profiles WHERE path=?', (profile_path,))
         else:
             conn.execute('INSERT INTO theme_profiles(path,profile) VALUES(?,?) ON CONFLICT(path) DO UPDATE SET profile=excluded.profile',
-                         (path, profile))
+                         (profile_path, profile))
 
 
 def _e(value):
@@ -188,5 +188,7 @@ def post(app, handler, redirect):
     except (ValueError, UnicodeError, OSError) as error:
         message = f'Theme profile not saved: {error}'
     if scope == 'title':
-        return redirect(handler, '/themes?' + urllib.parse.urlencode({'path': path, 'profile_msg': message[:220]}) + '#title-theme-profile')
-    return redirect(handler, '/media-management?' + urllib.parse.urlencode({'notice': message[:200]}) + '#theme-profiles')
+        params = urllib.parse.urlencode({'path': path, 'profile_msg': message[:220]})
+        return redirect(handler, f'/themes?{params}#title-theme-profile')
+    params = urllib.parse.urlencode({'notice': message[:200]})
+    return redirect(handler, f'/media-management?{params}#theme-profiles')

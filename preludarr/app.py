@@ -2347,13 +2347,13 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
      parts+=['<div class="panel" id="themearr-current-theme"><h3>Currently Installed Theme</h3>',
              '<p>No theme installed.</p></div>']
     parts.append(library_health.title_box(CONFIG,selected))  # V1.9.3: warning from the last Library Health scan
+    if not fragment_mode and kinds.is_anime(row['library']):
+     parts.append(theme_profiles.title_html(sys.modules[__name__],selected,query.get('profile_msg',[''])[0][:220]))
     extras=[]
     def section(key,title,hint,body,is_open):
      extras.extend(['<details class="tp-sec" id="tp-',key,'"',' open' if is_open else '','><summary><span class="tp-sum-t">',title,
                     '</span><span class="tp-sum-h">',hint,'</span></summary><div class="tp-body">']+body+['</div></details>'])
     if not fragment_mode:
-     if kinds.is_anime(row['library']):
-      parts.append(theme_profiles.title_html(sys.modules[__name__],selected,query.get('profile_msg',[''])[0][:220]))
      section('posters','Poster','Search, upload or reset artwork',[poster_manual.panel(sys.modules[__name__],selected,query)],
              bool(query.get('poster_msg',[''])[0] or query.get('poster_search',[''])[0]))
      manual=['<div class="panel"><h3>Search AnimeThemes Manually</h3>',

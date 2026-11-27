@@ -341,7 +341,8 @@ def post(app, handler, redirect):
             if f('confirm') != '1':
                 raise ValueError('Tick the confirmation box to add titles.')
             added, skipped = add(app, candidates(app, {k: [f(k)] for k in ('q', 'library', 'state')}))
-            msg = f'Added {added} title(s) to the queue' + (f' ({skipped} skipped: existing theme, unavailable, excluded profile or already queued)' if skipped else '') + '. Dry run started - nothing is installed until you approve.'
+            explanation = f' ({skipped} skipped: existing theme, unavailable, excluded profile or already queued)' if skipped else ''
+            msg = f'Added {added} title(s) to the queue{explanation}. Dry run started - nothing is installed until you approve.'
             back = '/queue?tab=waiting'
         else:
             action, qid = f('action'), f('id')
