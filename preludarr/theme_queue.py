@@ -172,6 +172,11 @@ def step(app):
                or c.execute("SELECT * FROM theme_queue WHERE state='queued' ORDER BY id LIMIT 1").fetchone())
     if not row:
         return False
+    with app.db() as c:
+        title = c.execute('SELECT state FROM shows WHERE path=?', (row['path'],)).fetchone()
+    if not title or title['state'] == 'unavailable' or not Path(row['path']).is_dir():
+        _set(app, row['id'], 'skipped', note='Title folder is unavailable — rescan before queueing it again.')
+        return True
     if row['state'] == 'queued':
         _set(app, row['id'], 'searching')
         try:

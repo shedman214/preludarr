@@ -92,6 +92,63 @@ check('Suggestion key is stable but changes with the selected track',
       sources.proposal_key(proposal) == sources.proposal_key(dict(reversed(list(proposal.items()))))
       and sources.proposal_key(proposal) != sources.proposal_key(dict(proposal, url='https://tvthemes.plexapp.com/54321.mp3')))
 
+with app.db() as c:
+    c.execute('INSERT INTO media_ids VALUES(?,?,?,?,?)', (str(one), 12345, None, None, 'sonarr'))
+    c.execute('DELETE FROM theme_suggestions WHERE path=?', (str(one),))
+    c.execute('DELETE FROM theme_suggestion_meta WHERE path=?', (str(one),))
+
+def changed_identity(_app, _settings, got, _library):
+    check('The provider lookup started with the original stored ID', got['tvdb'] == 12345)
+    with app.db() as c:
+        c.execute('UPDATE media_ids SET tvdb=54321 WHERE path=?', (str(one),))
+        c.execute('DELETE FROM theme_suggestion_meta WHERE path=?', (str(one),))
+    return [proposal], []
+
+with patch.object(sources, '_lookup', side_effect=changed_identity):
+    found, notes = lookup()
+    check('An ID change during provider lookup discards the stale suggestion', not found and 'changed during lookup' in notes[0])
+    with app.db() as c:
+        check('The stale lookup did not recreate the invalidated cache',
+              not meta() and not c.execute('SELECT 1 FROM theme_suggestions WHERE path=?', (str(one),)).fetchone())
+new_proposal = dict(proposal, url='https://tvthemes.plexapp.com/54321.mp3')
+with patch.object(sources, '_lookup', return_value=([new_proposal], [])) as fake:
+    check('Next lookup uses the current ID and caches the new suggestion',
+          lookup()[0] == [new_proposal] and fake.call_args.args[2]['tvdb'] == 54321 and bool(meta()))
+    lookup()
+    check('Stable new identity uses the normal cache', fake.call_count == 1)
+
+with app.db() as c:
+    c.execute('DELETE FROM media_ids WHERE path=?', (str(two),))
+    c.execute('DELETE FROM theme_suggestion_meta WHERE path=?', (str(two),))
+def tmdb_lookup(url, **kwargs):
+    if '/search/tv?' in url:
+        return {'results': [{'id': 55, 'name': 'Two', 'first_air_date': '2020-01-01'}]}
+    if '/tv/55/external_ids?' in url:
+        return {'tvdb_id': 54321}
+    raise AssertionError('Unexpected TMDB lookup')
+with patch.object(app.poster_connect, 'effective_values', return_value=('fixture-key', '', '', 'tmdb')), \
+     patch.object(app, 'request_json', side_effect=tmdb_lookup), \
+     patch.object(sources, '_lookup', return_value=([new_proposal], [])) as fake:
+    check('A newly identified title can cache its first successful lookup',
+          lookup(folder=two)[0] == [new_proposal] and bool(meta(two)))
+    lookup(folder=two)
+    check('Initial TMDB ID resolution is not mistaken for an external ID change', fake.call_count == 1)
+
+with app.db() as c:
+    c.execute('DELETE FROM media_ids WHERE path=?', (str(two),))
+    c.execute('DELETE FROM theme_suggestion_meta WHERE path=?', (str(two),))
+def concurrent_arr_lookup(url, **kwargs):
+    if '/tv/55/external_ids?' in url:
+        with app.db() as c:
+            c.execute('INSERT INTO media_ids VALUES(?,?,?,?,?)', (str(two), 54321, 99, None, 'sonarr'))
+    return tmdb_lookup(url, **kwargs)
+with patch.object(app.poster_connect, 'effective_values', return_value=('fixture-key', '', '', 'tmdb')), \
+     patch.object(app, 'request_json', side_effect=concurrent_arr_lookup), \
+     patch.object(sources, '_lookup', return_value=([new_proposal], [])) as fake:
+    lookup(folder=two)
+    check('An authoritative Arr update during TMDB search wins without being overwritten',
+          fake.call_args.args[2] == {'tvdb': 54321, 'tmdb': 99, 'imdb': None, 'source': 'sonarr'} and bool(meta(two)))
+
 import ratelimit
 with patch.object(ratelimit, 'wait'), patch.object(ratelimit, 'backoff') as backoff, \
      patch.object(sources.urllib.request, 'urlopen', side_effect=urllib.error.HTTPError(

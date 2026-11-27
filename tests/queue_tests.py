@@ -140,5 +140,17 @@ st = {r['name']: r['state'] for r in app.db().execute('select name,state from th
 check('D: after a restart, interrupted steps resume safely', st['Plex Only (2018)'] == 'queued' and st['Themerr Movie (2001)'] == 'approved')
 cand = q.candidates(app, {'library': ['Anime Movies']})
 check('A: filter → candidates (missing/review in Anime Movies)', cand == [str(lib / 'movies/Themerr Movie (2001)')], cand)
+app.mark_unavailable([str(lib / 'movies/Themerr Movie (2001)'), str(lib / 'anime/Plex Only (2018)')],
+                     'Folder temporarily unavailable')
+# The directories have returned, but a scan has not yet restored their states.
+from unittest.mock import patch
+with patch.object(q, 'install', side_effect=AssertionError('Unavailable title must not install')) as install, \
+     patch.object(q, 'propose', side_effect=AssertionError('Unavailable title must not look up themes')) as propose:
+    q.step(app); q.step(app)
+    st = {r['name']: r['state'] for r in app.db().execute('SELECT name,state FROM theme_queue')}
+    check('C: approved title that became unavailable is skipped before installation',
+          not install.called and st['Themerr Movie (2001)'] == 'skipped', st)
+    check('B: stale queued title that became unavailable is skipped before lookup',
+          not propose.called and st['Plex Only (2018)'] == 'skipped', st)
 print(f'{sum(results)}/{len(results)} passed'); sys.exit(0 if all(results) else 1)
 

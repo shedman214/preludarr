@@ -114,6 +114,7 @@ def event(name,status,detail):
 def save(path,library,name,state,detail=''):
  with db() as c:
   c.execute('INSERT INTO shows VALUES(?,?,?,?,?,?) ON CONFLICT(path) DO UPDATE SET library=excluded.library,name=excluded.name,state=excluded.state,detail=excluded.detail,updated=excluded.updated',(str(path),library,name,state,detail[:800],now()))
+  if state!='unavailable':c.execute('DELETE FROM title_availability WHERE path=?',(str(path),))
   if state in ('installed','review'):c.execute('DELETE FROM theme_retry WHERE path=?',(str(path),))
 def request_json(url, data=None, fresh=False):
  headers={'User-Agent':'Preludarr/1.12 (self-hosted theme manager)','Accept':'application/json'}
@@ -607,6 +608,13 @@ POSTER_BACKGROUND_LIMIT=max(
 )
 POSTER_QUEUE_REFRESH=600  # 1.15: re-read the to-do list at most every 10 minutes
 
+def background_poster_ready(path,current):
+ # The snapshot can be minutes old. Recheck both availability and cooldown.
+ if poster_file(path).is_file() or not os.path.isdir(path):return False
+ with db() as conn:
+  row=conn.execute("SELECT p.checked,s.state FROM shows s LEFT JOIN posters p ON p.path=s.path WHERE s.path=?",(path,)).fetchone()
+ return bool(row and row['state']!='unavailable' and (not row['checked'] or row['checked']<int(current)-7*86400))
+
 def background_poster_worker():
  poster_v2_init()
  print('Background poster worker started (V2)',flush=True)
@@ -656,12 +664,7 @@ def background_poster_worker():
 
    while todo:
     row=todo.popleft()
-    # 1.15: skip shows whose folder is gone (deleted or moved) — a lookup would be wasted
-    if poster_file(row['path']).is_file() or not os.path.isdir(row['path']):continue
-    # 1.15: the list may be minutes old — a lookup since then (e.g. a manual one) restarts the cooldown
-    with db() as conn:
-     now_checked=conn.execute('SELECT checked FROM posters WHERE path=?',(row['path'],)).fetchone()
-    if now_checked and now_checked[0] and now_checked[0]>=int(current)-7*86400:continue
+    if not background_poster_ready(row['path'],current):continue
     selected=row
     break
 
@@ -1329,7 +1332,6 @@ def discover(only=None):
     previous=c.execute('SELECT state,detail FROM shows WHERE path=?',(str(folder),)).fetchone()
     if previous and previous['state']=='unavailable':
      previous=c.execute('SELECT prior_state AS state,prior_detail AS detail FROM title_availability WHERE path=?',(str(folder),)).fetchone()
-    c.execute('DELETE FROM title_availability WHERE path=?',(str(folder),))
     pending=c.execute('SELECT next_retry,reason FROM theme_retry WHERE path=?',(str(folder),)).fetchone()
    if state=='missing' and pending:
     save(folder,label,folder.name,'missing',theme_retry.detail(pending))
@@ -1367,7 +1369,6 @@ def process(path):
   reason='Title folder is unavailable or has moved. Saved matches and history are retained.'
   mark_unavailable([path],reason);last_op(path,name,'unavailable',reason)
   return 'Unavailable: '+reason
- with db() as c:c.execute('DELETE FROM title_availability WHERE path=?',(str(path),))
  if target.exists() or target.is_symlink():
   if target.is_file() and not target.is_symlink() and target.stat().st_size>0:
    save(path,root_label,name,'installed','Already exists');last_op(path,name,'installed','Already exists');return 'Already installed'

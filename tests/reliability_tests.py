@@ -135,9 +135,37 @@ check('Disappeared title is retained and marked unavailable',
       and app.process(path('Vanished (2020)')).startswith('Unavailable:')
       and path('Vanished (2020)') not in app.auto_themes.to_install(app))
 shutil.move(work / 'temporarily-offline', root / 'Vanished (2020)')
+check('A stale background poster job waits until the returned folder is scanned',
+      not app.background_poster_ready(path('Vanished (2020)'), time.time()))
+real_save = app.save
+def interrupted_save(p, *args, **kwargs):
+    if str(p) == path('Vanished (2020)'):
+        raise OSError('Temporary database write failure')
+    return real_save(p, *args, **kwargs)
+with patch.object(app, 'save', side_effect=interrupted_save):
+    try:
+        app.discover()
+    except OSError as error:
+        check('Interrupted restore reports the database error', 'database write failure' in str(error))
+    else:
+        check('Interrupted restore reports the database error', False)
+with app.db() as c:
+    snapshot = c.execute('SELECT prior_state,prior_detail FROM title_availability WHERE path=?',
+                         (path('Vanished (2020)'),)).fetchone()
+check('A failed restore keeps the unavailable state and the original review snapshot',
+      row('Vanished (2020)')['state'] == 'unavailable' and snapshot and
+      tuple(snapshot) == ('review', 'Keep match review'))
 app.discover()
 check('When a folder returns, its original review state is restored',
       row('Vanished (2020)')['state'] == 'review' and row('Vanished (2020)')['detail'] == 'Keep match review')
+check('Once the scan restores the folder, a background poster lookup is eligible again',
+      app.background_poster_ready(path('Vanished (2020)'), time.time()))
+with app.db() as c:
+    check('Successful restore removes its availability snapshot',
+          not c.execute('SELECT 1 FROM title_availability WHERE path=?', (path('Vanished (2020)'),)).fetchone())
+    c.execute('INSERT INTO posters VALUES(?,?,?,?)', (path('Vanished (2020)'), 'error', int(time.time()), 'TMDB'))
+check('Background poster consumption still respects recent cooldowns',
+      not app.background_poster_ready(path('Vanished (2020)'), time.time()))
 shutil.move(root, work / 'root-offline')
 app.discover()
 check('An unavailable mount does not delete the library or schedule installs',

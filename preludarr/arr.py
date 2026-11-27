@@ -352,6 +352,7 @@ def sync(app, iid, create=False):
                 old = c.execute('SELECT tvdb,tmdb,imdb FROM media_ids WHERE path=?', (local,)).fetchone()
                 current = (it['tvdb'] or None, it['tmdb'] or None, it['imdb'] or None)
                 if not old or tuple(old) != current:
+                    c.execute('DELETE FROM theme_suggestions WHERE path=?', (local,))
                     c.execute('DELETE FROM theme_suggestion_meta WHERE path=?', (local,))
                 c.execute('INSERT INTO media_ids(path,tvdb,tmdb,imdb,source) VALUES(?,?,?,?,?) ON CONFLICT(path) DO UPDATE SET '
                           'tvdb=excluded.tvdb,tmdb=excluded.tmdb,imdb=excluded.imdb,source=excluded.source',

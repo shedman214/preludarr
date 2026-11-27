@@ -71,12 +71,22 @@ def _norm(text):
     return ''.join(ch for ch in unicodedata.normalize('NFKC', str(text)).casefold() if ch.isalnum())
 
 
+def _stored_ids(conn, path):
+    row = conn.execute('SELECT tvdb,tmdb,imdb,source FROM media_ids WHERE path=?', (path,)).fetchone()
+    return dict(row) if row else {}
+
+
+def _usable_ids(row, library):
+    return bool(row and (row['tvdb'] or row['tmdb'] or
+                        (row['imdb'] and __import__('kinds').is_regular(library))))
+
+
 def ids(app, path, name, library, *, strict=False):
     """{'tvdb','tmdb','imdb','source'} for a folder: Sonarr/Radarr ids, else an exact TMDB title+year match, else {}."""
     with app.db() as c:
-        row = c.execute('SELECT tvdb,tmdb,imdb,source FROM media_ids WHERE path=?', (path,)).fetchone()
-    if row and (row['tvdb'] or row['tmdb'] or (row['imdb'] and __import__('kinds').is_regular(library))):  # IMDb-only: Shows/Movies (anime unchanged)
-        return {'tvdb': row['tvdb'], 'tmdb': row['tmdb'], 'imdb': row['imdb'], 'source': row['source']}
+        row = _stored_ids(c, path)
+    if _usable_ids(row, library):  # IMDb-only: Shows/Movies (anime unchanged)
+        return row
     if not settings(app.CONFIG)['tmdb_search']:
         return {}
     key = app.poster_connect.effective_values(app.CONFIG)[0]
@@ -105,9 +115,17 @@ def ids(app, path, name, library, *, strict=False):
         except Exception:
             tvdb = None
     with app.db() as c:
+        c.execute('BEGIN IMMEDIATE')
+        current = _stored_ids(c, path)
+        if current != row:
+            # Sonarr/Radarr may have identified the title while TMDB was queried.
+            # Never overwrite that newer identity with a title-search result.
+            return current if _usable_ids(current, library) else {}
         c.execute('INSERT INTO media_ids(path,tvdb,tmdb,imdb,source) VALUES(?,?,?,NULL,?) ON CONFLICT(path) DO UPDATE SET '
                   'tvdb=excluded.tvdb,tmdb=excluded.tmdb,source=excluded.source', (path, tvdb, tmdb, 'tmdb-search'))
-    return {'tvdb': tvdb, 'tmdb': tmdb, 'imdb': None, 'source': 'tmdb-search'}
+        c.execute('DELETE FROM theme_suggestions WHERE path=?', (path,))
+        c.execute('DELETE FROM theme_suggestion_meta WHERE path=?', (path,))
+        return _stored_ids(c, path)
 
 
 # ---------------------------------------------------------------------------------- lookup ----
@@ -126,7 +144,7 @@ def _get(url, limit, timeout=25):
         raise
 
 
-def find(app, path, name, library, interactive=True, everywhere=False):
+def find(app, path, name, library, interactive=True, everywhere=False, *, identity=None):
     """Proposals (never installed here). Each: source, label, url, note. Anime: fallbacks after AnimeThemes.
     Preludarr 1.11, Shows / Movies: these are the main sources, then (optional, preview only) YouTube search."""
     kinds = __import__('kinds')
@@ -144,6 +162,8 @@ def find(app, path, name, library, interactive=True, everywhere=False):
         if not got and not notes:
             notes.append('No exact TVDB/TMDB/IMDb id for this title (connect Sonarr/Radarr, or the folder needs a year that TMDB matches exactly).')
     if got:
+        if identity is not None:
+            identity[0] = got  # the exact persisted identity used for this lookup
         found, more = _lookup(app, s, got, library)
         notes += more
     if not found and kinds.is_regular(library):
@@ -227,6 +247,8 @@ def cached_find(app, path, name, library, refresh=False, interactive=True, every
     """Remember successful results for a week, genuine misses for a day, and temporary delays only briefly."""
     signature = cache_signature(app)
     current = int(time.time())
+    with app.db() as c:
+        identity = [_stored_ids(c, path)]
     if not refresh:
         with app.db() as c:
             row = c.execute('SELECT t.found,t.notes,m.signature,m.expires FROM theme_suggestions t '
@@ -238,7 +260,7 @@ def cached_find(app, path, name, library, refresh=False, interactive=True, every
                 pass
     else:
         __import__('youtube_search').forget(app, path)
-    found, notes = find(app, path, name, library, interactive=interactive, everywhere=everywhere)
+    found, notes = find(app, path, name, library, interactive=interactive, everywhere=everywhere, identity=identity)
     delayed = waiting(notes)
     ttl = WAIT_TTL if delayed else (SUGGEST_DAYS * 86400 if found else NEGATIVE_TTL)
     current = int(time.time())
@@ -246,6 +268,9 @@ def cached_find(app, path, name, library, refresh=False, interactive=True, every
     prefix = 'Lookup waiting' if delayed else 'No theme found yet'
     summary = f'Suggestions: {len(found)} ({labels})' if found else f'{prefix}: {" ".join(notes)[:200]}'
     with app.db() as c:
+        c.execute('BEGIN IMMEDIATE')
+        if _stored_ids(c, path) != identity[0]:
+            return [], ['Media IDs changed during lookup. Look again for suggestions for the current title.']
         c.execute('INSERT INTO theme_suggestions(path,found,notes,fetched) VALUES(?,?,?,?) ON CONFLICT(path) DO UPDATE SET '
                   'found=excluded.found,notes=excluded.notes,fetched=excluded.fetched', (path, json.dumps(found), json.dumps(notes), current))
         c.execute('INSERT INTO theme_suggestion_meta(path,signature,expires) VALUES(?,?,?) ON CONFLICT(path) DO UPDATE SET '
