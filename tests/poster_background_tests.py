@@ -52,12 +52,13 @@ with tempfile.TemporaryDirectory() as temp:
     app.EXISTING_INSTALL = False
     check('Existing choice is not overwritten', not bg.enabled(app, {}))
     with db() as conn:
-        conn.execute('CREATE TABLE shows(path TEXT PRIMARY KEY, library TEXT,name TEXT)')
+        conn.execute("CREATE TABLE shows(path TEXT PRIMARY KEY, library TEXT,name TEXT,state TEXT NOT NULL DEFAULT 'missing')")
         conn.execute('CREATE TABLE posters(path TEXT PRIMARY KEY,status TEXT,checked INTEGER,provider TEXT)')
         for name in ('Missing', 'Cached', 'Failed', 'Queued'):
             folder = root / name; folder.mkdir()
-            conn.execute('INSERT INTO shows VALUES(?,?,?)', (str(folder),'Movies',name))
-        conn.execute('INSERT INTO shows VALUES(?,?,?)', (str(work / 'removed-root' / 'Title'),'Movies','Stale'))
+            conn.execute('INSERT INTO shows(path,library,name) VALUES(?,?,?)', (str(folder),'Movies',name))
+        conn.execute('INSERT INTO shows(path,library,name) VALUES(?,?,?)', (str(work / 'removed-root' / 'Title'),'Movies','Stale'))
+        conn.execute('INSERT INTO shows VALUES(?,?,?,?)', (str(root/'Unavailable'),'Movies','Offline','unavailable'))
         conn.execute('INSERT INTO posters VALUES(?,?,?,?)', (str(root/'Failed'),'error',12345,'TMDB'))
         conn.execute('INSERT INTO posters VALUES(?,?,?,?)', (str(root/'Queued'),'queued',0,''))
     app.poster_file(str(root/'Cached')).write_bytes(b'existing-poster')
@@ -77,9 +78,14 @@ with tempfile.TemporaryDirectory() as temp:
     check('Previous failure cooldown retained', rows[str(root/'Failed')]['checked'] == 12345 and rows[str(root/'Failed')]['status'] == 'error')
     check('Cached poster unchanged, not queued', app.poster_file(str(root/'Cached')).read_bytes() == b'existing-poster' and str(root/'Cached') not in rows)
     check('Removed roots are not queued', str(work/'removed-root'/'Title') not in rows)
+    check('Unavailable title folders are not queued', str(root/'Unavailable') not in rows)
+    (root/'Unavailable').mkdir()
+    with db() as conn:
+        conn.execute("UPDATE shows SET state='missing' WHERE path=?", (str(root/'Unavailable'),))
+    check('A title returning from an unavailable folder is eligible again', bg.enqueue_missing(app) == 1)
     added = root/'AfterCredentials'; added.mkdir()
     with db() as conn:
-        conn.execute('INSERT INTO shows VALUES(?,?,?)', (str(added),'Movies',added.name))
+        conn.execute('INSERT INTO shows(path,library,name) VALUES(?,?,?)', (str(added),'Movies',added.name))
     check('Roots discovered after credentials also queue', bg.enqueue_missing(app) == 1)
     check('No theme music installed or media files changed', not any(p.is_file() for p in root.rglob('*')))
     bg.wake()
