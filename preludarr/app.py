@@ -1413,7 +1413,7 @@ def process(path):
    temporary=theme_retry.provider_error('AnimeThemes audio',error)
    if temporary:raise temporary from error
    raise
-  save(path,root_label,name,'installed',song);last_op(path,name,'installed',song);STATUS.update(stage='completed',message='Downloaded: '+name+' — '+song);return 'Downloaded: '+song
+  save(path,root_label,name,'installed',song);last_op(path,name,'installed',song);STATUS.update(stage='completed',message=f'Downloaded: {name} — {song}');return f'Downloaded: {song}'
  except (theme_retry.RetryLater,theme_retry.InstallBusy) as error:
   reason=theme_retry.defer(sys.modules[__name__],path,str(error),getattr(error,'retry_after',0))
   save(path,root_label,name,'missing',reason);event(name,'retry scheduled',reason);last_op(path,name,'missing',reason)
@@ -2684,16 +2684,19 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    for k,rp in ROOTS:
     d=per.get(str(rp),{});tot=sum(d.values());inst=d.get('installed',0);miss=d.get('missing',0)+d.get('review',0)
     pct=round(100*inst/tot) if tot else 0
-    cards.append('<a class="stat dash-type" href="'+esc('/?'+urllib.parse.urlencode({'view':'library','library':root_folders.root_value(rp)}),quote=True)+'" title="'+esc(kinds.label(k),quote=True)+'"><span class="dash-type-h">'+kinds.ICONS[k]+' '+esc(root_folders.name_of(rp))+'</span>'
-                 '<strong>'+f'{tot:,}'+'</strong>titles<span class="stat-sub">'+f'{inst:,}'+' installed · '+f'{miss:,}'+' missing'+(' · '+f'{d.get("unavailable",0):,}'+' unavailable' if d.get('unavailable') else '')+'</span>'
-                 '<span class="dash-bar" role="img" aria-label="'+str(pct)+'% have a theme"><span style="width:'+str(pct)+'%"></span></span></a>')
+    link=esc('/?'+urllib.parse.urlencode({'view':'library','library':root_folders.root_value(rp)}),quote=True)
+    unavailable=f' · {d["unavailable"]:,} unavailable' if d.get('unavailable') else ''
+    cards.append(f'<a class="stat dash-type" href="{link}" title="{esc(kinds.label(k),quote=True)}"><span class="dash-type-h">{kinds.ICONS[k]} {esc(root_folders.name_of(rp))}</span>'
+                 f'<strong>{tot:,}</strong>titles<span class="stat-sub">{inst:,} installed · {miss:,} missing{unavailable}</span>'
+                 f'<span class="dash-bar" role="img" aria-label="{pct}% have a theme"><span style="width:{pct}%"></span></span></a>')
    cards.append('<a class="stat dash-type" href="/queue"><span class="dash-type-h">🧾 Theme Queue</span><strong>'+str(waiting)+'</strong>waiting<span class="stat-sub">to look up, review or install</span></a>')
    dash_types=('<div class="stats dash-types" aria-label="Libraries">'+''.join(cards)+'</div><style>#dashboard .dash-types{margin-top:10px}'
                '#dashboard .dash-type{display:flex;flex-direction:column;min-width:150px;text-decoration:none;color:inherit}#dashboard .dash-type:hover{border-color:#6f8fc7}'
                '#dashboard .dash-type-h{font-size:13px;font-weight:700;color:#9fb0cc;margin-bottom:2px}'
                '#dashboard .dash-bar{display:block;height:5px;margin-top:6px;border-radius:3px;background:#2b3a55;overflow:hidden}#dashboard .dash-bar>span{display:block;height:100%;background:#4f8ff7}'
                '@media(max-width:600px){#dashboard .dash-types{grid-template-columns:repeat(2,minmax(0,1fr))!important}}</style>')
-  parts+=['<div class="panel" id="dashboard"><h2>Dashboard</h2><div class="stats"><div class="stat"><strong>',f'{sum(counts.values()):,}','</strong>Total titles</div><div class="stat"><strong>',f"{counts.get('installed',0):,}",'</strong>Installed</div><div class="stat"><strong>',f"{sum(counts.get(k,0) for k in ('missing','review')):,}",'</strong>Missing or needs review<span class="stat-sub">',f"{counts.get('missing',0):,}",' missing · ',f"{counts.get('review',0):,}",' need',('s' if counts.get('review',0)==1 else ''),' review</span></div>',('<div class="stat"><strong>'+f'{counts.get("unavailable",0):,}'+'</strong>Unavailable folders</div>' if counts.get('unavailable') else ''),'</div>',dash_types,'<div class="notice" role="status" id="job-status">',esc(status_display()),'</div><p class="muted scan-line" id="scan-line">',esc(scan_line()),'</p><form method="POST" action="/scan"><button>Scan libraries</button></form><p class="auto-line" style="font-size:15px;line-height:1.5;margin:12px 0 0;color:#cfe0f8">',esc(auto_themes.summary()),' · <a href="/media-management#automatic-themes" style="font-weight:600">Change</a></p>',DASHBOARD_CSS,'</div>']
+  unavailable_card=f'<div class="stat"><strong>{counts["unavailable"]:,}</strong>Unavailable folders</div>' if counts.get('unavailable') else ''
+  parts+=['<div class="panel" id="dashboard"><h2>Dashboard</h2><div class="stats"><div class="stat"><strong>',f'{sum(counts.values()):,}','</strong>Total titles</div><div class="stat"><strong>',f"{counts.get('installed',0):,}",'</strong>Installed</div><div class="stat"><strong>',f"{sum(counts.get(k,0) for k in ('missing','review')):,}",'</strong>Missing or needs review<span class="stat-sub">',f"{counts.get('missing',0):,}",' missing · ',f"{counts.get('review',0):,}",' need',('s' if counts.get('review',0)==1 else ''),' review</span></div>',unavailable_card,'</div>',dash_types,'<div class="notice" role="status" id="job-status">',esc(status_display()),'</div><p class="muted scan-line" id="scan-line">',esc(scan_line()),'</p><form method="POST" action="/scan"><button>Scan libraries</button></form><p class="auto-line" style="font-size:15px;line-height:1.5;margin:12px 0 0;color:#cfe0f8">',esc(auto_themes.summary()),' · <a href="/media-management#automatic-themes" style="font-weight:600">Change</a></p>',DASHBOARD_CSS,'</div>']
   if view!='library':parts.append(__import__('onboarding').box(sys.modules[__name__]))  # 1.12 #15: next steps on a new install
   if view=='':parts.append(system._activity_page(sys.modules[__name__],query,'dashboard'))  # 1.12.2 (user): Activity on the Dashboard
   parts.append('<section class="panel" id="activity-heading"><h1>Activity</h1><p class="muted">Poster recovery and recent events · <a href="/poster-report">Missing poster report</a></p></section>')

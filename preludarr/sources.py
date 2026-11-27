@@ -242,8 +242,9 @@ def cached_find(app, path, name, library, refresh=False, interactive=True, every
     delayed = waiting(notes)
     ttl = WAIT_TTL if delayed else (SUGGEST_DAYS * 86400 if found else NEGATIVE_TTL)
     current = int(time.time())
-    summary = ('Suggestions: ' + str(len(found)) + ' (' + ', '.join(dict.fromkeys(f['label'] for f in found)) + ')') if found else (
-        ('Lookup waiting: ' if delayed else 'No theme found yet: ') + ' '.join(notes)[:200])
+    labels = ', '.join(dict.fromkeys(f['label'] for f in found))
+    prefix = 'Lookup waiting' if delayed else 'No theme found yet'
+    summary = f'Suggestions: {len(found)} ({labels})' if found else f'{prefix}: {" ".join(notes)[:200]}'
     with app.db() as c:
         c.execute('INSERT INTO theme_suggestions(path,found,notes,fetched) VALUES(?,?,?,?) ON CONFLICT(path) DO UPDATE SET '
                   'found=excluded.found,notes=excluded.notes,fetched=excluded.fetched', (path, json.dumps(found), json.dumps(notes), current))

@@ -50,7 +50,7 @@ app.manual_install_mp3(fresh, new_src, replace=False)
 check('A first install (no old theme) adds nothing to the recycle bin', (fresh / 'theme.mp3').is_file() and not tr.batches(app))
 
 late = anime / 'Concurrent Title (2021)'; late.mkdir(); app.save(str(late), 'Anime TV', late.name, 'missing')
-other = b'ID3' + b'other process' * 1000
+other = b''.join((b'ID3', b'other process' * 1000))
 def competing_install(phase, message):
     if phase == 'installing':
         (late / 'theme.mp3').write_bytes(other)

@@ -98,9 +98,11 @@ with patch.object(ratelimit, 'wait'), patch.object(ratelimit, 'backoff') as back
          sources.THEMERR.format(kind='movies', id=123), 429, 'Slow down', {'Retry-After': '120'}, None)):
     try:
         sources._get(sources.THEMERR.format(kind='movies', id=123), 1000)
-    except urllib.error.HTTPError:
-        pass
-    check('ThemerrDB honours provider rate-limit backoff', backoff.call_args.args == ('themerrdb', '120'))
+    except urllib.error.HTTPError as error:
+        check('ThemerrDB HTTP error is propagated', error.code == 429)
+    else:
+        check('ThemerrDB HTTP error is propagated', False)
+    check('ThemerrDB honours provider rate-limit backoff', bool(backoff.call_args) and backoff.call_args.args == ('themerrdb', '120'))
 
 print(f'{sum(checks)}/{len(checks)} passed')
 sys.exit(0 if all(checks) else 1)

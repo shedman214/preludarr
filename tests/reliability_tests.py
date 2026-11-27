@@ -20,7 +20,7 @@ names = ('AniList Wait (2020)', 'AnimeThemes Wait (2020)', 'No Match (2020)',
 for name in names:
     (root / name).mkdir(parents=True)
 (work / 'movies').mkdir()
-existing = b'ID3' + b'a' * 4096
+existing = b''.join((b'ID3', b'a' * 4096))
 (root / 'Existing (2020)' / 'theme.mp3').write_bytes(existing)
 (root / 'Empty File (2020)' / 'theme.mp3').touch()
 os.environ.update(CONFIG_DIR=str(work / 'config'), TV_ROOT=str(root),

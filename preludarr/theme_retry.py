@@ -61,8 +61,8 @@ def old_provider_failure(detail, has_id_tag=False):
 
 
 def detail(row):
-    return ('Waiting for retry: ' + row['reason'] + ' · no earlier than '
-            + time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(row['next_retry'])))
+    when = time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(row['next_retry']))
+    return f"Waiting for retry: {row['reason']} · no earlier than {when}"
 
 
 def defer(app, path, reason, retry_after=0, now=None):

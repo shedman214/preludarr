@@ -12,7 +12,7 @@ root = work / 'anime'
 title = root / 'Recovery Test (2026)'
 title.mkdir(parents=True)
 (work / 'movies').mkdir()
-original = b'ID3' + b'a' * 4096
+original = b''.join((b'ID3', b'a' * 4096))
 (title / 'theme.mp3').write_bytes(original)
 os.environ.update(CONFIG_DIR=str(work / 'config'), TV_ROOT=str(root),
                   MOVIE_ROOT=str(work / 'movies'), AUTO_DOWNLOAD='false',
@@ -38,8 +38,8 @@ class Handler:
 
 
 def review(operation, archive=''):
-    h = Handler('/review-' + operation + '-theme?' + urllib.parse.urlencode(
-        {'path': str(title), 'archive': archive}))
+    params = urllib.parse.urlencode({'path': str(title), 'archive': archive})
+    h = Handler(f'/review-{operation}-theme?{params}')
     tm.review_action(h, app.ROOTS, app.db, '', app.open_safe_theme_directory,
                      app.verify_theme_directory_identity, 'test-session', operation)
     token = re.search(r'name="token" value="([^"]+)"', h.body)
@@ -78,7 +78,7 @@ check('Restore removes the used recovery entry and updates the library',
 confirm('remove', review('remove'))
 archive = tm._tm_archives(title)[0]
 form = review('restore', archive)
-replacement = b'ID3' + b'b' * 4096
+replacement = b''.join((b'ID3', b'b' * 4096))
 (title / 'theme.mp3').write_bytes(replacement)
 refused = confirm('restore', form)
 check('Restore leaves a newly installed theme and the recovery copy untouched',
