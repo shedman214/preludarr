@@ -479,6 +479,7 @@ def perform_action(handler, roots, db, safe_open, verify_identity,
                         if not _tm_stat.S_ISREG(_tm_os.fstat(permission_fd).st_mode):
                             raise ValueError('Unsafe archive')
                         __import__('permissions').set_theme_owner(permission_fd)  # 1.12: PUID/PGID aware
+                        fixed = _tm_os.fstat(permission_fd)
                     finally:
                         _tm_os.close(permission_fd)
                     verify_identity(folder, folder_fd)

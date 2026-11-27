@@ -10,6 +10,7 @@ or from a TMDB search that matches the folder's exact title AND year with a sing
 always proposals for the user to review (Bulk Theme Queue / Theme Browser); they are never installed silently.
 Installs use the existing safe installer with replace=False (an existing theme.mp3 is never replaced).
 """
+import hashlib
 import html
 import json
 import os
@@ -18,6 +19,7 @@ import shutil
 import tempfile
 import time
 import unicodedata
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -69,7 +71,7 @@ def _norm(text):
     return ''.join(ch for ch in unicodedata.normalize('NFKC', str(text)).casefold() if ch.isalnum())
 
 
-def ids(app, path, name, library):
+def ids(app, path, name, library, *, strict=False):
     """{'tvdb','tmdb','imdb','source'} for a folder: Sonarr/Radarr ids, else an exact TMDB title+year match, else {}."""
     with app.db() as c:
         row = c.execute('SELECT tvdb,tmdb,imdb,source FROM media_ids WHERE path=?', (path,)).fetchone()
@@ -87,6 +89,8 @@ def ids(app, path, name, library):
     try:
         res = app.request_json('https://api.themoviedb.org/3/search/' + ('movie' if movie else 'tv') + '?' + qs).get('results') or []
     except Exception:
+        if strict:
+            raise
         return {}
     exact = [r for r in res if (str(r.get('release_date' if movie else 'first_air_date') or '')[:4] == str(yr))
              and _norm(title) in (_norm(r.get('title') or r.get('name') or ''), _norm(r.get('original_title') or r.get('original_name') or ''))]
@@ -108,11 +112,18 @@ def ids(app, path, name, library):
 
 # ---------------------------------------------------------------------------------- lookup ----
 def _get(url, limit, timeout=25):
-    __import__('ratelimit').wait(__import__('ratelimit').for_host(urllib.parse.urlsplit(url).hostname))  # V1.9.14
+    rate = __import__('ratelimit')
+    source = rate.for_host(urllib.parse.urlsplit(url).hostname)
+    rate.wait(source)
     req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        final = urllib.parse.urlsplit(r.geturl())
-        return r.status, r.headers.get('Content-Type', ''), final, r.read(limit + 1)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            final = urllib.parse.urlsplit(r.geturl())
+            return r.status, r.headers.get('Content-Type', ''), final, r.read(limit + 1)
+    except urllib.error.HTTPError as error:
+        if source and error.code == 429:
+            rate.backoff(source, (error.headers or {}).get('Retry-After'))
+        raise
 
 
 def find(app, path, name, library, interactive=True, everywhere=False):
@@ -125,8 +136,12 @@ def find(app, path, name, library, interactive=True, everywhere=False):
         notes.append('Plex TV Themes and ThemerrDB are off (Settings → Download Clients).')
         got = {}
     else:
-        got = ids(app, path, name, library)
-        if not got:
+        try:
+            got = ids(app, path, name, library, strict=True)
+        except Exception:
+            got = {}
+            notes.append('TMDB ID lookup could not be completed right now; retry later.')
+        if not got and not notes:
             notes.append('No exact TVDB/TMDB/IMDb id for this title (connect Sonarr/Radarr, or the folder needs a year that TMDB matches exactly).')
     if got:
         found, more = _lookup(app, s, got, library)
@@ -174,14 +189,49 @@ def _lookup(app, s, got, library):
 
 
 SUGGEST_DAYS = 7  # Plex/ThemerrDB answers for Shows/Movies are reused for a week (YouTube results keep their own 30-day limit)
+NEGATIVE_TTL = 86400
+WAIT_TTL = 600
+CACHE_REVISION = 2  # Old caches (including the former ThemerrDB host) are refreshed on demand.
+
+
+def cache_signature(app):
+    """Invalidate suggestions when the lookup configuration or endpoints change.
+
+    Only a digest is stored; no API key, cookie contents, or credential value
+    is written into the cache metadata or activity log.
+    """
+    yt = __import__('youtube_search')
+    source_settings = settings(app.CONFIG)
+    y = yt.settings()
+    tmdb = app.poster_connect.effective_values(app.CONFIG)[0]
+    inputs = [CACHE_REVISION, THEMERR, THEMERR_IMDB, PLEX_HOST, source_settings,
+              tmdb if source_settings['tmdb_search'] else '',
+              y['enabled'], y['api_key'] if y['enabled'] else '',
+              y['budget'], bool(y['enabled'] and yt.cookies_ok())]
+    return hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()
+
+
+def waiting(notes):
+    words = ('unavailable', 'could not be completed', 'failed', 'rejected', 'rate limit',
+             'spacing its requests', 'budget is used up', 'paused until', 'stops until',
+             'allowance is used up', 'background search has used', 'cookies.txt', 'needs your youtube data api key')
+    return any(word in str(note).casefold() for note in notes for word in words)
+
+
+def proposal_key(proposal):
+    """Pin the exact suggestion the user reviewed, even when a cache is refreshed."""
+    return hashlib.sha256(json.dumps(proposal, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
 
 
 def cached_find(app, path, name, library, refresh=False, interactive=True, everywhere=False):
-    """find() for Shows / Movies, remembered in theme_suggestions so title pages, the queue and installs agree. Returns (found, notes)."""
+    """Remember successful results for a week, genuine misses for a day, and temporary delays only briefly."""
+    signature = cache_signature(app)
+    current = int(time.time())
     if not refresh:
         with app.db() as c:
-            row = c.execute('SELECT found,notes,fetched FROM theme_suggestions WHERE path=?', (path,)).fetchone()
-        if row and row['fetched'] >= time.time() - SUGGEST_DAYS * 86400:
+            row = c.execute('SELECT t.found,t.notes,m.signature,m.expires FROM theme_suggestions t '
+                            'LEFT JOIN theme_suggestion_meta m ON m.path=t.path WHERE t.path=?', (path,)).fetchone()
+        if row and row['signature'] == signature and row['expires'] > current:
             try:
                 return json.loads(row['found']), json.loads(row['notes'])
             except ValueError:
@@ -189,14 +239,17 @@ def cached_find(app, path, name, library, refresh=False, interactive=True, every
     else:
         __import__('youtube_search').forget(app, path)
     found, notes = find(app, path, name, library, interactive=interactive, everywhere=everywhere)
-    waiting = any(('spacing its requests' in n or 'budget is used up' in n or 'paused until' in n or 'cookies.txt' in n) for n in notes)
-    if not waiting:  # a skipped YouTube search is not an answer — don't remember it
-        with app.db() as c:
-            c.execute('INSERT INTO theme_suggestions(path,found,notes,fetched) VALUES(?,?,?,?) ON CONFLICT(path) DO UPDATE SET '
-                      'found=excluded.found,notes=excluded.notes,fetched=excluded.fetched', (path, json.dumps(found), json.dumps(notes), int(time.time())))
-        summary = ('Suggestions: ' + str(len(found)) + ' (' + ', '.join(dict.fromkeys(f['label'] for f in found)) + ')') if found else 'No theme found yet: ' + ' '.join(notes)[:200]
-        with app.db() as c:
-            c.execute("UPDATE shows SET detail=? WHERE path=? AND state IN ('missing','review')", (summary[:300], path))
+    delayed = waiting(notes)
+    ttl = WAIT_TTL if delayed else (SUGGEST_DAYS * 86400 if found else NEGATIVE_TTL)
+    current = int(time.time())
+    summary = ('Suggestions: ' + str(len(found)) + ' (' + ', '.join(dict.fromkeys(f['label'] for f in found)) + ')') if found else (
+        ('Lookup waiting: ' if delayed else 'No theme found yet: ') + ' '.join(notes)[:200])
+    with app.db() as c:
+        c.execute('INSERT INTO theme_suggestions(path,found,notes,fetched) VALUES(?,?,?,?) ON CONFLICT(path) DO UPDATE SET '
+                  'found=excluded.found,notes=excluded.notes,fetched=excluded.fetched', (path, json.dumps(found), json.dumps(notes), current))
+        c.execute('INSERT INTO theme_suggestion_meta(path,signature,expires) VALUES(?,?,?) ON CONFLICT(path) DO UPDATE SET '
+                  'signature=excluded.signature,expires=excluded.expires', (path, signature, current + ttl))
+        c.execute("UPDATE shows SET detail=? WHERE path=? AND state IN ('missing','review')", (summary[:300], path))
     return found, notes
 
 

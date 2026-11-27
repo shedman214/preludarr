@@ -375,6 +375,13 @@ def suggest(app, path, name, library, interactive=True, everywhere=False):
     kinds = __import__('kinds')
     if not kinds.is_regular(library):
         return [], ''
+    s = settings()
+    if not s['enabled']:
+        return [], ''
+    if not s['api_key']:
+        return [], 'YouTube search needs your YouTube Data API key (Settings → Download Clients → YouTube search).'
+    if not cookies_ok():
+        return [], COOKIES_NEEDED
     hits = []
     if kinds.is_regular(library) and ready():  # Movies, collections and (user 2026-10-31) Shows
         try:
@@ -391,8 +398,6 @@ def suggest(app, path, name, library, interactive=True, everywhere=False):
             c.execute('INSERT INTO youtube_search_cache(path,query,results,fetched) VALUES(?,?,?,?) ON CONFLICT(path) DO UPDATE SET '
                       'query=excluded.query,results=excluded.results,fetched=excluded.fetched', (path, query, json.dumps(hits), int(time.time())))
         return hits, 'Found on ' + CHANNEL_NAME + ' — no YouTube search used. Not the right one? Search all of YouTube.'
-    if not settings()['enabled']:
-        return hits, ''
     with _LOCK:  # one search at a time, so the budget and spacing checks can't be raced
         ok, why = can_search(interactive)
         if not ok:
@@ -442,10 +447,15 @@ def suggest(app, path, name, library, interactive=True, everywhere=False):
 
 # ---------------------------------------------------------------------------- background ----
 def _next_title(app):
-    """A missing Shows / Movies title with no saved suggestions (oldest first)."""
+    """A missing regular title whose suggestions are absent, expired or outdated."""
+    signature = __import__('sources').cache_signature(app)
     with app.db() as c:
         row = c.execute("SELECT s.path,s.name,s.library FROM shows s LEFT JOIN theme_suggestions t ON t.path=s.path "
-                        "WHERE s.library IN ('Shows','Movies') AND s.state='missing' AND t.path IS NULL ORDER BY s.name LIMIT 1").fetchone()
+                        "LEFT JOIN theme_suggestion_meta m ON m.path=s.path "
+                        "WHERE s.library IN ('Shows','Movies') AND s.state='missing' "
+                        "AND (t.path IS NULL OR m.path IS NULL OR m.signature<>? OR m.expires<=?) "
+                        "ORDER BY CASE WHEN t.path IS NULL THEN 0 ELSE 1 END,COALESCE(m.expires,0),s.name LIMIT 1",
+                        (signature, int(time.time()))).fetchone()
     return row
 
 

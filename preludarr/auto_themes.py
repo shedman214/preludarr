@@ -87,9 +87,11 @@ def to_install(app):
     s = settings()
     if s['mode'] == 'off':
         return []
-    sql = ("SELECT s.path FROM shows s LEFT JOIN show_added a ON a.path=s.path WHERE s.state='missing'"
+    sql = ("SELECT s.path FROM shows s LEFT JOIN show_added a ON a.path=s.path"
+           " LEFT JOIN theme_retry r ON r.path=s.path WHERE s.state='missing'"
+           " AND (r.next_retry IS NULL OR r.next_retry<=?)"
            " AND s.library IN ('Anime TV','Anime Movies')")  # Preludarr 1.11: Shows / Movies are never auto-installed
-    params = []
+    params = [int(time.time())]
     if s['mode'] == 'new':
         sql += ' AND a.baseline=0 AND a.added>=?'
         params.append(s['enabled_at'])

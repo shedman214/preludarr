@@ -51,7 +51,9 @@ class DownloadReached(Exception):
     pass
 
 
-def fake_request_json(url, data=None):
+def fake_request_json(url, data=None, fresh=False):
+    # Verification of a selected track must use the same frozen provider
+    # response in replay mode (never contact the network).
     key = json.dumps([url, data], sort_keys=True, ensure_ascii=False)
     if key not in recorded:
         if MODE == 'replay':
@@ -97,6 +99,12 @@ if hasattr(app, 'open_approved'):  # 1.12: theme audio downloads go through app.
             raise ValueError('Download address is not from an approved provider')
         return no_download(request)
     app.open_approved = approved_no_download
+if hasattr(app, 'download_verified_theme_audio'):
+    # The shared installer now verifies the exact track before this boundary.
+    # Keep measuring the selected audio URL, not downloading any real audio.
+    def verified_no_download(track, destination):
+        raise DownloadReached('DOWNLOAD_REACHED ' + track['audio_url'])
+    app.download_verified_theme_audio = verified_no_download
 
 saves, events = [], []
 real_save = app.save

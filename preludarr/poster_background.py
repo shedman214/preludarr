@@ -105,7 +105,7 @@ def enqueue_missing(app):
     roots = {str(root) for _, root in app.ROOTS}
     with app.db() as conn:
         rows = conn.execute('SELECT s.path FROM shows s LEFT JOIN posters p ON p.path=s.path '
-                            'WHERE p.path IS NULL ORDER BY s.path').fetchall()
+                            "WHERE p.path IS NULL AND s.state<>'unavailable' ORDER BY s.path").fetchall()
         paths = [(row['path'],) for row in rows
                  if str(Path(row['path']).parent) in roots
                  and not app.poster_file(row['path']).is_file()]

@@ -13,7 +13,7 @@ import time
 import urllib.parse
 
 _ALLOWED_LIBRARIES = ('all', 'Anime TV', 'Anime Movies', 'Shows', 'Movies')  # Preludarr 1.11
-_ALLOWED_STATES = ('all', 'recent', 'missing', 'installed', 'review', 'searching', 'downloading', 'converting')
+_ALLOWED_STATES = ('all', 'recent', 'missing', 'installed', 'review', 'searching', 'downloading', 'converting', 'unavailable')
 _ALLOWED_POSTERS = ('all', 'missing', 'cached', 'failed')
 _PEND = {}
 _PEND_LOCK = threading.Lock()
@@ -70,7 +70,7 @@ def register(conn, poster_file):
 def candidates(conn, filters, poster_file):
     """Return every currently matching missing title, not just one page."""
     term = filters['q']; library = filters['library']; state = filters['state']; poster = filters['poster']
-    clauses = []; params = []
+    clauses = ["state<>'unavailable'"]; params = []
     if term:
         escaped = term.replace('\\','\\\\').replace('%','\\%').replace('_','\\_')
         clauses.append("name LIKE ? ESCAPE '\\'")

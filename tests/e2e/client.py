@@ -4,6 +4,7 @@
 Runs inside the app container's network namespace (--network container:<app>), so the app itself needs no network.
 Env: MODE=fresh|upgrade, SETUP_CODE (fresh), PASSWORD, USERNAME. Secrets are never printed.
 """
+import hashlib
 import http.client
 import json
 import os
@@ -137,7 +138,9 @@ else:
 
 # ---- streaming install progress (title seeded by the script; no network → the download fails, but progress streams)
 if MODE == 'fresh':
-    st, h, body = req('POST', '/regular/install', {'path': '/media/shows/E2E Show (2020)', 'idx': '0', 'confirm': '1'}, headers={'X-Preludarr-Progress': 'v1'}, timeout=120)
+    proposal = {'source': 'plex', 'url': 'https://tvthemes.plexapp.com/12345.mp3', 'title': 'E2E Show theme'}
+    key = hashlib.sha256(json.dumps(proposal, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
+    st, h, body = req('POST', '/regular/install', {'path': '/media/shows/E2E Show (2020)', 'idx': '0', 'confirm': '1', 'proposal': key}, headers={'X-Preludarr-Progress': 'v1'}, timeout=120)
     lines = [json.loads(x) for x in body.decode().splitlines() if x.strip()]
     check('Install progress streams as JSON lines through the hardened server', st == 200 and 'ndjson' in h.get('content-type', '')
           and len(lines) >= 2 and all('phase' in x for x in lines), (st, h.get('content-type'), body[:200]))

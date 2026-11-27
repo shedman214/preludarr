@@ -9,6 +9,29 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.16.3] — 2026-11-27
+
+This reliability update makes theme matching, installation and recovery more dependable, especially when a provider or a library mount is temporarily unavailable.
+
+### ✨ Highlights
+- Temporary provider failures are retried instead of leaving automatic theme installs stuck in Needs review.
+- Automatic and manual theme installation use the same verified, no-overwrite pipeline.
+
+### ➕ Added
+- **Unavailable folders.** A title whose folder or library mount disappears is marked unavailable rather than losing its saved state. A rescan checks the folder when it returns and preserves previous matching review decisions.
+
+### 🔧 Fixed
+- **AnimeThemes alternatives.** Plausible alternative titles and their preview and provider links are displayed again.
+- **Theme recovery.** Restoring from Theme Management completes successfully, updates the library and removes the used recovery entry without replacing an existing theme.
+- **Automatic installs.** Exact tracks are checked again before download, conversion uses the same resource limits and ownership checks as a manual install, and configured targeted media-server refreshes run after success.
+- **Provider retries and suggestions.** Temporary failures use a cooldown, old failed lookups are refreshed, and changes to source settings or relevant credentials invalidate cached suggestions. An updated suggestion cannot silently replace the one you reviewed.
+- **Windows Sonarr and Radarr paths.** Creating missing folders also works with mapped drive and UNC paths.
+- **Release validation.** Matching regression comparisons report their true result; failures no longer pass the test gate silently.
+
+### ⚠️ Upgrade notes
+- Existing files, saved matches and settings are kept. The next scan requeues recognizable previous provider failures, including the folder-ID-tag 404 fixed in 1.16.1. Automatic retries respect your existing Automatic Themes settings.
+- A missing mount or renamed title folder remains in the library as unavailable; no media files are deleted. Rescan after the folder returns.
+
 ## [1.16.2] — 2026-11-25
 
 This update fixes ThemerrDB lookups for TV shows and movies.

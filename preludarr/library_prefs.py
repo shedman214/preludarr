@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 
 FILE = 'preludarr_library_filters.json'
-STATES = ('all', 'recent', 'missing', 'installed', 'review', 'searching', 'downloading', 'converting')
+STATES = ('all', 'recent', 'missing', 'installed', 'review', 'searching', 'downloading', 'converting', 'unavailable')
 POSTERS = ('all', 'missing', 'cached', 'failed')
 DEFAULT = {'state': 'all', 'poster': 'all'}
 

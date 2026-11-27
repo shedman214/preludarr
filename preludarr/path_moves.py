@@ -22,7 +22,8 @@ import os
 import time
 from pathlib import Path
 
-TABLES_NEW_WINS = ('shows', 'theme_suggestions', 'youtube_search_cache', 'poster_attempts')
+TABLES_NEW_WINS = ('shows', 'theme_suggestions', 'youtube_search_cache', 'poster_attempts',
+                   'theme_retry', 'title_availability', 'theme_suggestion_meta')
 TABLES_OLD_WINS = ('show_added', 'media_ids', 'posters')
 JSON_FILES = ('themearr_v4_matches.json', 'themearr_media_servers_v1.json', 'themearr_library_health.json', 'themearr_arr.json')
 

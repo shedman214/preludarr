@@ -59,6 +59,7 @@ def panel(app, path, name, library):
             parts.append(_player(vid.group(1), f.get('track', '')))
         parts += ['<form method="post" action="/regular/install" class="rg-install"><input type="hidden" name="path" value="', _e(path), '">',
                   '<input type="hidden" name="idx" value="', str(i), '">',
+                  '<input type="hidden" name="proposal" value="', _e(src.proposal_key(f)), '">',
                   '<label class="check"><input type="checkbox" name="confirm" value="1" required', '' if writable else ' disabled', '> Install this as theme.mp3',
                   ' (downloads through the YouTube download client)' if f['source'] == 'themerrdb' else '', '</label>',
                   '<button type="submit"', '' if writable else ' disabled title="The folder is read-only in Docker"', '>Install</button></form></div>']
@@ -81,7 +82,8 @@ def panel(app, path, name, library):
                   '<input type="hidden" name="scope" value="all"><button type="submit" class="btn ghost">Search all of YouTube</button>',
                   '<span class="muted">Not the right version? Uses one YouTube search.</span></form>']
     if not found:
-        parts.append('<p>No theme found yet for this title.</p>')
+        parts.append('<p>Theme lookup is waiting or temporarily unavailable. Try again later.</p>' if src.waiting(notes)
+                     else '<p>No theme found yet for this title.</p>')
     if notes:
         parts += ['<ul class="muted rg-notes">'] + ['<li>' + _e(n) + '</li>' for n in notes] + ['</ul>']
     u, s = yt.usage(), yt.settings()
@@ -198,6 +200,8 @@ def post(app, handler, redirect):
             if not 0 <= idx < len(found) or found[idx].get('source') not in ('plex', 'themerrdb'):
                 raise ValueError('That suggestion changed meanwhile — look again.')
             proposal = found[idx]
+            if f('proposal') != src.proposal_key(proposal):
+                raise ValueError('That suggestion changed meanwhile — look again.')
             if handler.headers.get('X-Preludarr-Progress') == 'v1':  # 1.11.8: live progress for the title page
                 return _install_streamed(app, handler, path, proposal)
             src.install(app, path, proposal)
