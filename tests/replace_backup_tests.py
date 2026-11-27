@@ -49,6 +49,19 @@ fresh = anime / 'Fresh Title (2021)'; fresh.mkdir(); app.save(str(fresh), 'Anime
 app.manual_install_mp3(fresh, new_src, replace=False)
 check('A first install (no old theme) adds nothing to the recycle bin', (fresh / 'theme.mp3').is_file() and not tr.batches(app))
 
+late = anime / 'Concurrent Title (2021)'; late.mkdir(); app.save(str(late), 'Anime TV', late.name, 'missing')
+other = b''.join((b'ID3', b'other process' * 1000))
+def competing_install(phase, message):
+    if phase == 'installing':
+        (late / 'theme.mp3').write_bytes(other)
+try:
+    app.manual_install_mp3(late, new_src, replace=False, progress=competing_install)
+    refused = False
+except ValueError:
+    refused = True
+check('A theme created at publication time is preserved by the no-overwrite install',
+      refused and (late / 'theme.mp3').read_bytes() == other and sorted(p.name for p in late.iterdir()) == ['theme.mp3'])
+
 real = tr.save_replaced
 def broken(*a, **k):
     raise OSError('disk full')

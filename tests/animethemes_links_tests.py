@@ -2,6 +2,7 @@
 """Offline website-link rendering regressions; also picked up by run_tests.sh."""
 import sys
 import unittest
+import tempfile
 from html.parser import HTMLParser
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'preludarr'))
@@ -57,6 +58,19 @@ class CandidateLinks(unittest.TestCase):
         root = Path(__file__).resolve().parents[1] / 'preludarr'
         for filename, call in [('anidb.py', "animethemes.anime_page_link(r['slug'])"), ('media_servers.py', 'animethemes.anime_page_link(slug)'), ('app.py', "animethemes.anime_page_link(show.get('slug'))"), ('app.py', "animethemes.anime_page_link(chosen.get('slug'))"), ('app.py', 'animethemes.search_result(candidate,selected)')]:
             self.assertIn(call, (root / filename).read_text(encoding='utf-8'))
+
+    def test_alternative_match_renders_preview_and_external_link(self):
+        from media_servers import fallback_panel
+        with tempfile.TemporaryDirectory() as cfg:
+            candidate = {'slug': 'boku_no_hero_academia', 'name': 'Boku no Hero Academia', 'year': 2016,
+                         'media_format': 'TV', 'animesynonyms': [{'text': 'My Hero Academia'}]}
+            body = fallback_panel(Path(cfg), '/anime/My Hero Academia', 'My Hero Academia',
+                                  lambda url: {'anime': [candidate]})
+        links = Links(body).anchors
+        self.assertTrue(any('theme_slug=boku_no_hero_academia' in a.get('href', '') for a in links))
+        self.assertTrue(any(a.get('href') == 'https://animethemes.moe/anime/boku_no_hero_academia' for a in links))
+        self.assertIn('Remember this anime', body)
+        self.assertNotIn('Alternative search is temporarily unavailable', body)
 
 
 if __name__ == '__main__':

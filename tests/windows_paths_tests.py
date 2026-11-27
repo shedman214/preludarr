@@ -48,5 +48,23 @@ check('Suggestions work for Windows paths (G:\\TV → the TV root, 2 of 3 found)
       sugg and sugg[0]['remote'] == 'G:\\TV' and sugg[0]['local'] == str(media / 'TV') and sugg[0]['hits'] == 2, sugg)
 form = arr._form(app, None)
 check('The mapping form shows a Windows example', 'G:\\TV =&gt; /media/tv_shows' in form or 'G:\\TV => /media/tv_shows' in form)
+
+# Mapping a Windows path is not enough: creating its missing folder must use
+# the same platform-aware basename extraction as mapping suggestions.
+app.CONFIG = work / 'config'
+app.CONFIG.mkdir()
+saved = []
+app.save = lambda *args: saved.append(args)
+app.event = lambda *args: None
+app.auto_themes = types.SimpleNamespace(record_new=lambda app: None)
+inst.update(kind='sonarr', name='Windows Sonarr')
+drive = arr.create_folder(app, inst, r'G:\TV\New Show (2026)')
+check('Creates a missing Windows drive-path folder in the registered Linux root',
+      drive == media / 'TV' / 'New Show (2026)' and drive.is_dir())
+inst['mappings'].append({'remote': r'\\NAS\Anime', 'local': str(anime)})
+unc = arr.create_folder(app, inst, r'\\NAS\Anime\New Anime (2026)')
+check('Creates a missing UNC-path folder in the registered Linux root',
+      unc == anime / 'New Anime (2026)' and unc.is_dir())
+check('Folder creation registers only the mapped title folders', [a[2] for a in saved] == ['New Show (2026)', 'New Anime (2026)'])
 print(f'\n{sum(results)}/{len(results)} passed')
 sys.exit(0 if all(results) else 1)

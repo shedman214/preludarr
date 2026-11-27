@@ -172,7 +172,8 @@ Older `THEMEARR_*` and `SPLICARR_*` names of the `PRELUDARR_*` settings still wo
 
 ## Troubleshooting connections and posters
 - **Sonarr/Radarr timeout:** the address must be reachable from inside the Preludarr container. Check the port, Docker routing and the target server's firewall. A browser on another device can work even when the container cannot connect. Status checks allow 12 seconds; root-folder checks allow 30 seconds.
-- **Poster folder unavailable:** a saved Library entry can point to an old folder name after a rename or move. Rescan the registered root, reload the Library, and retry the entry matching the current folder. Preludarr will not create a replacement folder or automatically discard saved history.
+- **Folder unavailable:** a saved Library entry can point to an old folder name after a rename or move, or its library mount may be offline. Unavailable entries retain their saved state and are skipped by background theme and poster processing. Rescan the registered root when it returns; Preludarr will not create a replacement folder or automatically discard saved history.
+- **Waiting for a theme retry:** temporary network/provider failures are kept separate from genuine matching problems. Automatic Themes retries them on a subsequent scheduled run once their cooldown is due (when enabled). A genuine mismatch still requires review. Existing themes are never replaced by these retries.
 - **Logs:** use Debug or Trace temporarily under Settings → General → Logging. Normal logs can still contain private paths or hostnames despite credential redaction; review downloads before sharing them.
 
 ## Backups and updates

@@ -45,7 +45,7 @@ def add(app, paths):
         active = {r[0] for r in c.execute("SELECT path FROM theme_queue WHERE state NOT IN ('installed','skipped','no_match','failed','cancelled')")}
         for path in list(dict.fromkeys(paths))[:MAX_ADD]:
             row = c.execute('SELECT name,library,state FROM shows WHERE path=?', (path,)).fetchone()
-            if not row or path in active or row['state'] == 'installed' or (Path(path) / 'theme.mp3').exists():
+            if not row or path in active or row['state'] in ('installed', 'unavailable') or (Path(path) / 'theme.mp3').exists():
                 skipped += 1
                 continue
             c.execute('INSERT INTO theme_queue(path,name,library,state,source,proposal,note,created,updated) VALUES(?,?,?,?,?,?,?,?,?)',
@@ -72,6 +72,8 @@ def propose(app, row):
     import sources
     import media_servers as v4
     path, name = row['path'], row['name']
+    if not Path(path).is_dir():
+        return 'skipped', '', None, 'Title folder is unavailable — rescan before queueing it again.'
     if (Path(path) / 'theme.mp3').exists():
         return 'skipped', '', None, 'Already has a theme.mp3 — left untouched.'
     if __import__('kinds').is_regular(row['library']):  # Preludarr 1.11: Shows / Movies skip AnimeThemes
@@ -130,6 +132,7 @@ def propose(app, row):
 def install(app, row, proposal):
     """Phase C for one approved title, through the existing safe installer (replace=False)."""
     folder = Path(row['path'])
+    __import__('library_health').preflight(folder)
     if proposal['kind'] == 'animethemes':
         track = app.resolve_animethemes_track(proposal['anime_slug'], str(proposal['video_id']))
         with app.stage_verified_theme_audio(track, app.CONFIG) as audio:
@@ -169,6 +172,11 @@ def step(app):
                or c.execute("SELECT * FROM theme_queue WHERE state='queued' ORDER BY id LIMIT 1").fetchone())
     if not row:
         return False
+    with app.db() as c:
+        title = c.execute('SELECT state FROM shows WHERE path=?', (row['path'],)).fetchone()
+    if not title or title['state'] == 'unavailable' or not Path(row['path']).is_dir():
+        _set(app, row['id'], 'skipped', note='Title folder is unavailable — rescan before queueing it again.')
+        return True
     if row['state'] == 'queued':
         _set(app, row['id'], 'searching')
         try:
@@ -211,6 +219,8 @@ def candidates(app, query):
     term = query.get('q', [''])[0].strip()[:120]
     library = query.get('library', ['all'])[0]
     state = query.get('state', ['all'])[0]
+    if state not in ('all', 'recent', 'missing', 'review'):
+        return []
     clauses, params = ["state IN ('missing','review')"], []
     if term:
         clauses.append("name LIKE ? ESCAPE '\\'")

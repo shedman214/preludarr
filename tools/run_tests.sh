@@ -31,12 +31,19 @@ for t in "$REPO"/tests/*_tests.py; do
   esac
 done
 # Anime matching must stay identical to the recorded baseline (62 titles, recorded API answers, no network).
-docker run --rm --network none --tmpfs /tmp --tmpfs /config -e CONFIG_DIR=/config -v "$REPO":/src:ro -v "$WORK/out":/out -w /tmp \
-  --entrypoint python3 "$IMAGE" -B /src/tests/original_matching_harness.py replay \
-  /src/tests/matching/fixtures-original.json /src/tests/matching/regression-titles.json /out/replay.json >/dev/null 2>&1 \
-  && docker run --rm --network none -v "$REPO":/src:ro -v "$WORK/out":/out --entrypoint python3 "$IMAGE" -B \
-     /src/tests/matching/compare_original.py /src/tests/matching/baseline-v161-original.json /out/replay.json | tail -1 \
-  || { echo 'matching harness: FAILED'; failed=$((failed + 1)); }
+# Do not pipe the comparator through tail: POSIX sh returns the last process's status,
+# which can hide a real matching regression. Keep the full comparison for diagnosis.
+if docker run --rm --network none --tmpfs /tmp --tmpfs /config -e CONFIG_DIR=/config -v "$REPO":/src:ro -v "$WORK/out":/out -w /tmp \
+    --entrypoint python3 "$IMAGE" -B /src/tests/original_matching_harness.py replay \
+    /src/tests/matching/fixtures-original.json /src/tests/matching/regression-titles.json /out/replay.json >"$WORK/replay.log" 2>&1; then
+  if ! docker run --rm --network none -v "$REPO":/src:ro -v "$WORK/out":/out --entrypoint python3 "$IMAGE" -B \
+    /src/tests/matching/compare_original.py /src/tests/matching/baseline-v161-original.json /out/replay.json; then
+    echo 'matching comparator: FAILED'; failed=$((failed + 1))
+  fi
+else
+  cat "$WORK/replay.log"
+  echo 'matching replay: FAILED'; failed=$((failed + 1))
+fi
 rm -rf "$WORK"
 [ $failed -eq 0 ] && echo 'ALL TESTS PASSED' || echo "$failed test group(s) FAILED"
 exit $failed

@@ -87,7 +87,8 @@ check('A poster address that is not TMDB/TheTVDB is refused before any request',
 urllib.request.build_opener = real
 
 src = Path('/src/preludarr/app.py').read_text()
-check('Both download paths use the check (theme audio and automatic posters)',
-      "open_approved(req,ANIMETHEMES_AUDIO_HOSTS,35)" in src and "open_approved(req,__import__('poster_manual').IMAGE_HOSTS,25)" in src)
+check('Automatic installs use the shared verified audio stage; posters keep the approved-host check',
+      "with stage_verified_theme_audio(track,CONFIG) as source:" in src
+      and "open_approved(req,__import__('poster_manual').IMAGE_HOSTS,25)" in src)
 print(f'\n{sum(results)}/{len(results)} passed')
 sys.exit(0 if all(results) else 1)

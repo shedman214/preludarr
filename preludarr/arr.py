@@ -349,9 +349,14 @@ def sync(app, iid, create=False):
         folder = Path(local)
         if it['tvdb'] or it['tmdb'] or it['imdb']:  # V1.9.0: exact IDs for secondary theme sources
             with app.db() as c:
+                old = c.execute('SELECT tvdb,tmdb,imdb FROM media_ids WHERE path=?', (local,)).fetchone()
+                current = (it['tvdb'] or None, it['tmdb'] or None, it['imdb'] or None)
+                if not old or tuple(old) != current:
+                    c.execute('DELETE FROM theme_suggestions WHERE path=?', (local,))
+                    c.execute('DELETE FROM theme_suggestion_meta WHERE path=?', (local,))
                 c.execute('INSERT INTO media_ids(path,tvdb,tmdb,imdb,source) VALUES(?,?,?,?,?) ON CONFLICT(path) DO UPDATE SET '
                           'tvdb=excluded.tvdb,tmdb=excluded.tmdb,imdb=excluded.imdb,source=excluded.source',
-                          (local, it['tvdb'] or None, it['tmdb'] or None, it['imdb'] or None, inst['kind']))
+                          (local, *current, inst['kind']))
         if folder.is_dir():
             if local in known:
                 summary['in_library'] += 1
@@ -366,7 +371,7 @@ def sync(app, iid, create=False):
                     create_folder(app, inst, it['path'], reason='automatic')
                     summary['created'] += 1
                     continue
-                except ValueError:
+                except (OSError, ValueError):
                     pass
             summary['no_folder'].append(entry)
     _STATE[iid] = summary
@@ -392,7 +397,8 @@ def create_folder(app, inst, remote, reason='manual'):
         raise ValueError('No path mapping covers this folder.')
     label, root = _root_for(app, local)
     folder = Path(local)
-    name = Path(str(remote).rstrip('/')).name
+    # The remote path can be Windows or UNC even though Preludarr runs on Linux.
+    _, name = _parent_and_name(remote)
     if not label or folder.name != name or name.startswith('.') or '/' in name or name in ('', '..'):
         raise ValueError('The folder would not be directly inside a Preludarr root folder.')
     if os.path.realpath(root) != str(root):
@@ -746,7 +752,7 @@ def create_post(app, handler, redirect):
                 create_folder(app, inst, remote)
                 made += 1
             except (ValueError, OSError) as error:
-                problems.append(Path(remote).name + ': ' + (str(error) if isinstance(error, ValueError) else 'already exists or not allowed'))
+                problems.append(_parent_and_name(remote)[1] + ': ' + (str(error) if isinstance(error, ValueError) else 'already exists or not allowed'))
         st['no_folder'] = [e for e in st['no_folder'] if not Path(e['local']).is_dir()]
         msg = f'Created {made} folder(s).' + (' Skipped: ' + '; '.join(problems[:3]) if problems else '')
     except (ValueError, UnicodeError) as error:

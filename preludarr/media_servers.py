@@ -128,7 +128,7 @@ def override(config, anime_path):
     return item if isinstance(item, dict) and _SLUG.fullmatch(str(item.get('slug', ''))) else None
 
 
-def resolve(config, anime_path, name, media, automatic, request_json):
+def resolve(config, anime_path, name, media, automatic, request_json, *, strict=False):
     item = override(config, anime_path)
     if not item:
         return automatic(name, media or {})
@@ -140,6 +140,8 @@ def resolve(config, anime_path, name, media, automatic, request_json):
             return result
     except Exception as error:
         print('Saved anime match unavailable: ' + type(error).__name__, flush=True)
+        if strict:
+            raise
     # Never silently fall back to a potentially different anime once explicitly mapped.
     return None
 
@@ -275,12 +277,8 @@ def fallback_panel(config, anime_path, name, request_json):
                             '<button type="submit">Remember this anime</button></form></div></div></div>'])
     except Exception:
         box.append('<p>Alternative search is temporarily unavailable; existing manual search still works.</p>')
-        try:
-            import animethemes
-            if animethemes.status_note():
-                box.extend(['<p class="muted">', _e(animethemes.status_note()), '</p>'])
-        except ImportError:
-            pass
+        if animethemes.status_note():
+            box.extend(['<p class="muted">', _e(animethemes.status_note()), '</p>'])
     box.append('</section>')
     return ''.join(box)
 

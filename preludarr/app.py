@@ -42,6 +42,7 @@ import emby_signin  # 1.12: sign in to Emby
 import appearance  # 1.12: Settings → Appearance
 import theme_queue
 import poster_background
+import theme_retry
 
 CONFIG=Path(os.getenv('CONFIG_DIR','/config')); CONFIG.mkdir(parents=True,exist_ok=True)
 DB=CONFIG/'library.db'
@@ -80,10 +81,13 @@ def db():
  c.execute('CREATE TABLE IF NOT EXISTS theme_suggestions (path TEXT PRIMARY KEY, found TEXT, notes TEXT, fetched INTEGER)')  # Preludarr 1.11 Shows/Movies suggestions
  c.execute('CREATE TABLE IF NOT EXISTS youtube_search_cache (path TEXT PRIMARY KEY, query TEXT, results TEXT, fetched INTEGER)')  # Preludarr 1.11, kept <= 30 days
  c.execute('CREATE TABLE IF NOT EXISTS theme_queue (id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT, name TEXT, library TEXT, state TEXT, source TEXT, proposal TEXT, note TEXT, created INTEGER, updated INTEGER)')  # V1.9.0 Bulk Theme Queue
+ c.execute('CREATE TABLE IF NOT EXISTS theme_retry (path TEXT PRIMARY KEY, attempts INTEGER NOT NULL, next_retry INTEGER NOT NULL, reason TEXT NOT NULL)')
+ c.execute('CREATE TABLE IF NOT EXISTS title_availability (path TEXT PRIMARY KEY, prior_state TEXT NOT NULL, prior_detail TEXT NOT NULL)')
+ c.execute('CREATE TABLE IF NOT EXISTS theme_suggestion_meta (path TEXT PRIMARY KEY, signature TEXT NOT NULL, expires INTEGER NOT NULL)')
  c.commit();return c
 
 def now():return datetime.now(timezone.utc).isoformat(timespec='seconds')
-_STATE_LABEL={'installed':'Theme installed','review':'Needs review','missing':'Missing','searching':'Searching','downloading':'Downloading','converting':'Converting'}
+_STATE_LABEL={'installed':'Theme installed','review':'Needs review','missing':'Missing','searching':'Searching','downloading':'Downloading','converting':'Converting','unavailable':'Folder unavailable'}
 def last_op(path,name,state,detail=''):
  """V1.9.14: remember the last single-title outcome WITH its title and time (the dashboard used to show a bare global message)."""
  STATUS['last']={'path':str(path),'title':str(name),'state':state,'detail':str(detail or '')[:200],'at':time.time()}
@@ -93,7 +97,7 @@ def status_display():
  last=STATUS.get('last')
  if not last:return 'Idle'
  text='Last title: '+last['title']+' — '+_STATE_LABEL.get(last['state'],last['state'])
- if last['state']=='review' and last['detail']:text+=': '+last['detail']
+ if last['state'] in ('review','unavailable','missing') and last['detail']:text+=': '+last['detail']
  text+=' · '+__import__('ui').when(last['at'])
  try:
   with db() as c:row=c.execute('SELECT state FROM shows WHERE path=?',(last['path'],)).fetchone()
@@ -108,7 +112,10 @@ def scan_line():
 def event(name,status,detail):
  with db() as c:c.execute('INSERT INTO events(at,name,status,detail) VALUES(?,?,?,?)',(now(),name,status,detail[:800]))
 def save(path,library,name,state,detail=''):
- with db() as c:c.execute('INSERT INTO shows VALUES(?,?,?,?,?,?) ON CONFLICT(path) DO UPDATE SET library=excluded.library,name=excluded.name,state=excluded.state,detail=excluded.detail,updated=excluded.updated',(str(path),library,name,state,detail[:800],now()))
+ with db() as c:
+  c.execute('INSERT INTO shows VALUES(?,?,?,?,?,?) ON CONFLICT(path) DO UPDATE SET library=excluded.library,name=excluded.name,state=excluded.state,detail=excluded.detail,updated=excluded.updated',(str(path),library,name,state,detail[:800],now()))
+  if state!='unavailable':c.execute('DELETE FROM title_availability WHERE path=?',(str(path),))
+  if state in ('installed','review'):c.execute('DELETE FROM theme_retry WHERE path=?',(str(path),))
 def request_json(url, data=None, fresh=False):
  headers={'User-Agent':'Preludarr/1.12 (self-hosted theme manager)','Accept':'application/json'}
  if data is None and urllib.parse.urlsplit(url).hostname==animethemes.API_HOST:
@@ -601,6 +608,13 @@ POSTER_BACKGROUND_LIMIT=max(
 )
 POSTER_QUEUE_REFRESH=600  # 1.15: re-read the to-do list at most every 10 minutes
 
+def background_poster_ready(path,current):
+ # The snapshot can be minutes old. Recheck both availability and cooldown.
+ if poster_file(path).is_file() or not os.path.isdir(path):return False
+ with db() as conn:
+  row=conn.execute("SELECT p.checked,s.state FROM shows s LEFT JOIN posters p ON p.path=s.path WHERE s.path=?",(path,)).fetchone()
+ return bool(row and row['state']!='unavailable' and (not row['checked'] or row['checked']<int(current)-7*86400))
+
 def background_poster_worker():
  poster_v2_init()
  print('Background poster worker started (V2)',flush=True)
@@ -640,7 +654,7 @@ def background_poster_worker():
       SELECT s.path,s.library,s.name,p.checked
       FROM shows s
       LEFT JOIN posters p ON p.path=s.path
-      WHERE p.checked IS NULL OR p.checked < ?
+       WHERE s.state<>'unavailable' AND (p.checked IS NULL OR p.checked < ?)
       ORDER BY CASE WHEN p.status='queued' THEN 0 ELSE 1 END,COALESCE(p.checked,0),s.name
       LIMIT 5000
      """,(int(current)-7*86400,)).fetchall())
@@ -650,12 +664,7 @@ def background_poster_worker():
 
    while todo:
     row=todo.popleft()
-    # 1.15: skip shows whose folder is gone (deleted or moved) — a lookup would be wasted
-    if poster_file(row['path']).is_file() or not os.path.isdir(row['path']):continue
-    # 1.15: the list may be minutes old — a lookup since then (e.g. a manual one) restarts the cooldown
-    with db() as conn:
-     now_checked=conn.execute('SELECT checked FROM posters WHERE path=?',(row['path'],)).fetchone()
-    if now_checked and now_checked[0] and now_checked[0]>=int(current)-7*86400:continue
+    if not background_poster_ready(row['path'],current):continue
     selected=row
     break
 
@@ -752,7 +761,9 @@ def anime_theme(name, media):
      'q':query,'page[size]':'40','include':'animesynonyms'})
    try:
     shows=request_json(url).get('anime') or []
-   except Exception:
+   except Exception as error:
+    temporary=theme_retry.provider_error('AnimeThemes',error)
+    if temporary:raise temporary from error
     continue
    for show in shows:
     if not isinstance(show,dict):continue
@@ -795,7 +806,9 @@ def anime_theme(name, media):
  try:
   detail=request_json(detail_url).get('anime')
   return detail if isinstance(detail,dict) else None
- except Exception:
+ except Exception as error:
+  temporary=theme_retry.provider_error('AnimeThemes',error)
+  if temporary:raise temporary from error
   return None
 
 
@@ -877,6 +890,11 @@ def pick_audio(show):
     if url and urllib.parse.urlparse(url).hostname in ('a.animethemes.moe','v.animethemes.moe'):
      return url,(theme.get('song') or {}).get('title') or 'Opening'
  return None,None
+
+
+def pick_opening_track(show):
+ """Preserve the original first-available-opening policy, with its exact video ID."""
+ return next((t for t in list_available_themes(show) if t['type'].startswith('OP') and t.get('video_id')),None)
 
 
 
@@ -1188,10 +1206,15 @@ def _manual_install_mp3_unlocked(folder, source_audio, replace=False, expected_f
     if progress: progress("backing_up", "Keeping the current theme.mp3 in the recycle bin")
     saved=theme_review.save_replaced(sys.modules[__name__],folder,folder_fd)
    if progress: progress("installing", "Installing verified theme.mp3")
-   os.replace(
-    staged_name,'theme.mp3',
-    src_dir_fd=folder_fd,dst_dir_fd=folder_fd
-   )
+   if current is None:
+    # The destination was absent at confirmation/preflight. Publish without
+    # overwrite even if another process creates a theme at the last moment.
+    try:
+     os.link(staged_name,'theme.mp3',src_dir_fd=folder_fd,dst_dir_fd=folder_fd,follow_symlinks=False)
+    except FileExistsError:
+     raise ValueError('Existing theme requires explicit replacement') from None
+   else:
+    os.replace(staged_name,'theme.mp3',src_dir_fd=folder_fd,dst_dir_fd=folder_fd)
    if saved:
     theme_review.finish_replaced(saved,folder_fd)
    if progress: progress("published", "New theme.mp3 published successfully")
@@ -1209,7 +1232,7 @@ def manual_install_mp3(folder, source_audio, replace=False,
                        activity_label=None, backup=True):
  """Allow one manual installation at a time."""
  if not _manual_install_lock.acquire(blocking=False):
-  raise RuntimeError('Another manual installation is running')
+  raise theme_retry.InstallBusy('Another manual installation is running')
  try:
   try:
    library_health.preflight(folder)  # V1.9.3: plain reason before any conversion (read-only check)
@@ -1240,6 +1263,9 @@ def _record_install_activity(folder,anime_slug,video_id,status,extra,label=None)
   name=row['name'] if row else Path(folder).name
   if anime_slug=='custom_upload':source='Custom upload'+(' · '+label if label else '')
   elif anime_slug=='youtube_manual':source='YouTube'+(' · '+label if label else '')
+  elif label and label.startswith('Automatic Themes'):
+   source=label
+   if status=='installed':status='downloaded'
   elif str(anime_slug).startswith('source_') or (label and label.startswith('Bulk queue')):source=label or str(anime_slug)
   elif label:source='Theme Browser · '+label
   else:source=f'Theme Browser · AnimeThemes {anime_slug} (track {video_id})'
@@ -1260,24 +1286,66 @@ def activity_time(value):
 
 
 
+def mark_unavailable(paths, reason):
+ """Remember the prior state, but never remove a title or its saved data just
+ because a folder or mount disappears."""
+ if not paths:return
+ with db() as c:
+  for path in paths:
+   path=str(path)
+   row=c.execute('SELECT state,detail FROM shows WHERE path=?',(path,)).fetchone()
+   if not row:continue
+   if row['state']!='unavailable':
+    c.execute('INSERT OR REPLACE INTO title_availability(path,prior_state,prior_detail) VALUES(?,?,?)',
+              (path,row['state'],row['detail'] or ''))
+   c.execute("UPDATE shows SET state='unavailable',detail=?,updated=? WHERE path=?",(reason[:800],now(),path))
+
+
 def discover(only=None):
  count=0
  for label,root in (list(ROOTS) if only is None else [(l,r) for l,r in ROOTS if r==Path(only)]):
-  if not root.is_dir():event(label,'warning',f'Library path missing: {root}');continue
-  for folder in root.iterdir():
-   if not folder.is_dir() or folder.name.startswith(('.', '!')):continue
+  with db() as c:
+   known={r[0] for r in c.execute('SELECT path FROM shows') if Path(r[0]).parent==root}
+  try:
+   if not root.is_dir():raise FileNotFoundError()
+   folders=list(root.iterdir())
+  except OSError:
+   if (label,root) in ROOTS:
+    mark_unavailable(known,'Library root is currently unavailable. Saved matches and themes are retained; rescan when it returns.')
+    event(label,'warning',f'Library path unavailable: {root}')
+   continue
+  seen=set()
+  for folder in folders:
    if (label,root) not in ROOTS:break  # Preludarr 1.11.2: the root was removed / moved while this scan ran
+   if folder.name.startswith(('.', '!')):continue
+   try:
+    if not folder.is_dir():continue
+    seen.add(str(folder))
+    theme=folder/'theme.mp3'
+    state='installed' if theme.is_file() and not theme.is_symlink() and theme.stat().st_size>0 else 'missing'
+   except OSError:
+    seen.add(str(folder))
+    mark_unavailable([folder],'Title folder could not be read. Saved data is retained; rescan when it is available.')
+    continue
    count+=1
-   theme=folder/'theme.mp3'
-   state='installed' if theme.is_file() and theme.stat().st_size>0 else 'missing'
-   # Preserve failed-download explanations until a retry is requested.
-   with db() as c: previous=c.execute('SELECT state,detail FROM shows WHERE path=?',(str(folder),)).fetchone()
-   if state=='missing' and previous and previous['state']=='review':
+   with db() as c:
+    previous=c.execute('SELECT state,detail FROM shows WHERE path=?',(str(folder),)).fetchone()
+    if previous and previous['state']=='unavailable':
+     previous=c.execute('SELECT prior_state AS state,prior_detail AS detail FROM title_availability WHERE path=?',(str(folder),)).fetchone()
+    pending=c.execute('SELECT next_retry,reason FROM theme_retry WHERE path=?',(str(folder),)).fetchone()
+   if state=='missing' and pending:
+    save(folder,label,folder.name,'missing',theme_retry.detail(pending))
+   elif state=='missing' and previous and previous['state']=='review' and theme_retry.old_provider_failure(previous['detail'],bool(ID_TAG.search(folder.name) or re.search(r'\s-\s*imdb-tt\d+\s*$',folder.name,re.I))):
+    save(folder,label,folder.name,'missing','Queued to retry a previous provider error.')
+   elif state=='missing' and previous and previous['state']=='review':
     save(folder,label,folder.name,'review',previous['detail'])
-   elif state=='missing' and previous and previous['state'] in ('searching','downloading','converting') and STATUS['running']:
+   elif state=='missing' and previous and previous['state'] in ('searching','downloading','converting') and STATUS['running'] and STATUS['active_path']==str(folder):
     continue
    else:
-    save(folder,label,folder.name,state,'Existing theme' if state=='installed' else '')
+    prior_detail=previous['detail'] if previous and previous['state']==state else ''
+    save(folder,label,folder.name,state,prior_detail or ('Existing theme' if state=='installed' else ''))
+  if (label,root) in ROOTS:
+   mark_unavailable(known-seen,'Title folder is unavailable or has moved. Saved matches and history are retained.')
  # Preludarr 1.11.2: a root removed during the scan may have had a few titles saved after its removal — drop them again
  with db() as c:
   current={str(r) for _,r in ROOTS}
@@ -1294,15 +1362,22 @@ def process(path):
  path=Path(path)
  root_label=None
  for label,root in ROOTS:
-  if path.parent==root and root.is_dir():root_label=label;break
- if not root_label or not path.is_dir():raise ValueError('Not a direct child of an allowed library')
+  if path.parent==root:root_label=label;break
+ if not root_label:return 'Skipped: title is no longer in a registered library'
  name=path.name; target=path/'theme.mp3'
- if target.is_file() and target.stat().st_size>0:
-  save(path,root_label,name,'installed','Already exists');last_op(path,name,'installed','Already exists');return 'Already installed'
+ if not path.parent.is_dir() or not path.is_dir():
+  reason='Title folder is unavailable or has moved. Saved matches and history are retained.'
+  mark_unavailable([path],reason);last_op(path,name,'unavailable',reason)
+  return 'Unavailable: '+reason
+ if target.exists() or target.is_symlink():
+  if target.is_file() and not target.is_symlink() and target.stat().st_size>0:
+   save(path,root_label,name,'installed','Already exists');last_op(path,name,'installed','Already exists');return 'Already installed'
+  reason='An unusable theme.mp3 already exists. Review it before replacing; Preludarr will not overwrite it automatically.'
+  save(path,root_label,name,'review',reason);last_op(path,name,'review',reason);return 'Needs review: '+reason
  if kinds.is_regular(root_label):  # Preludarr 1.11: Shows / Movies are never installed automatically — suggestions only
   found,notes=sources.cached_find(sys.modules[__name__],str(path),name,root_label,interactive=False)
-  msg=(f'{len(found)} theme suggestion(s) ready — open the title to preview and choose' if found else 'No theme found yet: '+' '.join(notes)[:200])
-  save(path,root_label,name,'missing',msg);last_op(path,name,'review',msg);return 'Suggestions: '+msg
+  msg=(f'{len(found)} theme suggestion(s) ready — open the title to preview and choose' if found else ('Lookup waiting: ' if sources.waiting(notes) else 'No theme found yet: ')+' '.join(notes)[:200])
+  save(path,root_label,name,'missing',msg);last_op(path,name,'missing',msg);return 'Suggestions: '+msg
  try:library_health.preflight(path)  # V1.9.3: don't search/download when the folder can't take a theme
  except ValueError as error:
   save(path,root_label,name,'review',str(error));last_op(path,name,'review',str(error));return 'Needs review: '+str(error)
@@ -1311,45 +1386,39 @@ def process(path):
  try:
   if media_servers.has_override(CONFIG,str(path)):
    # V1.7.3: the user confirmed this folder's anime (Match / Import or Remember this anime) — use exactly that entry.
-   show=media_servers.resolve(CONFIG,str(path),name,{},anime_theme,request_json)
+   show=theme_retry.provider_call('AnimeThemes',media_servers.resolve,CONFIG,str(path),name,{},anime_theme,request_json,strict=True)
    if not show:raise ValueError('Your saved anime match could not be loaded from AnimeThemes right now')
   else:
-   media=anilist(name)
+   media=theme_retry.provider_call('AniList',anilist,name)
    if not media:raise ValueError('AniList did not identify the series')
    yr=year(name); ay=media.get('seasonYear')
    if yr and ay and yr!=ay:raise ValueError(f'AniList year mismatch: folder {yr}, result {ay}')
-   show=anime_theme(name,media)
+   show=theme_retry.provider_call('AnimeThemes',anime_theme,name,media)
    if not show:raise ValueError('No exact alternative-title match on AnimeThemes')
    sy=show.get('year')
    if yr and sy and int(sy)!=yr:raise ValueError(f'AnimeThemes year mismatch: folder {yr}, result {sy}')
-  url,song=pick_audio(show)
-  if not url:raise ValueError('No OP audio available')
+  selected=pick_opening_track(show)
+  if not selected:raise ValueError('No OP audio available')
+  song=selected['title']
   save(path,root_label,name,'downloading','Downloading: '+song)
   STATUS.update(stage='downloading',message='Downloading: '+name)
-  with tempfile.TemporaryDirectory(prefix='themearr-') as temp:
-   source=Path(temp)/'source.audio';converted=Path(temp)/'theme.mp3'
-   req=urllib.request.Request(url,headers={'User-Agent':'Preludarr/1.12 (self-hosted theme manager)'})
-   with open_approved(req,ANIMETHEMES_AUDIO_HOSTS,35) as resp,open(source,'wb') as out:
-    total=0
-    while True:
-     chunk=resp.read(1024*256)
-     if not chunk:break
-     total+=len(chunk)
-     if total>40*1024*1024:raise ValueError('Source audio exceeds 40 MB limit')
-     out.write(chunk)
-   subprocess.run(['ffmpeg','-nostdin','-hide_banner','-loglevel','error','-y','-i',str(source),'-vn','-codec:a','libmp3lame','-q:a','4',str(converted)],check=True,timeout=120)
-   if converted.stat().st_size<1024:raise ValueError('Converted MP3 is unexpectedly small')
-   # Copy into the media directory only after a complete conversion.
-   staged=path/'.themearr-theme.tmp'
-   if staged.exists():raise ValueError('Temporary output already exists; investigate before retrying')
-   try:
-    shutil.copyfile(converted,staged)
-    if target.exists():raise ValueError('Theme appeared during download; preserving it')
-    os.link(staged,target) # atomic no-overwrite installation on same filesystem
-    permissions.apply_file(CONFIG,target)  # V1.8.0: only if the user turned permissions on
-   finally:
-    staged.unlink(missing_ok=True)
-  save(path,root_label,name,'installed',song);event(name,'downloaded',song);last_op(path,name,'installed',song);STATUS.update(stage='completed',message='Downloaded: '+name+' — '+song);return 'Downloaded: '+song
+  slug=str(show['slug']);video_id=str(selected['video_id'])
+  track=theme_retry.provider_call('AnimeThemes',resolve_animethemes_track,slug,video_id)
+  try:
+   with stage_verified_theme_audio(track,CONFIG) as source:
+    save(path,root_label,name,'converting','Converting: '+song)
+    STATUS.update(stage='converting',message='Converting: '+name)
+    manual_install_mp3(path,source,replace=False,anime_slug=slug,video_id=video_id,
+                       activity_label='Automatic Themes · '+song)
+  except (urllib.error.URLError,TimeoutError,ConnectionError) as error:
+   temporary=theme_retry.provider_error('AnimeThemes audio',error)
+   if temporary:raise temporary from error
+   raise
+  save(path,root_label,name,'installed',song);last_op(path,name,'installed',song);STATUS.update(stage='completed',message=f'Downloaded: {name} — {song}');return f'Downloaded: {song}'
+ except (theme_retry.RetryLater,theme_retry.InstallBusy) as error:
+  reason=theme_retry.defer(sys.modules[__name__],path,str(error),getattr(error,'retry_after',0))
+  save(path,root_label,name,'missing',reason);event(name,'retry scheduled',reason);last_op(path,name,'missing',reason)
+  STATUS.update(stage='idle',message=reason);return reason
  except Exception as e:
   save(path,root_label,name,'review',str(e));event(name,'review',str(e));last_op(path,name,'review',str(e));STATUS.update(stage='failed',message='Failed: '+name+' — '+str(e));return 'Review: '+str(e)
 
@@ -1366,7 +1435,13 @@ def job(download=False,one=None,root=None):
     if root is None:arr.sync_all(sys.modules[__name__])  # V1.8.0: read Sonarr/Radarr (dates added; optional folder creation)
     count=discover(root);STATUS['message']=f'Discovered {count} titles'+(f' in {root}' if root else '');STATUS['scan_summary']=STATUS['message']
     if download:
-     for path in auto_themes.to_install(sys.modules[__name__]):process(path)  # V1.7.3: per the user's Automatic Themes choice
+     for path in auto_themes.to_install(sys.modules[__name__]):  # One unavailable title must not stop the whole run.
+      try:
+       result=process(path)
+       # A provider outage or busy installer should not cause the whole batch
+       # to repeat the same failing requests. The due retry stays persisted.
+       if str(result).startswith('Waiting for retry:'):break
+      except Exception as error:event(Path(path).name,'error',str(error))
    STATUS['last_scan']=now()
   except Exception as e:STATUS['message']='Error: '+str(e);event('System','error',str(e))
   finally:
@@ -1687,6 +1762,7 @@ def poster_v2_snapshot():
         rows = conn.execute('''
             SELECT s.path,p.status,p.checked
             FROM shows s LEFT JOIN posters p ON p.path=s.path
+            WHERE s.state<>'unavailable'
         ''').fetchall()
     stats = {'total': len(rows), 'cached': 0, 'missing': 0,
              'never_attempted': 0, 'failed': 0, 'queued': 0,
@@ -1733,7 +1809,7 @@ def poster_v2_control_post(handler, command):
     with db() as conn:
         rows = conn.execute('''
             SELECT p.path FROM posters p JOIN shows s ON s.path=p.path
-            WHERE p.status IN ('none','error')
+            WHERE p.status IN ('none','error') AND s.state<>'unavailable'
         ''').fetchall()
         retry_paths = [row['path'] for row in rows if not poster_file(row['path']).is_file()]
         with POSTER_LOCK:
@@ -2509,7 +2585,7 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    import login as _tl_api
    payload={'app':'Preludarr','formerly':'Splicarr, Themearr','version':_tl_api.APP_VERSION,'instance':_tl_api.instance_name(),'running':STATUS['running'],
             'message':STATUS['message'],'last_scan':STATUS['last_scan'],'titles':sum(counts.values()),'installed':counts.get('installed',0),
-            'missing':counts.get('missing',0),'review':counts.get('review',0),'counts':counts,'queue':theme_queue.counts(sys.modules[__name__])}
+            'missing':counts.get('missing',0),'review':counts.get('review',0),'unavailable':counts.get('unavailable',0),'counts':counts,'queue':theme_queue.counts(sys.modules[__name__])}
    return self.send(200,json.dumps(payload),'application/json')
   if parsed.path=='/api/v1/activity':
    try:limit=max(1,min(100,int(urllib.parse.parse_qs(parsed.query).get('limit',['20'])[0])))
@@ -2556,7 +2632,7 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    first=next((r for l,r in ROOTS if l==library),None)
    if first is not None:
     return auth.redirect(self,'/?'+urllib.parse.urlencode({'view':'library','library':root_folders.root_value(first),**{k:query[k][0] for k in ('q','state','poster','page') if query.get(k)}}))
-  if state not in ('all','recent','missing','installed','review','searching','downloading','converting'):state='all'
+  if state not in ('all','recent','missing','installed','review','searching','downloading','converting','unavailable'):state='all'
   try:page=max(1,int(query.get('page',['1'])[0]))
   except (ValueError,TypeError):page=1
   page=min(page,1000000)
@@ -2609,16 +2685,19 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    for k,rp in ROOTS:
     d=per.get(str(rp),{});tot=sum(d.values());inst=d.get('installed',0);miss=d.get('missing',0)+d.get('review',0)
     pct=round(100*inst/tot) if tot else 0
-    cards.append('<a class="stat dash-type" href="'+esc('/?'+urllib.parse.urlencode({'view':'library','library':root_folders.root_value(rp)}),quote=True)+'" title="'+esc(kinds.label(k),quote=True)+'"><span class="dash-type-h">'+kinds.ICONS[k]+' '+esc(root_folders.name_of(rp))+'</span>'
-                 '<strong>'+f'{tot:,}'+'</strong>titles<span class="stat-sub">'+f'{inst:,}'+' installed · '+f'{miss:,}'+' missing</span>'
-                 '<span class="dash-bar" role="img" aria-label="'+str(pct)+'% have a theme"><span style="width:'+str(pct)+'%"></span></span></a>')
+    link=esc('/?'+urllib.parse.urlencode({'view':'library','library':root_folders.root_value(rp)}),quote=True)
+    unavailable=f' · {d["unavailable"]:,} unavailable' if d.get('unavailable') else ''
+    cards.append(f'<a class="stat dash-type" href="{link}" title="{esc(kinds.label(k),quote=True)}"><span class="dash-type-h">{kinds.ICONS[k]} {esc(root_folders.name_of(rp))}</span>'
+                 f'<strong>{tot:,}</strong>titles<span class="stat-sub">{inst:,} installed · {miss:,} missing{unavailable}</span>'
+                 f'<span class="dash-bar" role="img" aria-label="{pct}% have a theme"><span style="width:{pct}%"></span></span></a>')
    cards.append('<a class="stat dash-type" href="/queue"><span class="dash-type-h">🧾 Theme Queue</span><strong>'+str(waiting)+'</strong>waiting<span class="stat-sub">to look up, review or install</span></a>')
    dash_types=('<div class="stats dash-types" aria-label="Libraries">'+''.join(cards)+'</div><style>#dashboard .dash-types{margin-top:10px}'
                '#dashboard .dash-type{display:flex;flex-direction:column;min-width:150px;text-decoration:none;color:inherit}#dashboard .dash-type:hover{border-color:#6f8fc7}'
                '#dashboard .dash-type-h{font-size:13px;font-weight:700;color:#9fb0cc;margin-bottom:2px}'
                '#dashboard .dash-bar{display:block;height:5px;margin-top:6px;border-radius:3px;background:#2b3a55;overflow:hidden}#dashboard .dash-bar>span{display:block;height:100%;background:#4f8ff7}'
                '@media(max-width:600px){#dashboard .dash-types{grid-template-columns:repeat(2,minmax(0,1fr))!important}}</style>')
-  parts+=['<div class="panel" id="dashboard"><h2>Dashboard</h2><div class="stats"><div class="stat"><strong>',f'{sum(counts.values()):,}','</strong>Total titles</div><div class="stat"><strong>',f"{counts.get('installed',0):,}",'</strong>Installed</div><div class="stat"><strong>',f"{sum(counts.get(k,0) for k in ('missing','review')):,}",'</strong>Missing or needs review<span class="stat-sub">',f"{counts.get('missing',0):,}",' missing · ',f"{counts.get('review',0):,}",' need',('s' if counts.get('review',0)==1 else ''),' review</span></div></div>',dash_types,'<div class="notice" role="status" id="job-status">',esc(status_display()),'</div><p class="muted scan-line" id="scan-line">',esc(scan_line()),'</p><form method="POST" action="/scan"><button>Scan libraries</button></form><p class="auto-line" style="font-size:15px;line-height:1.5;margin:12px 0 0;color:#cfe0f8">',esc(auto_themes.summary()),' · <a href="/media-management#automatic-themes" style="font-weight:600">Change</a></p>',DASHBOARD_CSS,'</div>']
+  unavailable_card=f'<div class="stat"><strong>{counts["unavailable"]:,}</strong>Unavailable folders</div>' if counts.get('unavailable') else ''
+  parts+=['<div class="panel" id="dashboard"><h2>Dashboard</h2><div class="stats"><div class="stat"><strong>',f'{sum(counts.values()):,}','</strong>Total titles</div><div class="stat"><strong>',f"{counts.get('installed',0):,}",'</strong>Installed</div><div class="stat"><strong>',f"{sum(counts.get(k,0) for k in ('missing','review')):,}",'</strong>Missing or needs review<span class="stat-sub">',f"{counts.get('missing',0):,}",' missing · ',f"{counts.get('review',0):,}",' need',('s' if counts.get('review',0)==1 else ''),' review</span></div>',unavailable_card,'</div>',dash_types,'<div class="notice" role="status" id="job-status">',esc(status_display()),'</div><p class="muted scan-line" id="scan-line">',esc(scan_line()),'</p><form method="POST" action="/scan"><button>Scan libraries</button></form><p class="auto-line" style="font-size:15px;line-height:1.5;margin:12px 0 0;color:#cfe0f8">',esc(auto_themes.summary()),' · <a href="/media-management#automatic-themes" style="font-weight:600">Change</a></p>',DASHBOARD_CSS,'</div>']
   if view!='library':parts.append(__import__('onboarding').box(sys.modules[__name__]))  # 1.12 #15: next steps on a new install
   if view=='':parts.append(system._activity_page(sys.modules[__name__],query,'dashboard'))  # 1.12.2 (user): Activity on the Dashboard
   parts.append('<section class="panel" id="activity-heading"><h1>Activity</h1><p class="muted">Poster recovery and recent events · <a href="/poster-report">Missing poster report</a></p></section>')
@@ -2649,7 +2728,7 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
     parts+=['<option value="',esc(value,quote=True),'"',(' selected' if library==value else ''),'>',esc(label),'</option>']
    parts+=['</select></div>']
   parts+=['<div class="ls-field"><label class="ls-label" for="ls-state">Theme status</label><select id="ls-state" name="state" aria-label="Theme status">']
-  for value,label in [('all','All statuses'),('recent','Recently added'),('missing','Missing themes'),('installed','Installed themes'),('review','Needs review'),('searching','Searching'),('downloading','Downloading'),('converting','Converting')]:
+  for value,label in [('all','All statuses'),('recent','Recently added'),('missing','Missing themes'),('installed','Installed themes'),('review','Needs review'),('unavailable','Folder unavailable'),('searching','Searching'),('downloading','Downloading'),('converting','Converting')]:
    parts+=['<option value="',value,'"',(' selected' if state==value else ''),'>',esc(label),'</option>']
   parts+=['</select></div><div class="ls-field"><label class="ls-label" for="ls-poster">Poster status</label><select id="ls-poster" name="poster" aria-label="Poster status">']
   for value,label in [('all','All posters'),('missing','Missing posters'),('cached','Posters available'),('failed','Failed / no match')]:
@@ -2685,14 +2764,16 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    poster_url='/poster?'+urllib.parse.urlencode({'path':r['path']})
    poster=('<img class="card-poster" loading="lazy" alt="" src="'+esc(poster_url,quote=True)+'">') if img.is_file() else '<div class="card-empty">No poster yet</div>'
    parts+=['<article class="anime-card"><a href="',esc(theme_url,quote=True),'" aria-label="Explore themes for ',esc(r['name'],quote=True),'">',poster,'</a><div class="card-info"><div class="card-title"><a href="',esc(theme_url,quote=True),'">',esc(r['name']),'</a></div><div class="card-meta">',esc(root_folders.name_of(Path(r['path']).parent)),'</div><div class="card-status ',esc(r['state']),'">',esc(r['state']),'</div>']
+   if r['state']=='unavailable' or str(r['detail']).startswith(('Waiting for retry:','Queued to retry')):
+    parts+=['<div class="card-meta">',esc(r['detail'] or ''),'</div>']
    pickable=r['path'] in pick_paths
-   if not img.is_file() or pickable:
+   if r['state']!='unavailable' and (not img.is_file() or pickable):
     parts+=['<div class="poster-tools">']
     if not img.is_file():
      parts+=['<form method="POST" action="/poster-retry">','<input type="hidden" name="path" value="',esc(r['path'],quote=True),'">','<button type="submit">Retry Poster</button></form>']
     if pickable:parts.append(poster_manual.pick_button(r['path'],r['name']))
     parts+=['<p data-poster-retry-status role="status" aria-live="polite"></p></div>']
-   if r['state']!='installed':
+   if r['state'] not in ('installed','unavailable'):
     parts+=['<form method="POST" action="/retry"><input type="hidden" name="path" value="',esc(r['path'],quote=True),'"><input type="hidden" name="return_to" value="',esc(self.path,quote=True),'"><button',(' disabled' if STATUS['running'] else ''),'>Download / Retry</button></form>']
    parts+=['</div></article>']
   if not rows:parts+=['<p>No matching titles.</p>']
@@ -2703,7 +2784,7 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    theme_url='/themes?'+urllib.parse.urlencode({'path':r['path']})
    poster='<img class="poster" loading="lazy" alt="" src="/poster?'+urllib.parse.urlencode({'path':r['path']})+'">' if img.is_file() else '<span class="poster poster-empty">No poster</span>'
    parts+=['<tr><td><div class="anime-cell"><a href="',esc(theme_url,quote=True),'" aria-label="Explore themes for ',esc(r['name'],quote=True),'">',poster,'</a><div class="anime-info"><a href="',esc(theme_url,quote=True),'">',esc(r['name']),'</a><br><small>',esc(r['detail'] or ''),'</small></div></div></td><td>',esc(r['library']),'</td><td class="',esc(r['state']),'">',esc(r['state']),'</td><td>']
-   if r['state']!='installed':parts+=['<form method="POST" action="/retry"><input type="hidden" name="path" value="',esc(r['path'],quote=True),'"><input type="hidden" name="return_to" value="',esc(self.path,quote=True),'"><button',(' disabled' if STATUS['running'] else ''),'>',('Working…' if r['state'] in ('searching','downloading','converting') else 'Download / Retry'),'</button></form>']
+   if r['state'] not in ('installed','unavailable'):parts+=['<form method="POST" action="/retry"><input type="hidden" name="path" value="',esc(r['path'],quote=True),'"><input type="hidden" name="return_to" value="',esc(self.path,quote=True),'"><button',(' disabled' if STATUS['running'] else ''),'>',('Working…' if r['state'] in ('searching','downloading','converting') else 'Download / Retry'),'</button></form>']
    parts+=['</td></tr>']
   if not rows:parts+=['<tr><td colspan="4">No matching titles. Try another search or scan your libraries.</td></tr>']
   parts+=['</table></div><div class="pager">']
@@ -2911,7 +2992,7 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
       progress=report if stream_progress else None,
       activity_label=' — '.join(str(x) for x in (track.get('slug'),track.get('title')) if x)
      )
-   except (ValueError,OSError,TimeoutError,subprocess.CalledProcessError,subprocess.TimeoutExpired) as error:
+   except (ValueError,OSError,TimeoutError,theme_retry.InstallBusy,subprocess.CalledProcessError,subprocess.TimeoutExpired) as error:
     if stream_progress:
      report('error','Theme installation failed. Refresh the page to verify whether theme.mp3 changed before retrying.')
      return

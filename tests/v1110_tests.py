@@ -221,6 +221,8 @@ regular.post(app, H('/regular/install', urllib.parse.urlencode({'path': P('shows
 check('Only a saved suggestion (by index) can be installed', 'changed meanwhile' in redirected[-1], redirected[-1])
 regular.post(app, H('/regular/install', urllib.parse.urlencode({'path': P('shows/Breaking Bad (2008)'), 'idx': '0'})), redirect)
 check('Install needs the confirmation tick', 'Tick the confirmation box' in redirected[-1], redirected[-1])
+regular.post(app, H('/regular/install', urllib.parse.urlencode({'path': P('shows/Breaking Bad (2008)'), 'idx': '0', 'confirm': '1', 'proposal': 'stale'})), redirect)
+check('A refreshed suggestion cannot silently replace the one the user reviewed', 'changed meanwhile' in redirected[-1], redirected[-1])
 regular.post(app, H('/regular/install', urllib.parse.urlencode({'path': P('anime/Naruto (2002)'), 'idx': '0', 'confirm': '1'})), redirect)
 check('Anime titles are refused here', 'not in a Shows or Movies root folder' in redirected[-1], redirected[-1])
 
@@ -244,7 +246,7 @@ import library_health as lh  # noqa: E402
 real_pre = lh.preflight
 lh.preflight = lambda folder: (_ for _ in ()).throw(ValueError('The library is mounted read-only in Docker — make the mapping read/write to install themes.'))
 calls.clear()
-h = SH(urllib.parse.urlencode({'path': P('shows/Breaking Bad (2008)'), 'idx': '0', 'confirm': '1'}))
+h = SH(urllib.parse.urlencode({'path': P('shows/Breaking Bad (2008)'), 'idx': '0', 'confirm': '1', 'proposal': src.proposal_key(found[0])}))
 regular.post(app, h, redirect)
 lines = [json.loads(x) for x in h.wfile.getvalue().decode().splitlines() if x.strip()]
 check('Progress: read-only folder → clear error, nothing downloaded', [x['phase'] for x in lines] == ['checking', 'error'] and 'read-only' in lines[-1]['message'] and calls == [], lines)
