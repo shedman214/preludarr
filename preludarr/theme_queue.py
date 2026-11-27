@@ -18,6 +18,9 @@ import threading
 import time
 import urllib.parse
 from pathlib import Path
+import kinds
+import smart_matching
+import theme_profiles
 
 MAX_ADD = 500
 STEP_PAUSE = 2.0
@@ -43,9 +46,13 @@ def add(app, paths):
     added = skipped = 0
     with app.db() as c:
         active = {r[0] for r in c.execute("SELECT path FROM theme_queue WHERE state NOT IN ('installed','skipped','no_match','failed','cancelled')")}
+        profiles = theme_profiles.read(c)
         for path in list(dict.fromkeys(paths))[:MAX_ADD]:
             row = c.execute('SELECT name,library,state FROM shows WHERE path=?', (path,)).fetchone()
             if not row or path in active or row['state'] in ('installed', 'unavailable') or (Path(path) / 'theme.mp3').exists():
+                skipped += 1
+                continue
+            if not theme_profiles.queued_allowed(path, row['library'], profiles):
                 skipped += 1
                 continue
             c.execute('INSERT INTO theme_queue(path,name,library,state,source,proposal,note,created,updated) VALUES(?,?,?,?,?,?,?,?,?)',
@@ -70,7 +77,6 @@ def counts(app):
 def propose(app, row):
     """Phase B for one title: what WOULD be installed. Never installs."""
     import sources
-    import media_servers as v4
     path, name = row['path'], row['name']
     if not Path(path).is_dir():
         return 'skipped', '', None, 'Title folder is unavailable — rescan before queueing it again.'
@@ -84,46 +90,39 @@ def propose(app, row):
         if found:
             return 'no_match', '', None, f'{len(found)} YouTube search result(s) to preview on the title page (YouTube results are never installed by the queue).'
         return 'no_match', '', None, ' '.join(notes) + ' Use the title page for a manual upload or YouTube link.'
+    profile, _ = theme_profiles.for_title(app, path)
+    if profile == 'skip':
+        return 'skipped', '', None, 'Theme Profile excludes this title from the queue.'
     show, how = None, ''
     try:
-        if v4.has_override(app.CONFIG, path):
-            show = v4.resolve(app.CONFIG, path, name, {}, app.anime_theme, app.request_json)
-            how = 'Your remembered match'
-            if not show:
-                return 'failed', '', None, 'Your remembered match could not be loaded from AnimeThemes right now — Retry later.'
-        else:
-            try:
-                media = app.anilist(name)
-            except Exception as error:
-                if getattr(error, 'code', None) != 404:  # AniList answers "not found" with HTTP 404
-                    raise
-                media = None
-            yr = app.year(name)
-            if media and not (yr and media.get('seasonYear') and yr != media.get('seasonYear')):
-                show = app.anime_theme(name, media)
-                if show and yr and show.get('year') and int(show['year']) != yr:
-                    show = None
-            how = 'Original Matching (exact title + year)'
+        show, via, how = smart_matching.resolve(app, path, name, row['library'])
+        if via == 'id':
+            how = f'Verified folder ID: {how}'
+    except smart_matching.MatchConflict as error:
+        return 'no_match', '', None, f'{error} Use Manual matching in the Theme Browser.'
+    except smart_matching.NoMatch:
+        show = None  # the optional secondary-source proposals remain review-only
     except Exception as error:
         return 'failed', '', None, 'AnimeThemes / AniList could not be reached (' + type(error).__name__ + ') — Retry later.'
     if show:
-        tracks = [t for t in app.list_available_themes(show) if t['type'].startswith('OP')] or app.list_available_themes(show)
-        if tracks:
-            t = tracks[0]
+        t = theme_profiles.select(app.list_available_themes(show), profile, path, review=True)
+        if t:
             proposal = {'kind': 'animethemes', 'anime_slug': show.get('slug'), 'anime': show.get('name'), 'year': show.get('year'),
                         'video_id': t['video_id'], 'track': f"{t['slug']} — {t['title']}" + (f" ({t['artist']})" if t.get('artist') else ''),
-                        'audio_url': t['audio_url'], 'how': how}
+                        'audio_url': t['audio_url'], 'how': how, 'profile': profile}
             return 'proposed', 'animethemes', proposal, ''
         notes = ['AnimeThemes has this anime but no audio for it.']
     else:
         notes = ['AnimeThemes: no exact match.']
+    if profile not in (theme_profiles.DEFAULT, 'review_only'):
+        return 'no_match', '', None, f'No track matching the {theme_profiles.PROFILES[profile]} profile. Open the Theme Browser to choose manually.'
     try:
         found, more = sources.find(app, path, name, row['library'])
     except Exception as error:
         found, more = [], ['Secondary sources could not be checked (' + type(error).__name__ + ').']
     if found:
         f = found[0]
-        proposal = {'kind': 'fallback', **f, 'how': 'Secondary source — check before approving'}
+        proposal = {'kind': 'fallback', **f, 'how': 'Secondary source — check before approving', 'profile': profile}
         return 'proposed', f['source'], proposal, ' '.join(notes + more)
     return 'no_match', '', None, ' '.join(notes + more) + ' Use the Theme Browser for a manual search, upload or YouTube link.'
 
@@ -132,15 +131,20 @@ def propose(app, row):
 def install(app, row, proposal):
     """Phase C for one approved title, through the existing safe installer (replace=False)."""
     folder = Path(row['path'])
+    def check_profile():
+        if kinds.is_anime(row['library']) and theme_profiles.for_title(app, row['path'])[0] != proposal.get('profile', theme_profiles.DEFAULT):
+            raise theme_profiles.ProfileChanged('Theme profile changed; review a fresh proposal.')
+    check_profile()
     __import__('library_health').preflight(folder)
     if proposal['kind'] == 'animethemes':
         track = app.resolve_animethemes_track(proposal['anime_slug'], str(proposal['video_id']))
         with app.stage_verified_theme_audio(track, app.CONFIG) as audio:
+            check_profile()
             app.manual_install_mp3(folder, audio, replace=False, anime_slug=proposal['anime_slug'], video_id=str(proposal['video_id']),
                                    activity_label='Bulk queue · ' + proposal['track'])
     else:
         import sources
-        sources.install(app, row['path'], proposal)
+        sources.install(app, row['path'], proposal, progress=lambda phase, message: check_profile())
     with app.db() as c:
         c.execute("UPDATE shows SET state='installed',detail=?,updated=? WHERE path=?",
                   ('Bulk queue · ' + proposal.get('track', ''), time.strftime('%Y-%m-%dT%H:%M:%S+00:00', time.gmtime()), row['path']))
@@ -173,9 +177,16 @@ def step(app):
     if not row:
         return False
     with app.db() as c:
-        title = c.execute('SELECT state FROM shows WHERE path=?', (row['path'],)).fetchone()
+        title = c.execute('SELECT state,library FROM shows WHERE path=?', (row['path'],)).fetchone()
+        profiles = theme_profiles.read(c)
     if not title or title['state'] == 'unavailable' or not Path(row['path']).is_dir():
         _set(app, row['id'], 'skipped', note='Title folder is unavailable — rescan before queueing it again.')
+        return True
+    if not theme_profiles.queued_allowed(row['path'], title['library'], profiles):
+        _set(app, row['id'], 'skipped', note='Theme Profile excludes this title from the queue.')
+        return True
+    if title['library'] != row['library']:
+        _set(app, row['id'], 'queued', library=title['library'], proposal='', source='', note='Library type changed. Review a fresh proposal.')
         return True
     if row['state'] == 'queued':
         _set(app, row['id'], 'searching')
@@ -189,6 +200,8 @@ def step(app):
     try:
         install(app, row, json.loads(row['proposal']))
         _set(app, row['id'], 'installed', note='Installed as theme.mp3.')
+    except theme_profiles.ProfileChanged:
+        _set(app, row['id'], 'queued', proposal='', source='', note='Theme profile changed. Review a fresh proposal.')
     except Exception as error:
         text = str(error) or type(error).__name__
         if 'Another manual installation is running' in text:
@@ -233,7 +246,14 @@ def candidates(app, query):
     elif state == 'recent':
         sql, extra = app.auto_themes.recent_clause(); clauses.append(sql); params += extra
     with app.db() as c:
-        return [r[0] for r in c.execute('SELECT path FROM shows WHERE ' + ' AND '.join(clauses) + ' ORDER BY name LIMIT ?', params + [MAX_ADD])]
+        saved = theme_profiles.read(c)
+        paths = []
+        for row in c.execute('SELECT path,library FROM shows WHERE ' + ' AND '.join(clauses) + ' ORDER BY name', params):
+            if theme_profiles.queued_allowed(row['path'], row['library'], saved):
+                paths.append(row['path'])
+                if len(paths) >= MAX_ADD:
+                    break
+        return paths
 
 
 def page(app, handler):
@@ -277,6 +297,9 @@ def page(app, handler):
             parts += ['<p class="tq-prop">', '⚠ ' if fallback else '', _e(p.get('track', '')), ' · <span class="muted">',
                       _e(('AnimeThemes: ' + str(p.get('anime')) + (f" ({p['year']})" if p.get('year') else '')) if not fallback else p.get('label', '')),
                       ' · ', _e(p.get('how', '')), (' · ' + _e(p.get('note', ''))) if fallback and p.get('note') else '', '</span></p>']
+            if kinds.is_anime(r['library']):
+                label = theme_profiles.PROFILES.get(p.get('profile', theme_profiles.DEFAULT), 'Review only')
+                parts.append(f'<p class="muted">Profile: {_e(label)}</p>')
             if p.get('audio_url') or (fallback and p.get('source') == 'plex'):
                 parts += ['<audio controls preload="none" src="', _e(p.get('audio_url') or p.get('url')), '"></audio>']
             elif fallback:
@@ -318,7 +341,8 @@ def post(app, handler, redirect):
             if f('confirm') != '1':
                 raise ValueError('Tick the confirmation box to add titles.')
             added, skipped = add(app, candidates(app, {k: [f(k)] for k in ('q', 'library', 'state')}))
-            msg = f'Added {added} title(s) to the queue' + (f' ({skipped} skipped: already queued or already have a theme)' if skipped else '') + '. Dry run started — nothing is installed until you approve.'
+            explanation = f' ({skipped} skipped: existing theme, unavailable, excluded profile or already queued)' if skipped else ''
+            msg = f'Added {added} title(s) to the queue{explanation}. Dry run started - nothing is installed until you approve.'
             back = '/queue?tab=waiting'
         else:
             action, qid = f('action'), f('id')

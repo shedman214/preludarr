@@ -72,35 +72,31 @@ def _root_of(app, path):
 
 # ------------------------------------------------------------------------------ suggestions ----
 def suggest(app, path):
-    """Possible AnimeThemes entries for one folder: Original Matching, then AniDB. Read-only."""
+    """Possible AnimeThemes entries for one folder. ID evidence takes precedence. Read-only."""
+    import smart_matching
+    import media_servers
     label, root = _root_of(app, path)
     if not label or not Path(path).is_dir() or Path(path).is_symlink():
         raise ValueError('Not a folder inside a root folder.')
     name = Path(path).name
     yr = app.year(name)
     cands, notes, seen = [], [], set()
+    strong = smart_matching.has_explicit(name) or media_servers.has_override(app.CONFIG, path)
     try:
-        media = app.anilist(name)
-        if media:
-            ay = media.get('seasonYear')
-            if yr and ay and yr != ay:
-                notes.append(f'Original Matching: AniList year {ay} differs from your folder ({yr}).')
-            else:
-                show = app.anime_theme(name, media)
-                if show and not (yr and show.get('year') and int(show['year']) != yr):
-                    seen.add(show.get('slug'))
-                    cands.append({'slug': show.get('slug'), 'name': show.get('name') or show.get('slug'), 'year': show.get('year'),
-                                  'format': show.get('media_format') or '', 'confidence': 'High', 'source': 'Original Matching',
-                                  'why': 'Original Matching: exact title match' + (f' · same year {yr}' if yr else '')})
-                else:
-                    notes.append('Original Matching found no exact AnimeThemes entry.')
-        else:
-            notes.append('AniList did not identify this title.')
+        show, method, evidence = smart_matching.resolve(app, path, name, label)
+        seen.add(show.get('slug'))
+        source = {'id': 'Verified folder ID', 'confirmed': 'Remembered match'}.get(method, 'Original Matching')
+        why = f'{source}: {evidence}' if strong else 'Original Matching: exact title match'
+        cands.append({'slug': show.get('slug'), 'name': show.get('name') or show.get('slug'), 'year': show.get('year'),
+                      'format': show.get('media_format') or '', 'confidence': 'High', 'source': source,
+                      'why': why + (f' · folder year {yr}' if yr else '')})
+    except smart_matching.NoMatch as error:
+        notes.append(str(error))
     except Exception as error:
-        notes.append('Original Matching could not finish (' + type(error).__name__ + ').')
+        notes.append(f'Anime matching could not finish ({type(error).__name__}).')
     try:
         import anidb
-        if anidb.enabled(app.CONFIG) and anidb.status(app.CONFIG)['available']:
+        if not strong and anidb.enabled(app.CONFIG) and anidb.status(app.CONFIG)['available']:
             results, more = anidb.identify(name, yr, label == 'Anime Movies', app.request_json, app.clean)
             notes += more
             for r in results:

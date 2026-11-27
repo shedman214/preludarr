@@ -95,10 +95,18 @@ def to_install(app):
     if s['mode'] == 'new':
         sql += ' AND a.baseline=0 AND a.added>=?'
         params.append(s['enabled_at'])
-    sql += ' ORDER BY COALESCE(a.added,0) DESC, s.name LIMIT ?'
-    params.append(s['per_scan'])
+    sql += ' ORDER BY COALESCE(a.added,0) DESC, s.name'
+    import theme_profiles
     with app.db() as c:
-        return [r['path'] for r in c.execute(sql, params).fetchall()]
+        saved = theme_profiles.read(c)
+        paths = []
+        for row in c.execute(sql, params):
+            if theme_profiles.effective(row['path'], saved)[0] in theme_profiles.AUTO_EXCLUDED:
+                continue
+            paths.append(row['path'])
+            if len(paths) >= s['per_scan']:
+                break
+        return paths
 
 
 def interval_seconds():
@@ -127,7 +135,7 @@ def settings_html(app, notice=''):
     return ('<section class="panel" id="automatic-themes"><h2>Automatic Themes</h2>'
             + ('<p class="notice" role="status">' + _e(notice) + '</p>' if notice else '') +
             '<p class="muted">When on, each scheduled scan installs theme.mp3 for up to the set number of titles, using Preludarr’s '
-            'automatic matching (exact title + year checks — the same rules as Download / Retry). An existing theme.mp3 is never replaced; '
+            'automatic matching (verified ID or exact title + year checks — the same rules as Download / Retry) and the active Theme Profile. An existing theme.mp3 is never replaced; '
             'titles it cannot match safely are marked “Needs review” for you.</p>'
             '<form method="post" action="/media-management/auto">' + radios +
             ('<p class="muted">New titles only: counting folders found since ' + _e(since) + '.</p>' if s['mode'] == 'new' and since else '') +
