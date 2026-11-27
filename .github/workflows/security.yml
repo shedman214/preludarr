@@ -35,6 +35,7 @@ jobs:
           persist-credentials: false
       - name: gitleaks — full Git history
         # safe.directory: never let a folder-owner mismatch turn the scan into a silent "0 commits scanned" pass
+        shell: bash
         run: |
           docker run --rm --user "$(id -u):$(id -g)" -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0='*' \
             -v "$PWD":/repo:ro "$GITLEAKS" git /repo --config /repo/.gitleaks.toml --redact=100 --no-banner --exit-code 1 2>&1 | tee gitleaks.log
