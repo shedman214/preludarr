@@ -152,7 +152,7 @@ def saved_banner(config, anime_path):
     if not item:
         return ''
     return (
-        '<div class="panel"><strong>Smart Matching V5: saved selection</strong> — ' +
+        '<div class="panel"><strong>Smart Matching V6: saved selection</strong> — ' +
         _e(item.get('name') or item['slug']) +
         '<form method="post" action="/v4-remove-match">' +
         '<input type="hidden" name="path" value="' + _e(anime_path) + '">' +
@@ -185,7 +185,7 @@ def fallback_panel(config, anime_path, name, request_json):
     desired_year = yr.group(1) if yr else ''
     saved = override(config, anime_path)
     # Retain the old HTML id for existing deep links and selectors.
-    box = ['<section class="panel" id="smart-matching-v4"><h3>Smart Matching V5</h3>']
+    box = ['<section class="panel" id="smart-matching-v4"><h3>Smart Matching V6</h3>']
     if saved:
         box.extend(['<p>Saved AnimeThemes match: <strong>', _e(saved.get('name') or saved['slug']),
                     '</strong> (', _e(saved['slug']), ')</p>',

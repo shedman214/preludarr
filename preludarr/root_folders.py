@@ -468,6 +468,7 @@ def page(app, handler):
               '<p class="muted">Library volumes mounted into Preludarr: ', _e(', '.join(str(m) for m in mounts() if m.is_dir()) or 'none yet'),
               '. A folder elsewhere on the server first needs a Docker volume mapping (Unraid: Docker → Preludarr → Edit; Compose: <code>volumes:</code>).</p></section>',
               PICKER, __import__('auto_themes').settings_html(app, notice if notice.startswith(('Saved.', 'Not saved:', 'Automatic', 'Another scan')) and not notice.startswith('Permissions') else ''),
+              __import__('theme_profiles').settings_html(app, notice if notice.startswith('Theme profile') else ''),
               __import__('permissions').settings_html(app, notice if notice.startswith('Permissions') else ''),
               '<style>.rf-table{display:flex;flex-direction:column;gap:6px}',
               '.rf-row{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.2fr) 240px;gap:12px;align-items:start;padding:10px;border:1px solid var(--line,#3b4b6b);border-radius:9px}',
@@ -488,7 +489,7 @@ def page(app, handler):
 
 def _summary(counts):
     labels = {'shows': 'titles', 'posters': 'posters', 'poster_images': 'poster images', 'media_ids': 'Sonarr/Radarr ids', 'show_added': 'added dates',
-              'theme_queue': 'queue items', 'themearr_media_servers_v1.json': 'media-server mappings', 'themearr_v4_matches.json': 'remembered matches',
+              'theme_queue': 'queue items', 'theme_profiles': 'theme profiles', 'themearr_media_servers_v1.json': 'media-server mappings', 'themearr_v4_matches.json': 'remembered matches',
               'themearr_arr.json': 'Sonarr/Radarr path mappings', 'themearr_library_health.json': 'health notes', 'recycle_bin': 'recycle-bin items'}
     parts = [f'{v:,} {labels[k]}' for k, v in counts.items() if v and k in labels]
     return ', '.join(parts) or 'nothing needed moving'

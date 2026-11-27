@@ -9,6 +9,27 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.17.0] — 2026-11-27
+
+This update gives you stronger anime identity matching and more control over which theme is chosen for each anime library.
+
+### ✨ Highlights
+- Smart Matching V6 can identify anime by verified provider IDs in folder names, even when local and provider titles differ.
+- Anime Theme Profiles let each title inherit a global or root-folder preference, or choose its own.
+
+### ➕ Added
+- **Smart Matching V6.** Confirmed matches still take precedence. AniDB, AniList and MyAnimeList folder tags are checked against AnimeThemes; ambiguous results and conflicting IDs, years or library types wait for manual review. Theme Browser shows the verified identity and Match / Import uses the same checks.
+- **Anime Theme Profiles.** Choose the first or latest opening, first ending, a stable random opening, prefer lossless source audio when identified, Review only, or Do not auto-theme or queue. Set the default and root overrides in Media Management; choose a title override in its Theme Browser. Profiles follow a moved root folder.
+
+### 🔄 Changed
+- **Theme Queue and Automatic Themes.** Both use the active anime profile. Review-only titles require a deliberate choice; excluded titles are not queued or automatically downloaded. A changed profile invalidates an approved queue proposal until you review a new one. Existing themes are never replaced.
+- **Match evidence.** Title-based matching retains its original behavior when no supported ID is supplied; a verified-ID match explains its actual evidence instead of reporting it as a title similarity.
+
+### ⚠️ Upgrade notes
+- The original first-opening behavior remains the default. Profiles apply to new anime installs and queue proposals, not to themes you already installed. Shows and Movies retain their existing suggestion behavior. Manual track selection and confirmed replacement are unchanged.
+- If an ID-tagged title was already in Needs review, use Retry or open its Theme Browser to run the new matching checks.
+- TVDB, TMDB and IMDb tags remain supported for their existing title cleanup and media-source purposes; AnimeThemes does not provide direct lookup by those IDs.
+
 ## [1.16.3] — 2026-11-27
 
 This reliability update makes theme matching, installation and recovery more dependable, especially when a provider or a library mount is temporarily unavailable.

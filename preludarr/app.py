@@ -43,6 +43,8 @@ import appearance  # 1.12: Settings → Appearance
 import theme_queue
 import poster_background
 import theme_retry
+import smart_matching
+import theme_profiles
 
 CONFIG=Path(os.getenv('CONFIG_DIR','/config')); CONFIG.mkdir(parents=True,exist_ok=True)
 DB=CONFIG/'library.db'
@@ -84,6 +86,7 @@ def db():
  c.execute('CREATE TABLE IF NOT EXISTS theme_retry (path TEXT PRIMARY KEY, attempts INTEGER NOT NULL, next_retry INTEGER NOT NULL, reason TEXT NOT NULL)')
  c.execute('CREATE TABLE IF NOT EXISTS title_availability (path TEXT PRIMARY KEY, prior_state TEXT NOT NULL, prior_detail TEXT NOT NULL)')
  c.execute('CREATE TABLE IF NOT EXISTS theme_suggestion_meta (path TEXT PRIMARY KEY, signature TEXT NOT NULL, expires INTEGER NOT NULL)')
+ c.execute('CREATE TABLE IF NOT EXISTS theme_profiles (path TEXT PRIMARY KEY, profile TEXT NOT NULL)')
  c.commit();return c
 
 def now():return datetime.now(timezone.utc).isoformat(timespec='seconds')
@@ -700,7 +703,7 @@ def background_poster_worker():
 # 1.16.1: Sonarr / Radarr / Jellyfin / Plex folder ID tags such as "[tvdbid-331753]", "{tvdb-331753}",
 # "{imdb-tt7441658}" or "[tmdbid-73223]" are not part of the title (issue #22: they were sent to AniList,
 # which found nothing and answered HTTP 404).
-ID_TAG=re.compile(r'\s*[\[{]\s*(?:tvdb|tmdb|imdb|anidb|anilist|mal|tvmaze)(?:id)?\s*[-=:]\s*(?:tt)?\d+\s*[\]}]',re.I)
+ID_TAG=re.compile(r'\s*[\[{]\s*(?:tvdb|tmdb|imdb|anidb|anilist|myanimelist|mal|tvmaze)(?:id)?\s*[-=:]\s*(?:tt)?\d+\s*[\]}]',re.I)
 def strip_id_tags(name):return ' '.join(ID_TAG.sub(' ',str(name)).split())
 def clean(name):return re.sub(r'\s*\(\d{4}\)\s*$','',re.sub(r'\s*-\s*imdb-tt\d+\s*$','',strip_id_tags(name),flags=re.I)).strip()
 def year(name):
@@ -812,7 +815,7 @@ def anime_theme(name, media):
   return None
 
 
-def _match_evidence(path,row,show,via):
+def _match_evidence(path,row,show,via,evidence=''):
  """V1.9.11: why the Theme Browser shows this AnimeThemes entry. Built only from data the lookup already returned; changes nothing."""
  esc=html.escape
  folder=clean(row['name']);want=year(row['name'])
@@ -820,10 +823,13 @@ def _match_evidence(path,row,show,via):
  exact=poster_key(folder)==poster_key(name)
  how={'confirmed':'You confirmed this AnimeThemes entry for this folder (Remember this anime / Match / Import).',
       'anilist':'Folder title search found nothing certain, so Preludarr searched with the English, Romaji and native titles from AniList.',
-      'folder':'Searched AnimeThemes with your folder title.'}[via]
+      'folder':'Searched AnimeThemes with your folder title.',
+      'id':f'Verified AnimeThemes resource ID: {evidence}. The entry also agrees with the folder year (if supplied) and library type.'}[via]
  title=('Exact title — your folder and the entry have the same name.' if exact else
         'Matched an alternative title or a spelling at least 96% identical (Original Matching never accepts loose matches).') if via!='confirmed' else (
         'Exact title.' if exact else 'Different title — accepted because you confirmed it.')
+ if via=='id':
+  title='Exact title.' if exact else 'Different display title — identified by the verified ID rather than spelling.'
  if want and got:yr=('Same year: '+str(got)+'.') if str(got)==str(want) else ('Year differs: folder '+str(want)+', entry '+str(got)+(' — accepted because you confirmed it.' if via=='confirmed' else '.'))
  elif want:yr='The entry has no year; folder says '+str(want)+'.'
  else:yr='Your folder name has no year'+(', entry is '+str(got) if got else '')+'.'
@@ -846,7 +852,7 @@ def _match_evidence(path,row,show,via):
        ('Your folder',esc(row['name'])),('How it was found',esc(how)),('Title check',esc(title)),('Year check',esc(yr))]
  if ids:rows.append(('Other IDs',' · '.join(esc(k)+' '+esc(str(v)) for k,v in ids)+(' <small>(from '+esc(src)+')</small>' if src else '')))
  if st and st['detail'] and st['state']!='installed':rows.append(('Last automatic attempt',esc(str(st['detail'])[:300])))
- short=('Confirmed by you' if via=='confirmed' else 'Exact title' if exact else 'Alternative title')+' · '+('same year' if want and got and str(got)==str(want) else 'year checked' if want else 'no folder year')
+ short=('Confirmed by you' if via=='confirmed' else 'Verified ID' if via=='id' else 'Exact title' if exact else 'Alternative title')+' · '+('same year' if want and got and str(got)==str(want) else 'year checked' if want else 'no folder year')
  return ('<details class="tp-ev"><summary>Why this match <span class="tp-ev-s">'+esc(name)+(' ('+esc(str(got))+')' if got else '')+' — '+esc(short)+'</span></summary>'
          '<dl>'+''.join('<dt>'+k+'</dt><dd>'+v+'</dd>' for k,v in rows)+'</dl>'
          '<p class="muted">Nothing is installed without your confirmation; the year and title checks above are the same ones automatic installs use.</p></details>')
@@ -872,6 +878,7 @@ def list_available_themes(show):
      'title':song.get('title') or kind,
      'artist':', '.join(a.get('name','') for a in song.get('artists') or [] if isinstance(a,dict)),
      'audio_url':url,
+     'audio_mimetype':audio.get('mimetype') or '',
      'video_url':video.get('link') or '',
      'entry_id':entry.get('id'),
      'video_id':video.get('id'),
@@ -1378,27 +1385,21 @@ def process(path):
   found,notes=sources.cached_find(sys.modules[__name__],str(path),name,root_label,interactive=False)
   msg=(f'{len(found)} theme suggestion(s) ready — open the title to preview and choose' if found else ('Lookup waiting: ' if sources.waiting(notes) else 'No theme found yet: ')+' '.join(notes)[:200])
   save(path,root_label,name,'missing',msg);last_op(path,name,'missing',msg);return 'Suggestions: '+msg
+ profile,_=theme_profiles.for_title(sys.modules[__name__],path)
+ if profile in theme_profiles.AUTO_EXCLUDED:
+  msg=f'Theme profile: {theme_profiles.PROFILES[profile]}. Choose a track explicitly in the Theme Browser.'
+  last_op(path,name,'review',msg)
+  return f'Skipped: {msg}'
  try:library_health.preflight(path)  # V1.9.3: don't search/download when the folder can't take a theme
  except ValueError as error:
   save(path,root_label,name,'review',str(error));last_op(path,name,'review',str(error));return 'Needs review: '+str(error)
  save(path,root_label,name,'searching','Matching title with AniList and AnimeThemes')
  STATUS.update(stage='searching',message='Matching: '+name)
  try:
-  if media_servers.has_override(CONFIG,str(path)):
-   # V1.7.3: the user confirmed this folder's anime (Match / Import or Remember this anime) — use exactly that entry.
-   show=theme_retry.provider_call('AnimeThemes',media_servers.resolve,CONFIG,str(path),name,{},anime_theme,request_json,strict=True)
-   if not show:raise ValueError('Your saved anime match could not be loaded from AnimeThemes right now')
-  else:
-   media=theme_retry.provider_call('AniList',anilist,name)
-   if not media:raise ValueError('AniList did not identify the series')
-   yr=year(name); ay=media.get('seasonYear')
-   if yr and ay and yr!=ay:raise ValueError(f'AniList year mismatch: folder {yr}, result {ay}')
-   show=theme_retry.provider_call('AnimeThemes',anime_theme,name,media)
-   if not show:raise ValueError('No exact alternative-title match on AnimeThemes')
-   sy=show.get('year')
-   if yr and sy and int(sy)!=yr:raise ValueError(f'AnimeThemes year mismatch: folder {yr}, result {sy}')
-  selected=pick_opening_track(show)
-  if not selected:raise ValueError('No OP audio available')
+  show,_,_=smart_matching.resolve(sys.modules[__name__],str(path),name,root_label)
+  selected=theme_profiles.select(list_available_themes(show),profile,path)
+  if not selected:
+   raise ValueError('No ED audio available' if profile=='first_ed' else 'No OP audio available')
   song=selected['title']
   save(path,root_label,name,'downloading','Downloading: '+song)
   STATUS.update(stage='downloading',message='Downloading: '+name)
@@ -1406,6 +1407,11 @@ def process(path):
   track=theme_retry.provider_call('AnimeThemes',resolve_animethemes_track,slug,video_id)
   try:
    with stage_verified_theme_audio(track,CONFIG) as source:
+    if theme_profiles.for_title(sys.modules[__name__],path)[0]!=profile:
+     reason='Theme profile changed during lookup; no theme installed.'
+     save(path,root_label,name,'missing',reason);last_op(path,name,'missing',reason)
+     STATUS.update(stage='idle',message=reason)
+     return reason
     save(path,root_label,name,'converting','Converting: '+song)
     STATUS.update(stage='converting',message='Converting: '+name)
     manual_install_mp3(path,source,replace=False,anime_slug=slug,video_id=video_id,
@@ -2346,6 +2352,8 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
      extras.extend(['<details class="tp-sec" id="tp-',key,'"',' open' if is_open else '','><summary><span class="tp-sum-t">',title,
                     '</span><span class="tp-sum-h">',hint,'</span></summary><div class="tp-body">']+body+['</div></details>'])
     if not fragment_mode:
+     if kinds.is_anime(row['library']):
+      parts.append(theme_profiles.title_html(sys.modules[__name__],selected,query.get('profile_msg',[''])[0][:220]))
      section('posters','Poster','Search, upload or reset artwork',[poster_manual.panel(sys.modules[__name__],selected,query)],
              bool(query.get('poster_msg',[''])[0] or query.get('poster_search',[''])[0]))
      manual=['<div class="panel"><h3>Search AnimeThemes Manually</h3>',
@@ -2430,35 +2438,39 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
        parts+=['<p role="alert">Theme suggestions could not be loaded. The details were recorded in Activity.</p><p><button type="button" data-tp-retry>Try again</button></p>']
      else:
       try:
-       show=(media_servers.resolve(CONFIG,selected,row['name'],{'title':{},'synonyms':[]},anime_theme,request_json) if media_servers.has_override(CONFIG,selected) else anime_theme(row['name'],{'title':{},'synonyms':[]}))
-       via='confirmed' if media_servers.has_override(CONFIG,selected) else 'folder'  # V1.9.11: for "Why this match" only
-       if (not show and not media_servers.has_override(CONFIG,selected)):
-        try:
-         media=anilist(row['name'])
-        except Exception:
-         media=None
-        if media:
-         show=(media_servers.resolve(CONFIG,selected,row['name'],media,anime_theme,request_json) if media_servers.has_override(CONFIG,selected) else anime_theme(row['name'],media))
-         via='anilist'
+       blocked=''
+       try:
+        show,via,evidence=smart_matching.resolve(sys.modules[__name__],selected,row['name'],row['library'],preview=True)
+       except smart_matching.MatchConflict as error:
+        blocked=str(error)
+        show=None
        if not show:
-        parts+=['<p>No matching AnimeThemes entry found.</p>',
-                '<p class="muted tp-nomatch">Preludarr only accepts an exact title (or a spelling at least 96% identical) with the same year, and stops when two entries look equally likely. '
+        parts+=['<p>No matching AnimeThemes entry found.</p>']
+        if blocked:
+         parts+=['<p role="status">',esc(blocked),' Use <strong>Manual matching</strong> to choose the correct entry.</p>']
+        else:
+         parts+=['<p class="muted tp-nomatch">Preludarr only accepts an exact title (or a spelling at least 96% identical) with the same year, and stops when two entries look equally likely. '
                 'Use <strong>Manual matching</strong> below to pick the entry yourself.</p>']
         with db() as c:
          st=c.execute('SELECT state,detail FROM shows WHERE path=?',(selected,)).fetchone()
         if st and st['detail']:
          parts+=['<p class="muted">Last automatic attempt: ',esc(str(st['detail'])[:300]),'</p>']
-        try:
-         parts.append(anidb.panel(sys.modules[__name__],selected,row['name'],row['library']))
-        except Exception as error:
-         print('AniDB identification error: '+type(error).__name__,flush=True)
-        parts.append(media_servers.fallback_panel(CONFIG,selected,row['name'],request_json))
+        if not blocked:
+         try:
+          parts.append(anidb.panel(sys.modules[__name__],selected,row['name'],row['library']))
+         except Exception as error:
+          print('AniDB identification error: '+type(error).__name__,flush=True)
+         parts.append(media_servers.fallback_panel(CONFIG,selected,row['name'],request_json))
        else:
 
         themes=list_available_themes(show)
         parts+=['<section class="panel" id="themearr-smart-themes">',
                 '<h3>Available Opening &amp; Ending Themes</h3>',
-                '<p>',str(len(themes)),' available audio versions</p>',animethemes.anime_page_link(show.get('slug')),_match_evidence(selected,row,show,via)]
+                '<p>',str(len(themes)),' available audio versions</p>',animethemes.anime_page_link(show.get('slug')),_match_evidence(selected,row,show,via,evidence)]
+        profile,_=theme_profiles.for_title(sys.modules[__name__],selected)
+        preferred=theme_profiles.select(themes,profile,selected)
+        if preferred and profile!=theme_profiles.DEFAULT:
+         parts+=['<p class="muted">Profile preference: ',esc(str(preferred['slug'])),' — ',esc(str(preferred['title'])),'</p>']
         if themes:
          groups={}
          for track in themes:
@@ -2839,6 +2851,8 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    return auto_themes.run_now(sys.modules[__name__],self,auth.redirect)
   if self.path=='/media-management/auto':
    return auto_themes.post(sys.modules[__name__],self,auth.redirect)
+  if self.path=='/media-management/theme-profile':
+   return theme_profiles.post(sys.modules[__name__],self,auth.redirect)
   if self.path.startswith('/media-management/'):
    return root_folders.post(sys.modules[__name__],self,auth.redirect)
   if self.path=='/anidb-settings':

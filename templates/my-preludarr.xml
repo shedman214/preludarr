@@ -13,6 +13,8 @@
   <ReadMe>https://raw.githubusercontent.com/shedman214/preludarr/main/README.md</ReadMe>
   <Overview>Theme songs for your media library. Preludarr finds the opening or theme song of each anime, TV show and movie and saves it as theme.mp3 in the title's folder, where Plex, Jellyfin and Emby play it.&#xD;
 &#xD;
+Smart Matching verifies supported anime folder IDs. Anime Theme Profiles choose openings, endings, review-only or excluded titles without replacing existing themes.&#xD;
+&#xD;
 First start: open the container log (Docker, Preludarr, Logs) for the one-time setup code, then open the web page and create your account.&#xD;
 &#xD;
 Before an update, make a backup (System, Backup &amp; Restore).</Overview>

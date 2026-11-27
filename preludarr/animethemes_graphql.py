@@ -9,7 +9,7 @@ Preludarr uses into a GraphQL query, and the answer is converted back into the J
 callers already read. Matching rules, install checks and the audio hosts do not change.
 
   /anime?q=…&page[size]=N[&include=animesynonyms]          -> search(search:, first:)
-  /anime?filter[site]=AniDB&filter[external_id]=N          -> findAnimeByExternalSite(site: ANIDB)
+  /anime?filter[site]=AniDB/AniList/MyAnimeList&filter[external_id]=N -> findAnimeByExternalSite(site: ...)
   /anime/{slug}?include=animethemes.…videos.audio,…song    -> anime(slug:) with themes, songs, files
   /anime/{slug}?include=images                             -> anime(slug:) with cover images
 Any other URL returns None and is asked of the JSON:API as before.
@@ -20,6 +20,7 @@ import urllib.parse
 ENDPOINT = 'https://graphql.animethemes.moe/'
 _SLUG = re.compile(r'\A[a-z0-9_]{1,192}\Z')
 MAX_SEARCH = 40
+EXTERNAL_SITES = {'anidb': 'ANIDB', 'anilist': 'ANILIST', 'myanimelist': 'MAL', 'mal': 'MAL'}
 
 # the JSON:API's display values, which callers compare against
 _FORMATS = {'TV': 'TV', 'TV_SHORT': 'TV Short', 'OVA': 'OVA', 'MOVIE': 'Movie', 'SPECIAL': 'Special', 'ONA': 'ONA'}
@@ -32,7 +33,7 @@ _IMAGES = ' images { nodes { facet link } }'
 _THEMES = (' animethemes { id type sequence slug'
            ' song { title { romaji native } performances { artist { name { main } } } }'
            ' animethemeentries { id version episodes nsfw spoiler'
-           ' videos { nodes { id link basename resolution nc audio { id link basename } } } } }')
+           ' videos { nodes { id link basename resolution nc audio { id link basename mimetype } } } } }')
 
 
 def _anime(a, synonyms=False, images=False, themes=False):
@@ -78,6 +79,7 @@ def _theme(t):
                 'resolution': v.get('resolution'), 'nc': v.get('nc'),
                 'audio': {'id': (v.get('audio') or {}).get('id'), 'link': (v.get('audio') or {}).get('link'),
                           'basename': (v.get('audio') or {}).get('basename'),
+                          'mimetype': (v.get('audio') or {}).get('mimetype'),
                           'filename': (v.get('audio') or {}).get('basename')} if v.get('audio') else None,
             } for v in (e.get('videos') or {}).get('nodes') or [] if isinstance(v, dict)],
         } for e in t.get('animethemeentries') or [] if isinstance(e, dict)],
@@ -94,9 +96,11 @@ def plan(url):
     path = parts.path.rstrip('/')
     include = {x.strip() for x in first('include').split(',') if x.strip()}
     if path == '/anime':
-        if first('filter[site]').casefold() == 'anidb' and first('filter[external_id]').isdigit():
-            gql = ('query($id: [Int!]) { findAnimeByExternalSite(site: ANIDB, id: $id) { ' + _BASE + ' } }')
-            return gql, {'id': [int(first('filter[external_id]'))]}, \
+        site = EXTERNAL_SITES.get(first('filter[site]').casefold())
+        external = first('filter[external_id]')
+        if site and re.fullmatch(r'[0-9]{1,10}', external) and 0 < int(external) <= 2147483647:
+            gql = f'query($id: [Int!]) {{ findAnimeByExternalSite(site: {site}, id: $id) {{ {_BASE} }} }}'
+            return gql, {'id': [int(external)]}, \
                 lambda d: {'anime': [x for x in (_anime(a) for a in (d or {}).get('findAnimeByExternalSite') or []) if x]}
         text = first('q')
         if text and include <= {'animesynonyms'}:
