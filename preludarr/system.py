@@ -162,7 +162,7 @@ def create_backup(config):
             staged.unlink()
 
 def _nav(current):
-    labels=[('overview','Overview'),('activity','Activity'),('backup','Backup & Restore'),('logs','Logs'),('releases','Releases'),('health','Library Health'),('advanced','Advanced Settings')]  # order: user 2026-10-27  # V1.9.5: Library Health lives in System
+    labels=[('overview','Overview'),('activity','Activity'),('tasks','Tasks'),('backup','Backup & Restore'),('logs','Logs'),('releases','Releases'),('health','Library Health'),('advanced','Advanced Settings')]  # order: user 2026-10-27  # V1.9.5: Library Health lives in System
     bits=[]
     for tab,label in labels:
         cls=' class="active" aria-current="page"' if tab==current else ''
@@ -573,6 +573,10 @@ def _body(tab,config,query):
         import sys as _sys
         app=_sys.modules.get('app') or _sys.modules.get('__main__')
         return _activity_page(app,query)
+    if tab=='tasks':
+        import sys as _sys
+        app=_sys.modules.get('app') or _sys.modules.get('__main__')
+        return __import__('tasks').body(app,query)
     if tab=='health':  # V1.9.5 (user): Library Health as a System tab
         import sys as _sys
         app=_sys.modules.get('app') or _sys.modules.get('__main__')
@@ -601,7 +605,7 @@ def _body(tab,config,query):
 def page(config,query=None):
     query=query or {}
     tab=(query.get('tab',['overview'])[0])[:20]
-    if tab not in {'overview','backup','logs','releases','advanced','health','activity'}:tab='overview'
+    if tab not in {'overview','backup','logs','releases','advanced','health','activity','tasks'}:tab='overview'
     return '''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preludarr — System</title>''' + ('<meta http-equiv="refresh" content="5">' if query.get('_status')==['1'] else '') + '''<style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{background:#101827;color:#eff4ff;font:15px system-ui,-apple-system,Segoe UI,sans-serif;margin:0}main{max-width:1100px;margin:0 auto;padding:26px 20px 60px}
 h1{font-size:1.8rem}h2{font-size:1.25rem}.muted{color:#b7c7df;line-height:1.55}a{color:#aacaff;text-decoration:none}a:hover{text-decoration:underline}

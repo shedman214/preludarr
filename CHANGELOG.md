@@ -9,6 +9,29 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.18.0] — 2026-11-27
+
+This update connects your media services more closely to Preludarr while giving you control over when background work runs.
+
+### ✨ Highlights
+- Discover media-server libraries and automatically map titles by exact paths or verified provider IDs.
+- React to Sonarr and Radarr imports without waiting for the next full library scan.
+- System → Tasks lets you control background processing hours, priorities and resource usage.
+
+### ➕ Added
+- **Automatic media-server mapping.** Choose libraries and translate their paths to your Preludarr root folders. A coverage report shows mapped and unresolved titles; conflicting identities stay unmapped. Plex, Jellyfin and Emby support independent connections and optional targeted refresh. Existing explicit item mappings take precedence.
+- **Sonarr and Radarr import webhooks.** Enable them per connected instance in System → Tasks with a separate header-only webhook key. Repeat notifications for the same title coalesce. Preludarr verifies the item with the configured Arr instance and uses its registered path mapping; automatic installs follow your existing mode and anime Theme Profiles.
+- **Tasks & Resource Management.** Durable scheduled scans, import tasks and mapping rebuilds survive restarts. Pause, resume or cancel work at safe boundaries. Choose Eco, Balanced or Performance, processing hours, an optional host-load threshold and an automatic-theme priority root.
+
+### 🔄 Changed
+- **Background resource limits.** Scheduled and import-triggered automatic installs share your configured attempt limit within a scan interval. The Theme Queue and background lookups honor the processing policy, and all theme conversions use a single shared slot. Explicit manual actions remain available.
+- **Targeted media refresh.** When enabled for a server, a successful install refreshes only the mapped item. Automatic links expire and are invalidated if their connection or library selection changes; manual mappings remain available.
+
+### ⚠️ Upgrade notes
+- Existing connections, files, profiles and manual mappings are retained. Import webhooks and automatic library mapping are optional; configure them in System → Tasks and Settings → Connect → Media servers. Additional servers do not start refreshing on upgrade.
+- Scheduled scans remain the fallback. An import never creates a folder or replaces an existing theme. Shows and Movies remain manual.
+- Balanced keeps the existing background pace; Eco slows it down. Processing windows use the container's local time. A paused/cancelled task finishes any atomic install already underway.
+
 ## [1.17.0] — 2026-11-27
 
 This update gives you stronger anime identity matching and more control over which theme is chosen for each anime library.

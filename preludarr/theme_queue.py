@@ -21,6 +21,7 @@ from pathlib import Path
 import kinds
 import smart_matching
 import theme_profiles
+import tasks
 
 MAX_ADD = 500
 STEP_PAUSE = 2.0
@@ -169,8 +170,16 @@ def recover(app):
 
 def step(app):
     """Do one unit of work (an approved install first, else one dry run). Returns True if something was done."""
-    if _STATE['paused'] or app.STATUS.get('running'):
+    if _STATE['paused'] or app.STATUS.get('running') or tasks.policy_reason(app) or not app.LOCK.acquire(blocking=False):
         return False
+    try:
+        return _step_locked(app)
+    finally:
+        app.LOCK.release()
+        app.drain_pending_scans()
+
+
+def _step_locked(app):
     with app.db() as c:
         row = (c.execute("SELECT * FROM theme_queue WHERE state='approved' ORDER BY updated, id LIMIT 1").fetchone()
                or c.execute("SELECT * FROM theme_queue WHERE state='queued' ORDER BY id LIMIT 1").fetchone())
@@ -216,6 +225,8 @@ def step(app):
 
 def _worker(app):
     recover(app)
+    with app.db() as conn:
+        _STATE['paused'] = tasks.setting(conn, 'theme_queue_paused') == '1'
     while True:
         _STATE['wake'].clear()
         try:
@@ -223,7 +234,7 @@ def _worker(app):
         except Exception as error:
             print('Theme queue error: ' + type(error).__name__, flush=True)
             did = False
-        _STATE['wake'].wait(STEP_PAUSE if did else 30)
+        _STATE['wake'].wait(tasks.queue_delay(app) if did else 30)
 
 
 # ------------------------------------------------------------------------------------ UI ----
@@ -277,7 +288,7 @@ def page(app, handler):
              'an existing theme.mp3 is never replaced.</p>']
     if notice:
         parts += ['<p class="notice" role="status">', _e(notice), '</p>']
-    parts += ['<div class="tq-bar"><span>Worker: <strong>', 'Paused' if _STATE['paused'] else ('Waiting for a library scan' if app.STATUS.get('running') else 'Running'),
+    parts += ['<div class="tq-bar"><span>Worker: <strong>', 'Paused' if _STATE['paused'] else _e(tasks.policy_reason(app) or ('Waiting for a library scan' if app.STATUS.get('running') else 'Running')),
               '</strong></span>',
               '<form method="post" action="/queue/action"><input type="hidden" name="action" value="', 'resume' if _STATE['paused'] else 'pause', '">',
               '<button type="submit">', 'Resume' if _STATE['paused'] else 'Pause', '</button></form>',
@@ -348,8 +359,10 @@ def post(app, handler, redirect):
             action, qid = f('action'), f('id')
             with app.db() as c:
                 if action == 'pause':
+                    tasks.put(c, 'theme_queue_paused', '1')
                     _STATE['paused'] = True; msg = 'Queue paused (the current step finishes first).'
                 elif action == 'resume':
+                    tasks.put(c, 'theme_queue_paused', '0')
                     _STATE['paused'] = False; wake(app); msg = 'Queue resumed.'
                 elif action == 'clear':
                     c.execute("DELETE FROM theme_queue WHERE state IN ('installed','skipped','cancelled')"); msg = 'Finished items cleared (themes stay installed).'

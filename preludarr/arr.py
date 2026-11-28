@@ -307,18 +307,32 @@ def _root_for(app, local):
     return None, None
 
 
+def normalized_item(kind, it):
+    return {'id': it.get('id'), 'title': str(it.get('title') or '')[:200], 'year': it.get('year') or 0, 'path': str(it['path']),
+            'added': _epoch(it.get('added')),
+            'has_files': bool(it.get('hasFile')) if kind == 'radarr' else bool((it.get('statistics') or {}).get('episodeFileCount')),
+            'tvdb': int(it.get('tvdbId') or 0), 'tmdb': int(it.get('tmdbId') or 0), 'imdb': str(it.get('imdbId') or '')[:20]}
+
+
 def items(inst):
     kind = inst['kind']
     raw = _get(inst, KINDS[kind][1], timeout=60)
-    out = []
-    for it in raw if isinstance(raw, list) else []:
-        if not isinstance(it, dict) or not it.get('path'):
-            continue
-        out.append({'id': it.get('id'), 'title': str(it.get('title') or '')[:200], 'year': it.get('year') or 0, 'path': str(it['path']),
-                    'added': _epoch(it.get('added')),
-                    'has_files': bool(it.get('hasFile')) if kind == 'radarr' else bool((it.get('statistics') or {}).get('episodeFileCount')),
-                    'tvdb': int(it.get('tvdbId') or 0), 'tmdb': int(it.get('tmdbId') or 0), 'imdb': str(it.get('imdbId') or '')[:20]})
-    return out
+    return [normalized_item(kind, it) for it in raw if isinstance(it, dict) and it.get('path')] if isinstance(raw, list) else []
+
+
+def record_media_ids(app, local, it, source):
+    """The exact provider IDs from a configured Arr instance."""
+    if not (it['tvdb'] or it['tmdb'] or it['imdb']):
+        return
+    with app.db() as c:
+        old = c.execute('SELECT tvdb,tmdb,imdb FROM media_ids WHERE path=?', (local,)).fetchone()
+        current = (it['tvdb'] or None, it['tmdb'] or None, it['imdb'] or None)
+        if not old or tuple(old) != current:
+            c.execute('DELETE FROM theme_suggestions WHERE path=?', (local,))
+            c.execute('DELETE FROM theme_suggestion_meta WHERE path=?', (local,))
+        c.execute('INSERT INTO media_ids(path,tvdb,tmdb,imdb,source) VALUES(?,?,?,?,?) ON CONFLICT(path) DO UPDATE SET '
+                  'tvdb=excluded.tvdb,tmdb=excluded.tmdb,imdb=excluded.imdb,source=excluded.source',
+                  (local, *current, source))
 
 
 def sync(app, iid, create=False):
@@ -347,16 +361,7 @@ def sync(app, iid, create=False):
             continue
         summary['mapped'] += 1
         folder = Path(local)
-        if it['tvdb'] or it['tmdb'] or it['imdb']:  # V1.9.0: exact IDs for secondary theme sources
-            with app.db() as c:
-                old = c.execute('SELECT tvdb,tmdb,imdb FROM media_ids WHERE path=?', (local,)).fetchone()
-                current = (it['tvdb'] or None, it['tmdb'] or None, it['imdb'] or None)
-                if not old or tuple(old) != current:
-                    c.execute('DELETE FROM theme_suggestions WHERE path=?', (local,))
-                    c.execute('DELETE FROM theme_suggestion_meta WHERE path=?', (local,))
-                c.execute('INSERT INTO media_ids(path,tvdb,tmdb,imdb,source) VALUES(?,?,?,?,?) ON CONFLICT(path) DO UPDATE SET '
-                          'tvdb=excluded.tvdb,tmdb=excluded.tmdb,imdb=excluded.imdb,source=excluded.source',
-                          (local, *current, inst['kind']))
+        record_media_ids(app, local, it, inst['kind'])
         if folder.is_dir():
             if local in known:
                 summary['in_library'] += 1
@@ -425,7 +430,8 @@ def connect_html(config, notice='', preview=''):
     parts = ['<section id="themearr-arr" aria-labelledby="arr-title" style="margin:24px 0;padding:23px;border:1px solid #485c7b;background:#1c283e;border-radius:14px;color:#edf4ff">',
              '<h2 id="arr-title">Sonarr &amp; Radarr</h2>',
              '<p style="color:#c5d4ea">Connect one or more Sonarr and Radarr instances. Preludarr only reads from them: their series/movies, folder paths and dates added '
-             '(for an exact “Recently added”). Folder names always come from Sonarr/Radarr themselves, following your naming settings.</p>']
+             '(for an exact “Recently added”). Folder names always come from Sonarr/Radarr themselves, following your naming settings.</p>',
+             '<p><a href="/system?tab=tasks#arr-import-events">Set up optional import webhooks</a> for faster, targeted discovery.</p>']
     if notice:
         bad = notice.startswith(FAIL)
         parts += ['<p role="', 'alert' if bad else 'status', '" class="arr-banner ', 'bad' if bad else ('good' if notice.startswith(OK) else 'warn' if notice.startswith(WARN) else ''), '">', _e(notice), '</p>']

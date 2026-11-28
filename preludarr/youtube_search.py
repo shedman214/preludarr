@@ -464,7 +464,7 @@ def _background(app):
         pause = 300
         try:
             s = settings()
-            if s['background'] and ready() and not app.STATUS.get('running'):
+            if s['background'] and ready() and not app.STATUS.get('running') and not __import__('tasks').policy_reason(app):
                 ok, _ = can_search(interactive=False)
                 row = _next_title(app) if ok else None
                 if row:

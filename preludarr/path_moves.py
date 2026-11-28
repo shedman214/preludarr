@@ -118,6 +118,18 @@ def remap(app, old, new, apply=True):
                         continue
                     c.execute(f'DELETE FROM {table} WHERE path=?', (np,))
                 c.execute(f'UPDATE {table} SET path=? WHERE path=?', (np, p))
+        if 'task_control' in tables:
+            row = c.execute("SELECT value FROM task_control WHERE key='policy'").fetchone()
+            if row:
+                try:
+                    policy = json.loads(row[0])
+                    if policy.get('priority_root') == old:
+                        counts['task_priority'] = 1
+                        if apply:
+                            policy['priority_root'] = new
+                            c.execute("UPDATE task_control SET value=? WHERE key='policy'", (json.dumps(policy),))
+                except (ValueError, TypeError, AttributeError):
+                    pass
         if 'theme_queue' in tables:
             q = c.execute("SELECT id,path FROM theme_queue WHERE path=? OR path LIKE ? ESCAPE '\\'", (old, _like(old))).fetchall()
             counts['theme_queue'] = len(q)
