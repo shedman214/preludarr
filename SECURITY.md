@@ -39,7 +39,7 @@ Not in scope: problems that need an attacker who is already signed in as the own
 
 ## How Preludarr limits damage
 - Every page needs sign-in. A new install is locked until the owner enters the one-time setup code from the container log.
-- The API key is read-only by default and accepted only in the `X-Api-Key` header.
+- The API key is read-only by default and accepted only in the `X-Api-Key` header. Optional Arr import receivers use separate per-instance, header-only keys; only a digest is stored, and the receiver re-reads the numeric item ID from the configured Arr connection before doing any work.
 - The container runs as a normal user (`PUID`/`PGID`), not root.
 - Preludarr only writes `theme.mp3` and its own data; see "What Preludarr changes on disk" in the README.
 

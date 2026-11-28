@@ -174,22 +174,37 @@ def choose(config, pin, picks, main, enabled):
     with ms._LOCK:
         servers = ms._read(config, 'servers')
         old = dict(servers.get('plex') or {})
+        saved_by_machine = {
+            rec['machine']: (key, dict(rec)) for key, rec in servers.items()
+            if (key == 'plex' or ms.EXTRA_PLEX.fullmatch(key)) and isinstance(rec, dict) and rec.get('machine')
+        }
         new_main = records[0][2]
         main_server = records[0][0]
         same = (old.get('machine') and old.get('machine') == new_main['machine']) or (
             not old.get('machine') and _host(old.get('url')) in {_host(c['uri']) for c in main_server['connections']})
-        merged = dict(old) if same else {}
+        # The same server may move between main and extra slots. Preserve
+        # selections and explicit mappings only by the verified machine ID
+        # (or the existing legacy-main address check).
+        main_saved = saved_by_machine.get(new_main['machine'])
+        merged = dict(old) if same else dict(main_saved[1]) if main_saved else {}
         merged.update(new_main)
         kept_links = len(merged.get('mappings') or {})
         servers['plex'] = merged
+        selected_machines = {record['machine'] for _, _, record in records}
+        old_main_retained = bool(same or old.get('machine') in selected_machines)
         for k in [k for k in servers if ms.EXTRA_PLEX.fullmatch(k)]:
             servers.pop(k)
         for n, (_, _, record) in enumerate(records[1:], 2):
-            servers['plex-' + str(n)] = record
+            saved = saved_by_machine.get(record['machine'])
+            previous = dict(saved[1]) if saved else {}
+            if saved and saved[0] == 'plex':
+                previous['mapping_refresh'] = bool(previous.get('enabled'))
+            previous.update(record)
+            servers['plex-' + str(n)] = previous
         ms._write(config, 'servers', servers)
     with _LOCK:
         _PENDING.pop(str(pin), None)
-    return [r[0]['name'] for r in records], kept_links, bool(old.get('mappings')) and not same
+    return [r[0]['name'] for r in records], kept_links, bool(old.get('mappings')) and not old_main_retained
 
 
 # ------------------------------------------------------------------------------ web ----

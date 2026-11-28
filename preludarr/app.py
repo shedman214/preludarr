@@ -45,6 +45,9 @@ import poster_background
 import theme_retry
 import smart_matching
 import theme_profiles
+import tasks
+import arr_events
+import media_mapping
 
 CONFIG=Path(os.getenv('CONFIG_DIR','/config')); CONFIG.mkdir(parents=True,exist_ok=True)
 DB=CONFIG/'library.db'
@@ -87,6 +90,8 @@ def db():
  c.execute('CREATE TABLE IF NOT EXISTS title_availability (path TEXT PRIMARY KEY, prior_state TEXT NOT NULL, prior_detail TEXT NOT NULL)')
  c.execute('CREATE TABLE IF NOT EXISTS theme_suggestion_meta (path TEXT PRIMARY KEY, signature TEXT NOT NULL, expires INTEGER NOT NULL)')
  c.execute('CREATE TABLE IF NOT EXISTS theme_profiles (path TEXT PRIMARY KEY, profile TEXT NOT NULL)')
+ tasks.schema(c)
+ media_mapping.schema(c)
  c.commit();return c
 
 def now():return datetime.now(timezone.utc).isoformat(timespec='seconds')
@@ -629,7 +634,7 @@ def background_poster_worker():
    if not POSTER_BACKGROUND_ENABLED:  # 1.14.2: switched off in the app; check again shortly
     time.sleep(5)
     continue
-   if poster_v2_paused():
+   if poster_v2_paused() or tasks.policy_reason(sys.modules[__name__]):
     time.sleep(5)
     continue
    if not poster_connect.has_provider(CONFIG):
@@ -691,7 +696,7 @@ def background_poster_worker():
     selected['name']
    )
 
-   time.sleep(POSTER_BACKGROUND_DELAY)
+   time.sleep(tasks.poster_delay(sys.modules[__name__],POSTER_BACKGROUND_DELAY))
 
   except Exception as exc:
    print(
@@ -1232,7 +1237,7 @@ def _manual_install_mp3_unlocked(folder, source_audio, replace=False, expected_f
     pass
  return folder/'theme.mp3'
 
-_manual_install_lock=threading.Lock()
+_manual_install_lock=tasks.CONVERSION_LOCK
 
 def manual_install_mp3(folder, source_audio, replace=False,
                        expected_fingerprint=None, anime_slug=None, video_id=None, progress=None,
@@ -1308,13 +1313,44 @@ def mark_unavailable(paths, reason):
    c.execute("UPDATE shows SET state='unavailable',detail=?,updated=? WHERE path=?",(reason[:800],now(),path))
 
 
+def index_title(label,root,folder):
+ """Index exactly one registered title, preserving review/retry history."""
+ folder=Path(folder)
+ if (label,root) not in ROOTS or folder.parent!=root or folder.name.startswith(('.', '!')):
+  return False
+ try:
+  if root.is_symlink() or not root.is_dir() or folder.is_symlink() or not folder.is_dir():return False
+  theme=folder/'theme.mp3'
+  state='installed' if theme.is_file() and not theme.is_symlink() and theme.stat().st_size>0 else 'missing'
+ except OSError:
+  mark_unavailable([folder],'Title folder could not be read. Saved data is retained; rescan when it is available.')
+  return False
+ with db() as c:
+  previous=c.execute('SELECT state,detail FROM shows WHERE path=?',(str(folder),)).fetchone()
+  if previous and previous['state']=='unavailable':
+   previous=c.execute('SELECT prior_state AS state,prior_detail AS detail FROM title_availability WHERE path=?',(str(folder),)).fetchone()
+  pending=c.execute('SELECT next_retry,reason FROM theme_retry WHERE path=?',(str(folder),)).fetchone()
+ if state=='missing' and pending:
+  save(folder,label,folder.name,'missing',theme_retry.detail(pending))
+ elif state=='missing' and previous and previous['state']=='review' and theme_retry.old_provider_failure(previous['detail'],bool(ID_TAG.search(folder.name) or re.search(r'\s-\s*imdb-tt\d+\s*$',folder.name,re.I))):
+  save(folder,label,folder.name,'missing','Queued to retry a previous provider error.')
+ elif state=='missing' and previous and previous['state']=='review':
+  save(folder,label,folder.name,'review',previous['detail'])
+ elif state=='missing' and previous and previous['state'] in ('searching','downloading','converting') and STATUS['running'] and STATUS['active_path']==str(folder):
+  return True
+ else:
+  prior_detail=previous['detail'] if previous and previous['state']==state else ''
+  save(folder,label,folder.name,state,prior_detail or ('Existing theme' if state=='installed' else ''))
+ return True
+
+
 def discover(only=None):
  count=0
  for label,root in (list(ROOTS) if only is None else [(l,r) for l,r in ROOTS if r==Path(only)]):
   with db() as c:
    known={r[0] for r in c.execute('SELECT path FROM shows') if Path(r[0]).parent==root}
   try:
-   if not root.is_dir():raise FileNotFoundError()
+   if root.is_symlink() or not root.is_dir():raise FileNotFoundError()
    folders=list(root.iterdir())
   except OSError:
    if (label,root) in ROOTS:
@@ -1326,31 +1362,15 @@ def discover(only=None):
    if (label,root) not in ROOTS:break  # Preludarr 1.11.2: the root was removed / moved while this scan ran
    if folder.name.startswith(('.', '!')):continue
    try:
+    if folder.is_symlink():
+     seen.add(str(folder));mark_unavailable([folder],'Title folder is a symbolic link; saved data was retained.');continue
     if not folder.is_dir():continue
     seen.add(str(folder))
-    theme=folder/'theme.mp3'
-    state='installed' if theme.is_file() and not theme.is_symlink() and theme.stat().st_size>0 else 'missing'
    except OSError:
     seen.add(str(folder))
     mark_unavailable([folder],'Title folder could not be read. Saved data is retained; rescan when it is available.')
     continue
-   count+=1
-   with db() as c:
-    previous=c.execute('SELECT state,detail FROM shows WHERE path=?',(str(folder),)).fetchone()
-    if previous and previous['state']=='unavailable':
-     previous=c.execute('SELECT prior_state AS state,prior_detail AS detail FROM title_availability WHERE path=?',(str(folder),)).fetchone()
-    pending=c.execute('SELECT next_retry,reason FROM theme_retry WHERE path=?',(str(folder),)).fetchone()
-   if state=='missing' and pending:
-    save(folder,label,folder.name,'missing',theme_retry.detail(pending))
-   elif state=='missing' and previous and previous['state']=='review' and theme_retry.old_provider_failure(previous['detail'],bool(ID_TAG.search(folder.name) or re.search(r'\s-\s*imdb-tt\d+\s*$',folder.name,re.I))):
-    save(folder,label,folder.name,'missing','Queued to retry a previous provider error.')
-   elif state=='missing' and previous and previous['state']=='review':
-    save(folder,label,folder.name,'review',previous['detail'])
-   elif state=='missing' and previous and previous['state'] in ('searching','downloading','converting') and STATUS['running'] and STATUS['active_path']==str(folder):
-    continue
-   else:
-    prior_detail=previous['detail'] if previous and previous['state']==state else ''
-    save(folder,label,folder.name,state,prior_detail or ('Existing theme' if state=='installed' else ''))
+   if index_title(label,root,folder):count+=1
   if (label,root) in ROOTS:
    mark_unavailable(known-seen,'Title folder is unavailable or has moved. Saved matches and history are retained.')
  # Preludarr 1.11.2: a root removed during the scan may have had a few titles saved after its removal — drop them again
@@ -1428,7 +1448,32 @@ def process(path):
  except Exception as e:
   save(path,root_label,name,'review',str(e));event(name,'review',str(e));last_op(path,name,'review',str(e));STATUS.update(stage='failed',message='Failed: '+name+' — '+str(e));return 'Review: '+str(e)
 
-PENDING_SCANS=[]  # Preludarr 1.11.2: root folders added while another job ran; scanned as soon as it finishes
+PENDING_SCANS=[]  # Root scans requested while another job runs are picked up once it finishes.
+def drain_pending_scans():
+ while PENDING_SCANS:
+  nxt=PENDING_SCANS.pop(0)
+  if any(r==nxt for _,r in ROOTS):job(False,root=nxt);break
+
+def scan_library(download=False,root=None,checkpoint=lambda:None,managed=False):
+ app=sys.modules[__name__]
+ checkpoint()
+ if root is None:arr.sync_all(app)
+ checkpoint()
+ count=discover(root);STATUS['message']=f'Discovered {count} titles'+(f' in {root}' if root else '');STATUS['scan_summary']=STATUS['message']
+ if download:
+  paths=auto_themes.to_install(app)
+  if managed:paths=paths[:tasks.automatic_limit(app,len(paths))]
+  for path in paths:
+   checkpoint()
+   if not auto_themes.eligible(app,path):continue
+   if managed and not tasks.take_auto_attempt(app):break
+   try:
+    STATUS['active_path']=path
+    result=process(path)
+    if str(result).startswith('Waiting for retry:'):break
+   except Exception as error:event(Path(path).name,'error',str(error))
+ return STATUS.get('scan_summary','Library scanned.')
+
 def job(download=False,one=None,root=None):
  if not LOCK.acquire(blocking=False):
   if root is not None and not download and not one and Path(root) not in PENDING_SCANS:PENDING_SCANS.append(Path(root))
@@ -1437,24 +1482,12 @@ def job(download=False,one=None,root=None):
   STATUS.update(running=True,message='Scanning' if not one else 'Starting download',active_path=str(one) if one else None,stage='scanning' if not one else 'queued')
   try:
    if one:STATUS['message']=process(one)
-   else:
-    if root is None:arr.sync_all(sys.modules[__name__])  # V1.8.0: read Sonarr/Radarr (dates added; optional folder creation)
-    count=discover(root);STATUS['message']=f'Discovered {count} titles'+(f' in {root}' if root else '');STATUS['scan_summary']=STATUS['message']
-    if download:
-     for path in auto_themes.to_install(sys.modules[__name__]):  # One unavailable title must not stop the whole run.
-      try:
-       result=process(path)
-       # A provider outage or busy installer should not cause the whole batch
-       # to repeat the same failing requests. The due retry stays persisted.
-       if str(result).startswith('Waiting for retry:'):break
-      except Exception as error:event(Path(path).name,'error',str(error))
+   else:scan_library(download=download,root=root)
    STATUS['last_scan']=now()
   except Exception as e:STATUS['message']='Error: '+str(e);event('System','error',str(e))
   finally:
    STATUS['running']=False;LOCK.release()
-   while PENDING_SCANS:
-    nxt=PENDING_SCANS.pop(0)
-    if any(r==nxt for _,r in ROOTS):job(False,root=nxt);break
+   drain_pending_scans()
  threading.Thread(target=work,daemon=True).start();return True
 
 TITLE_PAGE_CSS='''<style>
@@ -2210,6 +2243,8 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    return jellyfin_quickconnect.get(self,CONFIG)
   if parsed.path=='/media-servers/plex-signin/status':
    return plex_signin.get(self,CONFIG)
+  if parsed.path=='/media-servers/mapping':
+   return media_mapping.page(sys.modules[__name__],self)
   if parsed.path=='/media-servers':
    if not auth.get(self):return
    return poster_connect.render_connect_page(self,CONFIG,media_servers.settings_page,ROOTS,db)
@@ -2807,7 +2842,13 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
   for e in events:parts+=['<tr><td title="',esc(e['at'],quote=True),'">',esc(activity_time(e['at'])),'</td><td>',esc(e['name']),'</td><td>',esc(e['status']),'</td><td>',esc(e['detail']),'</td></tr>']
   parts+=['</table></div><script>let wasRunning=',('true' if STATUS['running'] else 'false'),';let pollTimer=0;async function poll(){if(document.hidden)return;try{const r=await fetch("/api/status",{cache:"no-store"});if((r.status===401||(r.redirected&&new URL(r.url).pathname==="/login"))){clearInterval(pollTimer);const se=document.getElementById("job-status");if(se)se.textContent="You were signed out — reload the page to sign in again.";return}if(!r.ok)return;const s=await r.json();const el=document.getElementById("job-status");if(el)el.textContent=s.display||(s.message+(s.running?" (in progress…)":""));const sl=document.getElementById("scan-line");if(sl&&s.scan_line)sl.textContent=s.scan_line;if(wasRunning&&!s.running){location.reload();return;}wasRunning=s.running;}catch(e){}}pollTimer=setInterval(poll,2000);document.addEventListener("visibilitychange",()=>{if(!document.hidden&&pollTimer)poll()});const buttons=document.querySelectorAll("#themearr-view-toggle button");function setView(v){v=v==="list"?"list":"grid";document.body.classList.remove("view-grid","view-list");document.body.classList.add("view-"+v);buttons.forEach(b=>b.classList.toggle("active",b.dataset.view===v));try{localStorage.setItem("themearr-library-view",v)}catch(e){}}let saved="grid";try{saved=localStorage.getItem("themearr-library-view")||"grid"}catch(e){}setView(saved);buttons.forEach(b=>b.addEventListener("click",()=>setView(b.dataset.view)));const posterSize=document.getElementById("themearr-poster-size");const posterSizes=["small","medium","large","extra"];/* Preludarr 1.11.1 (user 2026-10-29): phones start with Small posters. A size is remembered only when the user picks one *//* (preludarr-poster-size, older splicarr-poster-size still read); the themearr key was written on every visit, so it is only the desktop fallback. */function setPosterSize(v){v=posterSizes.includes(v)?v:"large";document.body.classList.remove(...posterSizes.map(x=>"poster-"+x));document.body.classList.add("poster-"+v);posterSize.value=v}let savedPosterSize=null;try{savedPosterSize=localStorage.getItem("preludarr-poster-size")||localStorage.getItem("splicarr-poster-size")}catch(e){}if(!posterSizes.includes(savedPosterSize)){let legacy=null;try{legacy=localStorage.getItem("themearr-poster-size")}catch(e){}savedPosterSize=matchMedia("(max-width:600px)").matches?"small":(legacy||"large")}setPosterSize(savedPosterSize);posterSize.addEventListener("change",()=>{setPosterSize(posterSize.value);try{localStorage.setItem("preludarr-poster-size",posterSize.value)}catch(e){}});</script></main></div></body></html>'];self.send(200,''.join(parts))
  def do_POST(self):
+  if urllib.parse.urlsplit(self.path).path.startswith(arr_events.ROUTE):
+   if auth.needs_setup():return self.send(403,'{"error":"First-run setup is not finished"}','application/json')
+   return arr_events.receive(sys.modules[__name__],self)
   if not auth.post(self):return
+  if self.path=='/system/tasks':return tasks.post(sys.modules[__name__],self,auth.redirect)
+  if self.path=='/system/arr-webhook':return arr_events.settings_post(sys.modules[__name__],self,auth.redirect)
+  if self.path=='/media-servers/mapping':return media_mapping.post(sys.modules[__name__],self,auth.redirect)
   if self.path=='/api/v1/command/scan':  # V1.9.7 API: start a library scan (X-Api-Key header or signed-in)
    started=job(False)
    return self.send(202 if started else 409,json.dumps({'started':bool(started),'message':STATUS['message']}),'application/json')
@@ -3033,12 +3074,19 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
   self.send_response(303);self.send_header('Location',destination);self.end_headers()
 
 def scheduler():
- # V1.7.3: interval and automatic installs follow Settings → Media Management → Automatic Themes.
- job(download=auto_themes.settings()['mode']!='off')
+ # The scheduled scan remains the fallback, but now waits durably when work is paused.
+ app=sys.modules[__name__]
+ next_scan=0
  while True:
-  started=time.monotonic()
-  while time.monotonic()-started<auto_themes.interval_seconds():time.sleep(60)
-  job(download=auto_themes.settings()['mode']!='off')
+  try:
+   current=time.monotonic()
+   if current>=next_scan:
+    tasks.schedule_scan(app)
+    next_scan=current+auto_themes.interval_seconds()
+   tasks.schedule_mappings(app)
+  except Exception as error:
+   print('Preludarr task scheduling: '+type(error).__name__,flush=True)
+  time.sleep(60)
 
 
 def _limit_theme_ffmpeg_memory():
@@ -3166,7 +3214,7 @@ def verify_theme_directory_identity(folder, folder_fd):
 if __name__=='__main__':
  db().close()
  POSTER_BACKGROUND_ENABLED=poster_background.enabled(sys.modules[__name__])
- auto_themes.init(sys.modules[__name__]);theme_queue.wake(sys.modules[__name__]);threading.Thread(target=scheduler,daemon=True).start()
+ auto_themes.init(sys.modules[__name__]);tasks.start(sys.modules[__name__]);theme_queue.wake(sys.modules[__name__]);threading.Thread(target=scheduler,daemon=True).start()
  __import__('youtube_search').start_background(sys.modules[__name__])  # Preludarr 1.11: idles unless background search is on
  __import__('updates').start_background(APP_VERSION)  # Preludarr 1.12: once a day, can be turned off
  if __import__('general_settings').migrate_api_scan(EXISTING_INSTALL):event('API','info','Kept "API key may start library scans" for this existing install (new installs are read-only since 1.12). Change it in Settings → General.')

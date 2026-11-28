@@ -420,6 +420,17 @@ def _probe_seconds(path):
 
 
 def _to_mp3(src, config):
+    """Convert under the same one-at-a-time limit used for individual titles."""
+    import tasks
+    if not tasks.CONVERSION_LOCK.acquire(blocking=False):
+        raise ValueError('Another theme conversion is running. Try again shortly.')
+    try:
+        return _to_mp3_locked(src, config)
+    finally:
+        tasks.CONVERSION_LOCK.release()
+
+
+def _to_mp3_locked(src, config):
     """Convert any audio file to theme MP3 bytes (inside a private temporary folder in /config)."""
     seconds = _probe_seconds(src)
     if not 1 <= seconds <= MAX_SECONDS:
@@ -427,7 +438,7 @@ def _to_mp3(src, config):
     with tempfile.TemporaryDirectory(prefix='.preludarr-collection-', dir=config) as td:
         out = Path(td) / 'theme.mp3'
         r = subprocess.run(['ffmpeg', '-nostdin', '-hide_banner', '-loglevel', 'error', '-y', '-i', str(src), '-vn', '-map_metadata', '-1',
-                            '-codec:a', 'libmp3lame', '-q:a', '4', str(out)], capture_output=True, timeout=180, check=False)
+                            '-codec:a', 'libmp3lame', '-q:a', '4', '-threads', '1', str(out)], capture_output=True, timeout=180, check=False)
         if r.returncode or not out.is_file():
             raise ValueError('The audio could not be converted to MP3.')
         data = out.read_bytes()

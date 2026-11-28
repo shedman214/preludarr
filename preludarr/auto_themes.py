@@ -82,31 +82,42 @@ def recent_clause():
     return 'path IN (SELECT path FROM show_added WHERE baseline=0 AND added>=?)', [cutoff]
 
 
-def to_install(app):
-    """Missing titles the automatic run may try now, per the user's choice (newest first)."""
+def _candidates(app, path=None, include_review=False):
+    """Read the same automatic-install eligibility for a scan or one import."""
     s = settings()
     if s['mode'] == 'off':
         return []
     sql = ("SELECT s.path FROM shows s LEFT JOIN show_added a ON a.path=s.path"
            " LEFT JOIN theme_retry r ON r.path=s.path WHERE s.state='missing'"
            " AND (r.next_retry IS NULL OR r.next_retry<=?)"
-           " AND s.library IN ('Anime TV','Anime Movies')")  # Preludarr 1.11: Shows / Movies are never auto-installed
+           " AND s.library IN ('Anime TV','Anime Movies')")
     params = [int(time.time())]
     if s['mode'] == 'new':
         sql += ' AND a.baseline=0 AND a.added>=?'
         params.append(s['enabled_at'])
+    if path is not None:
+        sql += ' AND s.path=?'
+        params.append(str(path))
     sql += ' ORDER BY COALESCE(a.added,0) DESC, s.name'
     import theme_profiles
     with app.db() as c:
         saved = theme_profiles.read(c)
-        paths = []
-        for row in c.execute(sql, params):
-            if theme_profiles.effective(row['path'], saved)[0] in theme_profiles.AUTO_EXCLUDED:
-                continue
-            paths.append(row['path'])
-            if len(paths) >= s['per_scan']:
-                break
-        return paths
+        excluded = ('skip',) if include_review else theme_profiles.AUTO_EXCLUDED
+        return [row['path'] for row in c.execute(sql, params) if theme_profiles.effective(row['path'], saved)[0] not in excluded]
+
+
+def eligible(app, path, include_review=False):
+    return bool(_candidates(app, path, include_review))
+
+
+def to_install(app):
+    """Missing titles, newest first within the configured priority root."""
+    import tasks
+    paths = _candidates(app)
+    root = tasks.settings(app)['priority_root']
+    if root:
+        paths.sort(key=lambda path: str(Path(path).parent) != root)
+    return paths[:settings()['per_scan']]
 
 
 def interval_seconds():

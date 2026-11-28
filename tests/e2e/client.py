@@ -65,6 +65,9 @@ if MODE == 'fresh':
     check('Fresh install: every page leads to first-run setup', st == 303 and h.get('location') == '/setup')
     st, _, _ = req('GET', '/api/v1/status', auth=False)
     check('Fresh install: the API is closed until setup is finished', st == 503)
+    st, _, _ = req('POST', '/api/v1/webhook/arr/aabbccddeeff', b'{"eventType":"Test"}',
+                    {'Content-Type': 'application/json'}, auth=False, origin=None)
+    check('Import receiver is closed before first-run setup', st == 403)
     form = {'code': 'AAAA-BBBB', 'username': USER, 'password': PW, 'confirm': PW}
     st, _, _ = req('POST', '/setup', form, auth=False)
     check('Setup with a wrong code is refused', st == 403)
@@ -79,6 +82,22 @@ else:
 
 st, _, body = req('GET', '/')
 check('Signed in: the Library page opens', st == 200 and b'Preludarr' in body)
+
+# ---- Tasks, mapping and import receiver (no connected server needed)
+st, _, page = req('GET', '/system?tab=tasks')
+check('Tasks page is available after sign-in', st == 200 and b'Tasks &amp; Resource Management' in page and b'Import' in page)
+st, _, page = req('GET', '/media-servers/mapping')
+check('Automatic mapping page opens without contacting a server', st == 200 and b'Automatic media-server mapping' in page)
+st, _, _ = req('POST', '/system/tasks', {'action': 'pause'}, auth=False)
+check('Background policy requires an authenticated session', st == 303)
+st, _, _ = req('POST', '/system/tasks', {'action': 'pause'}, origin='http://evil.example')
+check('Background policy requires the same origin', st == 403)
+st, _, _ = req('POST', '/system/tasks', {'action': 'pause'})
+check('Pause saves and appears on the Tasks page', st == 303 and b'Background work paused' in req('GET', '/system?tab=tasks')[2])
+req('POST', '/system/tasks', {'action': 'resume'})
+st, _, _ = req('POST', '/api/v1/webhook/arr/aabbccddeeff', b'{"eventType":"Test"}',
+                {'Content-Type': 'application/json'}, origin=None)
+check('A signed-in session is not a webhook credential', st == 401)
 
 # ---- authenticated writes, CSRF / origin, sign-in required
 page = req('GET', '/system?tab=backup')[2].decode()
@@ -135,6 +154,10 @@ if MODE == 'fresh':
     check('Fresh install: API key is read-only — starting a scan is refused (403)', st == 403)
 else:
     check('Upgrade: an existing install keeps "API key may start scans" (202 started or 409 busy)', st in (202, 409), (st, body[:80]))
+
+st, _, _ = req('POST', '/api/v1/webhook/arr/aabbccddeeff', b'{"eventType":"Test"}',
+                {'X-Api-Key': key, 'Content-Type': 'application/json'}, auth=False, origin=None)
+check('General API key cannot authorize Arr import receivers', st == 401)
 
 # ---- streaming install progress (title seeded by the script; no network → the download fails, but progress streams)
 if MODE == 'fresh':

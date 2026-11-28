@@ -93,6 +93,22 @@ def _moving_wins(app, c, table, src, dst):
     return True
 
 
+def _move_task_priority(conn, old, new, apply):
+    row = conn.execute("SELECT value FROM task_control WHERE key='policy'").fetchone()
+    if not row:
+        return 0
+    try:
+        policy = json.loads(row[0])
+    except (ValueError, TypeError):
+        return 0  # invalid saved resource policy is ignored, not rewritten
+    if not isinstance(policy, dict) or policy.get('priority_root') != old:
+        return 0
+    if apply:
+        policy['priority_root'] = new
+        conn.execute("UPDATE task_control SET value=? WHERE key='policy'", (json.dumps(policy),))
+    return 1
+
+
 def remap(app, old, new, apply=True):
     """Move saved records from root `old` to root `new`. Returns {area: count}. apply=False only counts."""
     old, new = _norm(old), _norm(new)
@@ -101,6 +117,10 @@ def remap(app, old, new, apply=True):
     counts = {}
     cfg = Path(app.CONFIG)
     with app.db() as c:
+        if apply:
+            # Keep the policy read/update and the other records in one write
+            # transaction, even when the old root had no saved titles.
+            c.execute('BEGIN IMMEDIATE')
         tables = {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         for table in TABLES_NEW_WINS + TABLES_OLD_WINS:
             if table not in tables:
@@ -118,6 +138,8 @@ def remap(app, old, new, apply=True):
                         continue
                     c.execute(f'DELETE FROM {table} WHERE path=?', (np,))
                 c.execute(f'UPDATE {table} SET path=? WHERE path=?', (np, p))
+        if 'task_control' in tables:
+            counts['task_priority'] = _move_task_priority(c, old, new, apply)
         if 'theme_queue' in tables:
             q = c.execute("SELECT id,path FROM theme_queue WHERE path=? OR path LIKE ? ESCAPE '\\'", (old, _like(old))).fetchall()
             counts['theme_queue'] = len(q)

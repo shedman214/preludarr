@@ -579,6 +579,7 @@ def settings_page(handler, config, roots, db):
     raw_path = params.get('path', [''])[0]
     selected = _valid_anime(raw_path, roots, db) if raw_path else None
     path = raw_path if selected else ''
+    import media_mapping
     servers = _server_map(config)
     configure = params.get('configure', [''])[0]
     if configure not in _TYPES:
@@ -598,13 +599,14 @@ def settings_page(handler, config, roots, db):
 <div class="heading-row"><div><h1 class="heading">Connect</h1><p class="muted">Manage connections to your media servers.</p></div>
 """, '<a class="btn primary" href="', _e(link(add='1')), '">＋ Add Connection</a></div>',
 """<section class="cx-sec" id="cx-sec-media">""" + (('<p class="notice" role="status">' + _e(params.get('notice', [''])[0][:240]) + '</p>') if params.get('notice', [''])[0] else '') + """<h2 class="cx-h">Media servers</h2><p class="intro muted">Connections can be saved without enabling refresh. A targeted refresh happens only after an approved theme installation, when that server is enabled and the anime has a mapped item ID. No full-library scan is triggered.</p>
-<div class="grid">"""]
+<p><a class="btn ghost" href="/media-servers/mapping">Automatic library mapping &amp; extra servers</a></p><div class="grid">"""]
     for kind in _TYPES:
         label, symbol, desc, example, id_label = details[kind]
         record = servers.get(kind, {})
         configured = bool(record.get('url') and record.get('api_key'))
         enabled = bool(record.get('enabled'))
         mapped = len(record.get('mappings') or {})
+        auto_mapped = media_mapping.coverage(config, kind, record)
         status = ('Refresh enabled' if enabled else 'Refresh disabled') if configured else 'Not configured'
         klass = 'on' if configured and enabled else ('off' if configured else '')
         parts.extend(['<section class="connection"><div class="conn-head">', _logo(kind),
@@ -613,7 +615,7 @@ def settings_page(handler, config, roots, db):
                       '<div class="stats"><div>', _e(desc), '</div>',
                       '<div>Host: <strong>', _e(record.get('url') or 'Not set'), '</strong></div>',
                       '<div>API token: <strong>', 'Saved' if record.get('api_key') else 'Not saved', '</strong></div>',
-                      '<div>Mapped titles: <strong>', str(mapped), '</strong></div></div>',
+                      '<div>Manually mapped: <strong>', str(mapped), '</strong></div><div>Automatically mapped: <strong>', str(auto_mapped), '</strong></div></div>',
                       '<div class="actions"><a class="btn ghost" href="', _e(link(configure=kind)), '">',
                       'Edit' if configured else 'Configure', '</a>'])
         if configured:
@@ -630,7 +632,7 @@ def settings_page(handler, config, roots, db):
     extras = [(k, r) for k, r in plex_servers(config) if k != 'plex']
     if extras:  # 1.12: more than one Plex server
         parts.append('<section class="cx-sec" id="cx-plex-extra"><h2 class="cx-h">Other Plex servers</h2><p class="intro muted">Added with Sign in with Plex. '
-                     'They are used for Collections; per-title links and refresh after installs use the main Plex server above.</p><div class="grid">')
+                     'They are available for Collections. Set up independent title mappings and refresh under Automatic library mapping.</p><div class="grid">')
         for k, r in extras:
             parts.extend(['<section class="card"><h3>', _e(r.get('name') or 'Plex'), '</h3><div>Host: <strong>', _e(r.get('url', '')), '</strong></div>',
                           '<div>API token: <strong>Saved</strong></div>',
@@ -642,16 +644,23 @@ def settings_page(handler, config, roots, db):
         parts.append('<section class="panel"><h2>Media item mapping</h2>')
         parts.extend(['<p><strong>', _e(selected['name']), '</strong></p>',
                       '<p class="muted">Connect this title to the correct item ID on each media server. Plex uses ratingKey; Jellyfin and Emby use their Item IDs.</p>'])
-        for kind in _TYPES:
-            label = details[kind][0]
-            mapped_id = (servers.get(kind, {}).get('mappings') or {}).get(path, '')
+        available = media_mapping.connections(config)
+        keys = list(_TYPES) + sorted(k for k in available if k not in _TYPES)
+        for kind in keys:
+            record = available.get(kind, servers.get(kind, {}))
+            label = record.get('name') or details[media_mapping.kind_of(kind)][0]
+            if kind not in _TYPES and not record.get('name'):
+                label += ' ' + kind.split('-')[1]
+            mapped_id = (record.get('mappings') or {}).get(path, '')
+            auto_id = media_mapping.lookup(config, kind, record, path) if record else None
             parts.extend(['<form class="mapping-row" method="post" action="/media-server-map">',
                           '<strong>', _e(label), '</strong>',
                           '<input type="hidden" name="kind" value="', kind, '">',
                           '<input type="hidden" name="path" value="', _e(path), '">',
                           '<label class="field" style="margin:0"><span>', _e(label), ' item ID</span>',
-                          '<input type="text" name="item_id" maxlength="80" placeholder="Blank removes mapping" value="',
+                          '<input type="text" name="item_id" maxlength="80" placeholder="Blank removes manual override" value="',
                           _e(mapped_id), '"></label>',
+                          '<small class="muted">Automatic: ' + _e(auto_id or 'not mapped') + '</small>',
                           '<button type="submit">Save mapping</button></form>'])
         parts.extend(['<p><a href="', _e(_u('/themes', path=path)), '">← Return to theme browser</a></p></section>'])
     parts.append('</section></main></div>')  # V1.9.8: closes the Media servers tab section
@@ -681,7 +690,7 @@ def settings_page(handler, config, roots, db):
                       '<small>', 'API token configured' if record.get('api_key') else 'API token not configured', '</small>',
                       '<label class="check"><input type="checkbox" name="enabled" value="1"',
                       ' checked' if record.get('enabled') else '',
-                      '><span>Enable targeted refresh after an approved theme installation (requires a per-title mapping).</span></label>',
+                      '><span>Enable targeted refresh after an approved theme installation (requires a manual or verified automatic item mapping).</span></label>',
                       '<p class="notice">Use the private LAN IPv4 address and port. Nothing is refreshed merely by saving or testing this connection.</p>',
                       '<div class="dialog-footer"><a class="btn ghost" href="', _e(link()), '">Cancel</a>',
                       '<button class="primary" type="submit">Save ', _e(label), '</button></div></form></section></div>'])
@@ -740,7 +749,8 @@ def server_post(handler, config, roots, db, redirect):
         return handler.send(200, '<html><body><p>' + _e(msg) + '</p><a href="/media-servers">Back to Media Servers</a></body></html>')
     if route == '/media-server-map':
         form = _parse(handler, {'kind', 'path', 'item_id'})
-        if not form or form.get('kind') not in _TYPES:
+        import media_mapping
+        if not form or not media_mapping.KEY.fullmatch(form.get('kind', '')):
             return handler.send(400, 'Invalid mapping', 'text/plain')
         path, kind = form.get('path', ''), form['kind']
         try:
@@ -748,7 +758,7 @@ def server_post(handler, config, roots, db, redirect):
         except ValueError:
             return handler.send(400, 'Unknown anime', 'text/plain')
         item_id = form.get('item_id', '').strip()
-        if item_id and not _item_ok(kind, item_id):
+        if item_id and not _item_ok(media_mapping.kind_of(kind), item_id):
             return handler.send(400, 'Invalid server item ID', 'text/plain')
         with _LOCK:
             settings = _read(config, 'servers')
@@ -781,33 +791,53 @@ def _refresh_one(server, item_id):
 
 
 def after_install(config, anime_path):
-    """Non-blocking and best-effort. Called only on successful confirmed install."""
+    """Best-effort targeted refresh, never an entire library. Manual links win."""
     try:
-        servers = _server_map(config)
-        targets = [(k, s, (s.get('mappings') or {}).get(anime_path))
-                   for k, s in servers.items() if s.get('enabled')]
-        targets = [(k, s, item) for k, s, item in targets if item and _item_ok(k, item)]
+        import media_mapping as mm
+        servers = mm.connections(config)
+        targets = []
+        for key, server in servers.items():
+            if not mm.refresh_enabled(key, server):
+                continue
+            item = (server.get('mappings') or {}).get(anime_path) or mm.lookup(config, key, server, anime_path)
+            if item and _item_ok(server['kind'], item):
+                targets.append((key, server, item))
         if not targets:
             return
         now = time.monotonic()
         with _REFRESH_LOCK:
+            for k in list(_RECENT):
+                if now - _RECENT[k] >= 120:
+                    del _RECENT[k]
             active = []
-            for kind, server, item_id in targets:
-                token = (kind, item_id)
-                if now - _RECENT.get(token, -100000) >= 120:
+            for key, server, item in targets:
+                token = (key, mm.signature(server), item)
+                if token not in _RECENT:
                     _RECENT[token] = now
-                    active.append((kind, server, item_id))
+                    active.append((key, server, item, token, now))
         if not active:
             return
 
         def worker():
-            for kind, server, item_id in active:
+            for key, server, item, token, reservation in active:
                 try:
-                    _refresh_one(server, item_id)
-                    print('Preludarr target item refresh queued: ' + kind, flush=True)
+                    live = mm.connections(config).get(key)
+                    current_item = live and mm.refresh_enabled(key, live) and mm.signature(live) == mm.signature(server) and (
+                        (live.get('mappings') or {}).get(anime_path) or mm.lookup(config, key, live, anime_path))
+                    if current_item != item:
+                        # Nothing was sent, so a later install may refresh this item.
+                        with _REFRESH_LOCK:
+                            if _RECENT.get(token) == reservation:
+                                _RECENT.pop(token, None)
+                        continue
+                    with _REFRESH_LOCK:
+                        if _RECENT.get(token) != reservation:
+                            continue
+                    _refresh_one(live, item)
+                    print('Preludarr target item refresh queued: ' + key, flush=True)
                 except Exception as error:
-                    print('Preludarr target refresh failed: ' + kind + ' ' + type(error).__name__, flush=True)
-        threading.Thread(target=worker, name='themearr-media-refresh', daemon=True).start()
+                    print('Preludarr target refresh failed: ' + key + ' ' + type(error).__name__, flush=True)
+        threading.Thread(target=worker, name='preludarr-media-refresh', daemon=True).start()
     except Exception as error:
         print('Preludarr post-install refresh skipped: ' + type(error).__name__, flush=True)
 
@@ -830,6 +860,7 @@ def connect_overview(config):
     def row(name, tab, last, status, detail):
         rows.append('<tr><th scope="row"><a href="/media-servers?tab=' + tab + '">' + _e(name) + '</a></th><td>' + last + '</td><td>' + status +
                     '</td><td>' + detail + '</td></tr>')
+    import media_mapping
     servers = _server_map(config)
     any_server = False
     for kind, label in (('plex', 'Plex'), ('jellyfin', 'Jellyfin'), ('emby', 'Emby')):
@@ -837,10 +868,11 @@ def connect_overview(config):
         if not (rec.get('url') and rec.get('api_key')):
             continue
         any_server = True
-        mapped = len(rec.get('mappings') or {})
+        manual, automatic = len(rec.get('mappings') or {}), media_mapping.coverage(config, kind, rec)
         on = bool(rec.get('enabled'))
-        status = (badge('Configured', 'on') if on and mapped else badge('Needs attention: no titles mapped', 'warn') if on else badge('Configured · refresh off', 'off'))
-        row(label, 'media', badge('Checked on the Media servers tab', 'off'), status, f'Refresh {"on" if on else "off"} · {mapped:,} titles mapped')
+        status = (badge('Configured', 'on') if on and (manual or automatic) else badge('Needs attention: no titles mapped', 'warn') if on else badge('Configured · refresh off', 'off'))
+        row(label, 'media', badge('Checked on the Media servers tab', 'off'), status,
+            f'Refresh {"on" if on else "off"} · {manual:,} manual · {automatic:,} automatic mappings')
     if not any_server:
         row('Media servers', 'media', '—', badge('Not configured', 'off'), '<span class="muted">Optional — only for refreshing a title after an install</span>')
     try:
