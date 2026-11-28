@@ -26,7 +26,13 @@ Before an update, make a backup (System, Backup &amp; Restore).</Overview>
   <Requires>Your TV and movie shares mapped read/write. Anime themes work out of the box; shows and movies use the free theme sources (Settings, Download Clients) and your own TMDB key.</Requires>
   <ExtraSearchTerms>theme themes theme.mp3 anime opening plex jellyfin emby sonarr radarr</ExtraSearchTerms>
   <License>GPL-3.0-or-later</License>
-  <Changes>### 1.16.3&#xD;
+  <Changes>### 1.19.0&#xD;
+Theme Studio: trim, fade, normalize and preview theme audio, compare it with the current theme, then install the exact preview; per-title installation history.&#xD;
+### 1.18.0&#xD;
+Automatic media-server mapping by exact paths or verified IDs, optional Sonarr/Radarr import events, and a Tasks page with pause, processing hours and Eco/Balanced/Performance profiles.&#xD;
+### 1.17.0&#xD;
+Smart Matching V6 matches anime by verified provider IDs in folder names; Anime Theme Profiles per title, root folder or globally.&#xD;
+### 1.16.3&#xD;
 Reliability fixes: provider retries, verified automatic installs, restored AnimeThemes alternatives and theme recovery, unavailable library folders, Windows/UNC folder creation and suggestion cache refresh.&#xD;
 ### 1.16.2&#xD;
 Fixed ThemerrDB lookups using the current provider address.&#xD;
@@ -54,7 +60,7 @@ Dashboard shows Activity (choose how many events per page); the Library remember
 Sonarr/Radarr on Windows: path mappings accept Windows paths (G:\ =&gt; /mnt/media).&#xD;
 ### 1.12.0&#xD;
 First stable release. Changes: https://github.com/shedman214/preludarr/blob/main/CHANGELOG.md</Changes>
-  <Date>2026-11-27</Date>
+  <Date>2026-11-28</Date>
   <MinVer>6.12.0</MinVer>
   <Screenshot>https://raw.githubusercontent.com/shedman214/preludarr/main/.github/screenshots/library.png</Screenshot>
   <Screenshot>https://raw.githubusercontent.com/shedman214/preludarr/main/.github/screenshots/theme-review.png</Screenshot>
