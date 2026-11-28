@@ -1319,7 +1319,7 @@ def index_title(label,root,folder):
  if (label,root) not in ROOTS or folder.parent!=root or folder.name.startswith(('.', '!')):
   return False
  try:
-  if folder.is_symlink() or not folder.is_dir():return False
+  if root.is_symlink() or not root.is_dir() or folder.is_symlink() or not folder.is_dir():return False
   theme=folder/'theme.mp3'
   state='installed' if theme.is_file() and not theme.is_symlink() and theme.stat().st_size>0 else 'missing'
  except OSError:
@@ -1350,7 +1350,7 @@ def discover(only=None):
   with db() as c:
    known={r[0] for r in c.execute('SELECT path FROM shows') if Path(r[0]).parent==root}
   try:
-   if not root.is_dir():raise FileNotFoundError()
+   if root.is_symlink() or not root.is_dir():raise FileNotFoundError()
    folders=list(root.iterdir())
   except OSError:
    if (label,root) in ROOTS:
@@ -1362,6 +1362,8 @@ def discover(only=None):
    if (label,root) not in ROOTS:break  # Preludarr 1.11.2: the root was removed / moved while this scan ran
    if folder.name.startswith(('.', '!')):continue
    try:
+    if folder.is_symlink():
+     seen.add(str(folder));mark_unavailable([folder],'Title folder is a symbolic link; saved data was retained.');continue
     if not folder.is_dir():continue
     seen.add(str(folder))
    except OSError:

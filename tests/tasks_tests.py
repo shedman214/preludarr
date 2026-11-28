@@ -117,6 +117,11 @@ with app.db() as c:
     linked = c.execute('SELECT 1 FROM shows WHERE path=?', (str(anime / 'Linked'),)).fetchone()
 check('A linked title folder pointing outside the root is not indexed', not indexed and not linked
       and app.index_title('Anime TV', anime, existing))
+link_root = work / 'linked-root'
+link_root.symlink_to(outside, target_is_directory=True)
+app.ROOTS.append(('Anime TV', link_root))
+check('A registered root that becomes a symlink is not indexed', not app.index_title('Anime TV', link_root, link_root / 'Linked'))
+app.ROOTS.remove(('Anime TV', link_root))
 
 # A generated, dedicated webhook key; no production credentials.
 iid = 'aabbccddeeff'

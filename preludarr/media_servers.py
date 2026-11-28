@@ -830,6 +830,9 @@ def after_install(config, anime_path):
                             if _RECENT.get(token) == reservation:
                                 _RECENT.pop(token, None)
                         continue
+                    with _REFRESH_LOCK:
+                        if _RECENT.get(token) != reservation:
+                            continue
                     _refresh_one(live, item)
                     print('Preludarr target item refresh queued: ' + key, flush=True)
                 except Exception as error:
