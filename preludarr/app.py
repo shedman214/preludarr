@@ -1319,7 +1319,7 @@ def index_title(label,root,folder):
  if (label,root) not in ROOTS or folder.parent!=root or folder.name.startswith(('.', '!')):
   return False
  try:
-  if not folder.is_dir():return False
+  if folder.is_symlink() or not folder.is_dir():return False
   theme=folder/'theme.mp3'
   state='installed' if theme.is_file() and not theme.is_symlink() and theme.stat().st_size>0 else 'missing'
  except OSError:

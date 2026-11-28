@@ -9,6 +9,7 @@ library selections. Rebuilds never refresh the media server.
 import hashlib
 import html
 import json
+import os
 import re
 import sqlite3
 import time
@@ -24,6 +25,7 @@ import tasks
 PAGE_SIZE = 200
 MAX_ITEMS = 30000
 MAX_LIBRARIES = 100
+MAX_PATH_MAPPINGS = 20  # arr._parse_mappings keeps at most 20
 MAX_AGE = 2 * 86400
 KEY = re.compile(r'(plex|jellyfin|emby)(?:-[2-9])?\Z')
 ID_TAG = re.compile(r'[\[{]\s*(tvdb|tmdb|imdb)(?:id)?\s*[-=:]\s*((?:tt)?[0-9]+)\s*[\]}]', re.I)
@@ -77,7 +79,12 @@ def _plex(record, route, sections=False):
         container = json.loads(data).get('MediaContainer')
         if not isinstance(container, dict):
             raise ValueError('Unexpected Plex response.')
-        rows = container.get('Directory' if sections else 'Metadata') or []
+        rows = container.get('Directory' if sections else 'Metadata')
+        if rows is None:
+            # Plex omits the list for an empty page; anything else is an incomplete reply.
+            if str(container.get('size')) != '0':
+                raise ValueError('Incomplete Plex response.')
+            rows = []
         if not isinstance(rows, list):
             raise ValueError('Unexpected Plex library items.')
         return rows, container.get('totalSize')
@@ -91,7 +98,10 @@ def _plex(record, route, sections=False):
     if root.tag != 'MediaContainer':
         raise ValueError('Unexpected Plex response.')
     tag = ('Directory',) if sections else ('Directory', 'Video')
-    return [_xml_item(n) for n in root if n.tag in tag], root.get('totalSize')
+    rows = [_xml_item(n) for n in root if n.tag in tag]
+    if not rows and root.get('size') != '0':
+        raise ValueError('Incomplete Plex response.')
+    return rows, root.get('totalSize')
 
 
 def _item_ok(kind, value):
@@ -103,7 +113,9 @@ def _remote_path(value):
             or any(ord(c) < 32 for c in value) or not (value.startswith('/') or arr.is_windows_path(value))
             or any(p in ('.', '..') for p in re.split(r'[\\/]+', value))):
         return ''
-    return arr.norm_remote(value)
+    # norm_remote strips surrounding spaces (fine for typed settings); a server's
+    # folder name may really end in one, so Linux paths are only normalized.
+    return arr.norm_remote(value) if arr.is_windows_path(value) else os.path.normpath(value)
 
 
 def discover(record):
@@ -254,6 +266,8 @@ def _local_titles(app, record, libraries):
     roots = {str(root): ('movie' if label in ('Anime Movies', 'Movies') else 'tv') for label, root in app.ROOTS}
     maps = (record.get('library_mapping') or {}).get('paths', [])
     scoped = {m['local'] for m in maps if m['local'] in roots}
+    if maps and not scoped:
+        return {}  # every configured destination is gone: map nothing rather than everything
     # Explicit mapped roots constrain ID fallback. Without mappings, a unique
     # provider ID can identify a title in the registered libraries of that type.
     allowed_types = {t for l in libraries for t in (('tv', 'movie') if l['type'] == 'mixed' else (l['type'],))}
@@ -440,7 +454,7 @@ def page(app, handler):
                           '<p class="muted">' + _e(' · '.join(lib['paths'])) + '</p>'])
         if not found:
             parts.append('<p class="muted">Discover your libraries first.</p>')
-        parts.extend(['<label class="field"><span>Remote path =&gt; registered Preludarr root (one per line, optional for unique provider-ID matching)</span>'
+        parts.extend(['<label class="field"><span>Remote path =&gt; registered Preludarr root (one per line, up to 20, optional for unique provider-ID matching)</span>'
                       '<textarea name="paths" rows="4" placeholder="/data/tv/anime =&gt; /anime">' + _e(paths) + '</textarea></label>',
                       '<label class="check"><input type="checkbox" name="automatic" value="1"' + (' checked' if config.get('automatic') else '') +
                       '> Rebuild automatically once a day</label>',
@@ -539,9 +553,10 @@ def post(app, handler, redirect):
                         raise ValueError('Connection changed; reopen this page.')
                     del all_servers[key]
                     ms._write(app.CONFIG, 'servers', all_servers)
-                with app.db() as conn:
-                    conn.execute('DELETE FROM media_server_links WHERE server_key=?', (key,))
-                    conn.execute('DELETE FROM media_mapping_report WHERE server_key=?', (key,))
+                    # still under the lock, so a new connection cannot reuse the key meanwhile
+                    with app.db() as conn:
+                        conn.execute('DELETE FROM media_server_links WHERE server_key=?', (key,))
+                        conn.execute('DELETE FROM media_mapping_report WHERE server_key=?', (key,))
                 message = 'Connection removed. No media or installed themes were changed.'
             elif action == 'discover':
                 found = discover(record)
@@ -557,6 +572,8 @@ def post(app, handler, redirect):
                 available = {x['id'] for x in record.get('discovered_libraries', [])}
                 if not set(selected).issubset(available):
                     raise ValueError('Discover libraries again.')
+                if sum(1 for line in f('paths').splitlines() if line.strip()) > MAX_PATH_MAPPINGS:
+                    raise ValueError('Too many path mappings.')
                 paths = arr._parse_mappings(app, f('paths'))
                 if len({arr._key(m['remote']) for m in paths}) != len(paths):
                     raise ValueError('Each remote path must have one mapping.')

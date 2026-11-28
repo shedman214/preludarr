@@ -822,10 +822,12 @@ def after_install(config, anime_path):
             for key, server, item in active:
                 try:
                     live = mm.connections(config).get(key)
-                    if not live or not mm.refresh_enabled(key, live) or mm.signature(live) != mm.signature(server):
-                        continue
-                    current_item = (live.get('mappings') or {}).get(anime_path) or mm.lookup(config, key, live, anime_path)
+                    current_item = live and mm.refresh_enabled(key, live) and mm.signature(live) == mm.signature(server) and (
+                        (live.get('mappings') or {}).get(anime_path) or mm.lookup(config, key, live, anime_path))
                     if current_item != item:
+                        # Nothing was sent, so a later install may refresh this item.
+                        with _REFRESH_LOCK:
+                            _RECENT.pop((key, mm.signature(server), item), None)
                         continue
                     _refresh_one(live, item)
                     print('Preludarr target item refresh queued: ' + key, flush=True)
@@ -862,10 +864,11 @@ def connect_overview(config):
         if not (rec.get('url') and rec.get('api_key')):
             continue
         any_server = True
-        mapped = max(len(rec.get('mappings') or {}), media_mapping.coverage(config, kind, rec))
+        manual, automatic = len(rec.get('mappings') or {}), media_mapping.coverage(config, kind, rec)
         on = bool(rec.get('enabled'))
-        status = (badge('Configured', 'on') if on and mapped else badge('Needs attention: no titles mapped', 'warn') if on else badge('Configured · refresh off', 'off'))
-        row(label, 'media', badge('Checked on the Media servers tab', 'off'), status, f'Refresh {"on" if on else "off"} · {mapped:,} titles mapped')
+        status = (badge('Configured', 'on') if on and (manual or automatic) else badge('Needs attention: no titles mapped', 'warn') if on else badge('Configured · refresh off', 'off'))
+        row(label, 'media', badge('Checked on the Media servers tab', 'off'), status,
+            f'Refresh {"on" if on else "off"} · {manual:,} manual · {automatic:,} automatic mappings')
     if not any_server:
         row('Media servers', 'media', '—', badge('Not configured', 'off'), '<span class="muted">Optional — only for refreshing a title after an install</span>')
     try:

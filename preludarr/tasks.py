@@ -48,6 +48,8 @@ def schema(conn):
     conn.execute('CREATE TABLE IF NOT EXISTS auto_attempts (at INTEGER NOT NULL)')
     conn.execute('CREATE INDEX IF NOT EXISTS auto_attempts_at ON auto_attempts(at)')
     conn.execute('CREATE TABLE IF NOT EXISTS arr_webhooks (instance TEXT PRIMARY KEY, token_hash TEXT NOT NULL)')
+    if 'rerun' not in {r[1] for r in conn.execute('PRAGMA table_info(background_tasks)')}:
+        conn.execute('ALTER TABLE background_tasks ADD COLUMN rerun INTEGER NOT NULL DEFAULT 0')
 
 
 def setting(conn, key, default=''):
@@ -62,7 +64,10 @@ def put(conn, key, value):
 
 def settings(app):
     with app.db() as conn:
-        raw = setting(conn, 'policy', '{}')
+        return _policy(setting(conn, 'policy', '{}'))
+
+
+def _policy(raw):
     try:
         saved = json.loads(raw)
     except ValueError:
@@ -145,8 +150,11 @@ def enqueue(app, kind, key, payload, delay=0):
         raise ValueError('Task is too large.')
     with app.db() as conn:
         conn.execute('BEGIN IMMEDIATE')
-        old = conn.execute("SELECT id FROM background_tasks WHERE task_key=? AND state IN ('queued','running')", (key,)).fetchone()
+        old = conn.execute("SELECT id,state FROM background_tasks WHERE task_key=? AND state IN ('queued','running')", (key,)).fetchone()
         if old:
+            if old[1] == 'running':
+                # It may have read older settings already: run once more when it ends.
+                conn.execute('UPDATE background_tasks SET rerun=1,payload=? WHERE id=?', (encoded, old[0]))
             return old[0], False
         pending = conn.execute("SELECT COUNT(*) FROM background_tasks WHERE state IN ('queued','running')").fetchone()[0]
         if pending >= MAX_PENDING:
@@ -193,8 +201,9 @@ def cancel_task(app, task_id):
 def _finish(app, task_id, state, note, delay=0):
     now = int(time.time())
     with app.db() as conn:
-        conn.execute("UPDATE background_tasks SET state=CASE WHEN cancel=1 THEN 'cancelled' ELSE ? END,"
-                     "note=CASE WHEN cancel=1 THEN 'Stopped after the last safe step' ELSE ? END,due=?,updated=? WHERE id=? AND state='running'",
+        conn.execute("UPDATE background_tasks SET state=CASE WHEN cancel=1 THEN 'cancelled' WHEN rerun=1 THEN 'queued' ELSE ? END,"
+                     "note=CASE WHEN cancel=1 THEN 'Stopped after the last safe step' WHEN rerun=1 THEN 'Settings changed; running again' ELSE ? END,"
+                     "due=?,updated=?,rerun=0 WHERE id=? AND state='running'",
                      (state, str(note)[:240], now+delay, now, task_id))
 
 
@@ -361,23 +370,26 @@ def post(app, handler, redirect):
                 raise ValueError('Unknown task.')
             msg = 'Cancellation requested.' if cancel_task(app, int(raw)) else 'Task is no longer pending.'
         else:
-            s = settings(app)
             if action in ('pause', 'resume'):
-                s['paused'] = action == 'pause'
+                change = {'paused': action == 'pause'}
             elif action == 'policy':
                 profile = form.get('profile', [''])[0]
                 root = form.get('priority_root', [''])[0]
                 if profile not in PROFILES or (root and root not in {str(r) for _, r in app.ROOTS}):
                     raise ValueError('Choose a valid resource profile and root.')
-                s.update(profile=profile, priority_root=root)
+                change = {'profile': profile, 'priority_root': root}
                 for key, maximum in (('start', 23), ('end', 23), ('busy_percent', 200)):
                     raw = form.get(key, [''])[0]
                     if not raw.isascii() or not raw.isdecimal() or len(raw) > 3 or not 0 <= int(raw) <= maximum:
                         raise ValueError('Invalid processing hour or load limit.')
-                    s[key] = int(raw)
+                    change[key] = int(raw)
             else:
                 raise ValueError('Unknown task action.')
+            # Read and write under one write lock, so a concurrent pause is never overwritten.
             with app.db() as conn:
+                conn.execute('BEGIN IMMEDIATE')
+                s = _policy(setting(conn, 'policy', '{}'))
+                s.update(change)
                 put(conn, 'policy', json.dumps(s))
             WAKE.set()
             msg = 'Background policy saved.'

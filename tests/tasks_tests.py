@@ -76,6 +76,47 @@ with app.db() as c:
 tasks.cancel_task(app, t)
 tasks.recover(app)
 check('Restart respects pending cancellation', row(t)['state'] == 'cancelled')
+t, _ = tasks.schedule_scan(app)
+with app.db() as c:
+    c.execute("UPDATE background_tasks SET state='running' WHERE id=?", (t,))
+again, again_new = tasks.schedule_scan(app)
+tasks._finish(app, t, 'done', 'Finished with the older settings')
+check('A request during a running task queues exactly one follow-up run', again == t and not again_new
+      and row(t)['state'] == 'queued' and row(t)['note'] == 'Settings changed; running again' and not row(t)['rerun'])
+tasks._finish(app, t, 'done', 'unused')  # not running: no change
+with app.db() as c:
+    c.execute("UPDATE background_tasks SET state='running' WHERE id=?", (t,))
+tasks._finish(app, t, 'done', 'Complete')
+check('Without a new request the task simply finishes', row(t)['state'] == 'done')
+
+
+class Form:
+    def __init__(self, text):
+        data = text.encode()
+        self.headers, self.rfile = {'Content-Length': str(len(data))}, io.BytesIO(data)
+
+
+def submit(text):
+    return tasks.post(app, Form(text), lambda handler, url: url)
+
+
+submit('action=pause')
+# A policy form opened before the pause must not undo it.
+saved = submit('action=policy&profile=eco&priority_root=&start=1&end=5&busy_percent=0')
+check('Saving the policy keeps a pause made meanwhile', 'saved' in saved and tasks.settings(app)['paused']
+      and tasks.settings(app)['profile'] == 'eco' and tasks.settings(app)['end'] == 5)
+submit('action=resume')
+submit('action=policy&profile=eco&priority_root=&start=0&end=0&busy_percent=0')  # the later checks expect Eco
+check('Resume and policy changes are saved', tasks.settings(app) == {**tasks.DEFAULTS, 'profile': 'eco'})
+outside = work / 'outside'
+(outside / 'Linked').mkdir(parents=True)
+(outside / 'Linked' / 'theme.mp3').write_bytes(b'ID3' + b'x' * 2000)
+(anime / 'Linked').symlink_to(outside / 'Linked', target_is_directory=True)
+indexed = app.index_title('Anime TV', anime, anime / 'Linked')
+with app.db() as c:
+    linked = c.execute('SELECT 1 FROM shows WHERE path=?', (str(anime / 'Linked'),)).fetchone()
+check('A linked title folder pointing outside the root is not indexed', not indexed and not linked
+      and app.index_title('Anime TV', anime, existing))
 
 # A generated, dedicated webhook key; no production credentials.
 iid = 'aabbccddeeff'

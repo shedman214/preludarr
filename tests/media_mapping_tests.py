@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Read-only Plex/Jellyfin/Emby discovery, conservative links and post-install refresh."""
+import io
 import json
 import os
 import sys
 import tempfile
-import threading
-import time
 import urllib.parse
 from pathlib import Path
 from unittest.mock import patch
@@ -19,7 +18,9 @@ for f in names + [film]:
 os.environ.update(CONFIG_DIR=str(work / 'config'), TV_ROOT=str(anime), MOVIE_ROOT=str(movie),
                   AUTO_DOWNLOAD='false', POSTER_BACKGROUND_ENABLED='false')
 sys.path.insert(0, '/src/preludarr')
-import app
+import anidb
+with patch.object(anidb, 'enabled', return_value=False):  # no AniDB title-list download
+    import app
 import media_mapping as mm
 import media_servers as ms
 
@@ -104,36 +105,87 @@ with patch.object(ms, '_call', return_value=b'<!DOCTYPE MediaContainer><MediaCon
     except ValueError:
         failed = True
     check('Unexpected XML document declarations rejected', failed)
-with patch.object(ms, '_call', return_value=b'{"MediaContainer":{"Directory":[]}}'):
+with app.db() as conn:
+    before = [tuple(r) for r in conn.execute("SELECT * FROM media_server_links WHERE server_key='plex' ORDER BY path")]
+    report = tuple(conn.execute("SELECT * FROM media_mapping_report WHERE server_key='plex'").fetchone())
+
+
+def broken_second_page(server, method, path, **kw):
+    if 'X-Plex-Container-Start=2' in path:
+        raise OSError('connection reset')
+    return fake(server, method, path, **kw)
+
+
+for label, reply in (('a network failure', broken_second_page),
+                     ('a page without its items', lambda s, m, p, **kw: b'{"MediaContainer":{"size":1}}' if 'X-Plex-Container-Start=2' in p else fake(s, m, p, **kw))):
     failed = False
-    try:
-        mm.rebuild(app, 'plex')
-    except ValueError:
-        failed = True
-    check('Incomplete mapping does not replace the last valid snapshot', failed and mm.lookup(app.CONFIG, 'plex', plex, by_id) == '12')
+    with patch.object(ms, '_call', side_effect=reply), patch.object(mm, 'PAGE_SIZE', 2):
+        try:
+            mm.rebuild(app, 'plex')
+        except (OSError, ValueError):
+            failed = True
+    with app.db() as conn:
+        after = [tuple(r) for r in conn.execute("SELECT * FROM media_server_links WHERE server_key='plex' ORDER BY path")]
+        same_report = tuple(conn.execute("SELECT * FROM media_mapping_report WHERE server_key='plex'").fetchone()) == report
+    check('After the first page, ' + label + ' keeps the last valid snapshot', failed and after == before and same_report)
+with patch.object(ms, '_call', return_value=b'{"MediaContainer":{"size":0}}'):
+    check('A genuinely empty Plex library page is accepted', list(mm.read_items(plex, {'id': '1', 'type': 'tv'}, lambda: None)) == [])
+check('A trailing space in a server folder name is kept', mm._remote_path('/server/tv/Show ') == '/server/tv/Show '
+      and mm._remote_path('/server/tv/Show') == '/server/tv/Show' and mm._remote_path('g:\\TV\\Show') == 'G:\\TV\\Show')
+gone = {**plex, 'library_mapping': {**plex['library_mapping'], 'paths': [{'remote': '/server/tv', 'local': str(work / 'removed-root')}]}}
+check('Mappings that only point at removed roots map nothing', mm._local_titles(app, gone, [{'type': 'tv'}]) == {}
+      and len(mm._local_titles(app, {**plex, 'library_mapping': {'libraries': ['1']}}, [{'type': 'tv'}])) == 5)
+
+
+class Form:
+    def __init__(self, text):
+        data = text.encode()
+        self.headers, self.rfile = {'Content-Length': str(len(data))}, io.BytesIO(data)
+
+
+def submit(text):
+    return urllib.parse.parse_qs(urllib.parse.urlsplit(mm.post(app, Form(text), lambda handler, url: url)).query)['notice'][0]
+
+
+ms._write(app.CONFIG, 'servers', {**ms._read(app.CONFIG, 'servers'),
+                                  'plex': {**plex, 'discovered_libraries': found}})
+too_many = '\n'.join(f'/server/tv{n} => {anime}' for n in range(21))
+before_save = ms._read(app.CONFIG, 'servers')['plex']['library_mapping']
+check('More path mappings than can be saved are refused, not cut short',
+      'could not finish' in submit(urllib.parse.urlencode({'server': 'plex', 'action': 'configure', 'library': '1', 'paths': too_many}))
+      and ms._read(app.CONFIG, 'servers')['plex']['library_mapping'] == before_save)
+ms._write(app.CONFIG, 'servers', {**ms._read(app.CONFIG, 'servers'), 'plex': plex})
 
 refreshed = []
-finished = threading.Event()
 
 
-def refresh(server, item):
-    refreshed.append((server['kind'], item))
-    if len(refreshed) == 2:
-        finished.set()
+class Inline:
+    """Runs the refresh worker before after_install returns, so no thread outlives the patch."""
+    def __init__(self, target, **kw):
+        self.target = target
+
+    def start(self):
+        self.target()
 
 
-with patch.object(ms, '_refresh_one', side_effect=refresh):
+with patch.object(ms, '_refresh_one', side_effect=lambda server, item: refreshed.append((server['kind'], item))), \
+        patch.object(ms.threading, 'Thread', Inline):
+    ms._RECENT.clear()
     ms.after_install(app.CONFIG, exact)
-    finished.wait(3)
-    check('Manual mapping wins and only individually opted-in instances refresh', set(refreshed) == {('plex', '999'), ('emby', 'emby-item')})
+    check('Manual mapping wins and only individually opted-in instances refresh', sorted(refreshed) == [('emby', 'emby-item'), ('plex', '999')])
     refreshed.clear()
-    finished.clear()
     ms.after_install(app.CONFIG, by_id)
-    for _ in range(40):
-        if refreshed:
-            break
-        time.sleep(.05)
     check('Automatic mapping enables a targeted refresh, not a library scan', refreshed == [('plex', '12')])
+    refreshed.clear()
+    ms._RECENT.clear()
+    live_connections = mm.connections
+    off = lambda config: {k: ({**v, 'enabled': False} if k == 'plex' else v) for k, v in live_connections(config).items()}
+    with patch.object(mm, 'connections', side_effect=[live_connections(app.CONFIG), off(app.CONFIG)]):
+        ms.after_install(app.CONFIG, by_id)  # refresh switched off before the worker ran
+    ms.after_install(app.CONFIG, by_id)
+    check('A refresh skipped before sending does not block the next install', refreshed == [('plex', '12')])
+    overview = ms.connect_overview(app.CONFIG)
+    check('Connect shows manual and automatic mapping counts separately', '1 manual · 3 automatic mappings' in overview)
 with app.db() as conn:
     conn.execute('INSERT INTO media_ids(path,tvdb,source) VALUES(?,?,?)', (by_id, 321, 'sonarr'))
 check('Changed local provider identity invalidates a cached automatic link', mm.lookup(app.CONFIG, 'plex', plex, by_id) is None)
