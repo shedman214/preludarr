@@ -33,7 +33,7 @@ MOVIE_SUFFIXES = {'.mkv', '.mp4', '.avi', '.mov', '.m4v', '.ts', '.wmv', '.webm'
 def schema(conn):
     conn.execute('CREATE TABLE IF NOT EXISTS media_server_links (server_key TEXT NOT NULL, path TEXT NOT NULL, '
                  'item_id TEXT NOT NULL, evidence TEXT NOT NULL, library_id TEXT NOT NULL, signature TEXT NOT NULL, '
-                 'checked INTEGER NOT NULL, PRIMARY KEY(server_key,path))')
+                 'checked INTEGER NOT NULL, local_identity TEXT NOT NULL, PRIMARY KEY(server_key,path))')
     conn.execute('CREATE TABLE IF NOT EXISTS media_mapping_report (server_key TEXT PRIMARY KEY, signature TEXT NOT NULL, '
                  'checked INTEGER NOT NULL, total INTEGER NOT NULL, matched INTEGER NOT NULL, ambiguous INTEGER NOT NULL, remote_count INTEGER NOT NULL)')
 
@@ -234,6 +234,22 @@ def read_items(record, lib, check):
             return
 
 
+def _title_identity(row, typ):
+    ids = _ids({k: row[k] for k in ('tvdb', 'tmdb', 'imdb')})
+    conflict = False
+    for key, value in ID_TAG.findall(str(row['name'] or '')):
+        tag = _ids({key: value})
+        for k, v in tag.items():
+            if k in ids and ids[k] != v:
+                conflict = True
+            ids[k] = v
+    return {'type': typ, 'ids': ids, 'conflict': conflict}
+
+
+def _identity_signature(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+
+
 def _local_titles(app, record, libraries):
     roots = {str(root): ('movie' if label in ('Anime Movies', 'Movies') else 'tv') for label, root in app.ROOTS}
     maps = (record.get('library_mapping') or {}).get('paths', [])
@@ -250,15 +266,7 @@ def _local_titles(app, record, libraries):
         typ = roots.get(root)
         if typ not in allowed_types or (scoped and root not in scoped):
             continue
-        ids = _ids({k: row[k] for k in ('tvdb', 'tmdb', 'imdb')})
-        conflict = False
-        for key, value in ID_TAG.findall(str(row['name'] or '')):
-            tag = _ids({key: value})
-            for k, v in tag.items():
-                if k in ids and ids[k] != v:
-                    conflict = True
-                ids[k] = v
-        found[path] = {'type': typ, 'ids': ids, 'conflict': conflict}
+        found[path] = _title_identity(row, typ)
     return found
 
 
@@ -346,8 +354,8 @@ def rebuild(app, key, check=lambda: None):
         now = int(time.time())
         with app.db() as conn:
             conn.execute('DELETE FROM media_server_links WHERE server_key=?', (key,))
-            conn.executemany('INSERT INTO media_server_links(server_key,path,item_id,evidence,library_id,signature,checked) VALUES(?,?,?,?,?,?,?)',
-                             [(key, p, item, why, lib, sig, now) for p, (item, why, lib) in links.items()])
+            conn.executemany('INSERT INTO media_server_links(server_key,path,item_id,evidence,library_id,signature,checked,local_identity) VALUES(?,?,?,?,?,?,?,?)',
+                             [(key, p, item, why, lib, sig, now, _identity_signature(local[p])) for p, (item, why, lib) in links.items()])
             conn.execute('INSERT OR REPLACE INTO media_mapping_report VALUES(?,?,?,?,?,?,?)',
                          (key, sig, now, len(local), len(links), unresolved, len(items)))
     return f'{len(links)} of {len(local)} local titles mapped · {unresolved} unresolved server items.'
@@ -360,9 +368,17 @@ def lookup(config, key, record, path):
         return None
     try:
         with closing(sqlite3.connect('file:' + urllib.parse.quote(str(db)) + '?mode=ro', uri=True, timeout=5)) as conn:
-            row = conn.execute('SELECT item_id FROM media_server_links WHERE server_key=? AND path=? AND signature=? AND checked>=?',
+            conn.row_factory = sqlite3.Row
+            row = conn.execute("SELECT l.item_id,l.local_identity,s.library,s.name,m.tvdb,m.tmdb,m.imdb FROM media_server_links l "
+                               "JOIN shows s ON s.path=l.path LEFT JOIN media_ids m ON m.path=s.path WHERE "
+                               "l.server_key=? AND l.path=? AND l.signature=? AND l.checked>=? AND s.state<>'unavailable'",
                                (key, str(path), signature(record), int(time.time())-MAX_AGE)).fetchone()
-        return row[0] if row and _item_ok(record['kind'], row[0]) else None
+        if not row or not _item_ok(record['kind'], row['item_id']):
+            return None
+        typ = 'movie' if row['library'] in ('Anime Movies', 'Movies') else 'tv'
+        if row['local_identity'] != _identity_signature(_title_identity(row, typ)):
+            return None
+        return row['item_id']
     except sqlite3.Error:
         return None
 

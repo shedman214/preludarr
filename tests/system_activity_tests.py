@@ -26,7 +26,7 @@ app.event('<script>alert(1)</script>', 'theme kept', 'kept 100% of_it')
 page = lambda **q: sysv.page(app.CONFIG, dict({'tab': ['activity']}, **{k: [v] for k, v in q.items()}))  # noqa: E731
 body = page()
 tabs = re.findall(r'<a href="/system\?tab=(\w+)"', body.split('System navigation')[1].split('</nav>')[0])
-check('System tab order (user): Overview, Activity, Backup & Restore, Logs, Releases, Library Health, Advanced Settings', tabs == ['overview', 'activity', 'backup', 'logs', 'releases', 'health', 'advanced'], tabs)
+check('System tab order: Overview, Activity, Tasks, Backup & Restore, Logs, Releases, Library Health, Advanced Settings', tabs == ['overview', 'activity', 'tasks', 'backup', 'logs', 'releases', 'health', 'advanced'], tabs)
 check('Activity tab active', 'aria-current="page">Activity</a>' in body)
 check('Newest first + 50 per page + paging', body.index('&lt;script&gt;') < body.index('Show 119') and body.count('<tr><td title=') == 50 and 'Page 1 / 3' in body)
 check('HTML in names is escaped', '<script>alert(1)</script>' not in body)

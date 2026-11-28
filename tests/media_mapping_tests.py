@@ -105,11 +105,12 @@ with patch.object(ms, '_call', return_value=b'<!DOCTYPE MediaContainer><MediaCon
         failed = True
     check('Unexpected XML document declarations rejected', failed)
 with patch.object(ms, '_call', return_value=b'{"MediaContainer":{"Directory":[]}}'):
+    failed = False
     try:
         mm.rebuild(app, 'plex')
     except ValueError:
-        pass
-    check('Incomplete mapping does not replace the last valid snapshot', mm.lookup(app.CONFIG, 'plex', plex, by_id) == '12')
+        failed = True
+    check('Incomplete mapping does not replace the last valid snapshot', failed and mm.lookup(app.CONFIG, 'plex', plex, by_id) == '12')
 
 refreshed = []
 finished = threading.Event()
@@ -133,6 +134,9 @@ with patch.object(ms, '_refresh_one', side_effect=refresh):
             break
         time.sleep(.05)
     check('Automatic mapping enables a targeted refresh, not a library scan', refreshed == [('plex', '12')])
+with app.db() as conn:
+    conn.execute('INSERT INTO media_ids(path,tvdb,source) VALUES(?,?,?)', (by_id, 321, 'sonarr'))
+check('Changed local provider identity invalidates a cached automatic link', mm.lookup(app.CONFIG, 'plex', plex, by_id) is None)
 with app.db() as conn:
     conn.execute('UPDATE media_server_links SET checked=0')
 check('Expired automatic links cannot refresh', mm.lookup(app.CONFIG, 'plex', plex, exact) is None)

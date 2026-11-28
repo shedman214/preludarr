@@ -106,8 +106,8 @@ def _item_id(payload, kind):
 
 
 def receive(app, handler):
-    def send(status, **body):
-        return handler.send(status, json.dumps(body), 'application/json')
+    def send(code, **body):
+        return handler.send(code, json.dumps(body), 'application/json')
     parsed = urllib.parse.urlsplit(handler.path)
     iid = parsed.path.removeprefix(ROUTE)
     if (not re.fullmatch(r'[0-9a-f]{12}', iid) or parsed.query or parsed.fragment
