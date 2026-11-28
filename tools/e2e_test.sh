@@ -27,10 +27,15 @@ runs_as() { u=$(docker exec "$APP" sh -c "ps -o user,comm | awk '/python3/{print
 
 echo "== fresh install ($IMAGE)"
 mkdir -p "$WORK/fresh"
-docker run -d --name "$APP" --network none -e PUID=1000 -e PGID=1000 -e PRELUDARR_UPDATE_CHECK=0 -v "$WORK/fresh":/config "$IMAGE" >/dev/null
+# Studio requires a real title directly below a registered root. Keep the media fixture disposable.
+cat >"$WORK/fresh/themearr_root_folders.json" <<'JSON'
+{"version":1,"roots":[{"path":"/media/shows","type":"Shows","name":"Shows"}]}
+JSON
+docker run -d --name "$APP" --network none -e PUID=1000 -e PGID=1000 -e PRELUDARR_UPDATE_CHECK=0 -v "$WORK/fresh":/config --tmpfs /media/shows:mode=0777 "$IMAGE" >/dev/null
 wait_up
 runs_as 1000
 owner_ok
+docker exec -u 1000:1000 "$APP" mkdir -p '/media/shows/E2E Show (2020)'
 docker exec -u 1000:1000 "$APP" python3 -c "
 import sqlite3, json, time
 c = sqlite3.connect('/config/library.db')

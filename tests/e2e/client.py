@@ -163,7 +163,7 @@ check('General API key cannot authorize Arr import receivers', st == 401)
 if MODE == 'fresh':
     studio_path = '/theme-studio?' + urllib.parse.urlencode({'path': '/media/shows/E2E Show (2020)'})
     st, _, page = req('GET', studio_path)
-    check('Theme Studio opens for a registered title', st == 200 and b'Theme Studio' in page)
+    check('Theme Studio opens for a registered title', st == 200 and b'Theme Studio' in page, st)
     st, _, _ = req('GET', studio_path, auth=False)
     check('Theme Studio requires sign-in', st == 303)
     st, _, _ = req('POST', '/theme-studio/start', {'path': '/media/shows/E2E Show (2020)', 'source': 'current'},
