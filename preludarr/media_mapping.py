@@ -9,7 +9,6 @@ library selections. Rebuilds never refresh the media server.
 import hashlib
 import html
 import json
-import os
 import re
 import sqlite3
 import time
@@ -113,9 +112,9 @@ def _remote_path(value):
             or any(ord(c) < 32 for c in value) or not (value.startswith('/') or arr.is_windows_path(value))
             or any(p in ('.', '..') for p in re.split(r'[\\/]+', value))):
         return ''
-    # norm_remote strips surrounding spaces (fine for typed settings); a server's
-    # folder name may really end in one, so Linux paths are only normalized.
-    return arr.norm_remote(value) if arr.is_windows_path(value) else os.path.normpath(value)
+    # Server-supplied folder names retain significant spaces all the way
+    # through normalized path translation (Linux, Windows and UNC).
+    return arr.norm_remote(value, preserve_spaces=True)
 
 
 def discover(record):

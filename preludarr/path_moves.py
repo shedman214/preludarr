@@ -117,6 +117,10 @@ def remap(app, old, new, apply=True):
     counts = {}
     cfg = Path(app.CONFIG)
     with app.db() as c:
+        if apply:
+            # Keep the policy read/update and the other records in one write
+            # transaction, even when the old root had no saved titles.
+            c.execute('BEGIN IMMEDIATE')
         tables = {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         for table in TABLES_NEW_WINS + TABLES_OLD_WINS:
             if table not in tables:

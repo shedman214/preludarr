@@ -22,6 +22,7 @@ import anidb
 with patch.object(anidb, 'enabled', return_value=False):  # no AniDB title-list download
     import app
 import media_mapping as mm
+import arr
 import media_servers as ms
 
 results = []
@@ -132,6 +133,12 @@ with patch.object(ms, '_call', return_value=b'{"MediaContainer":{"size":0}}'):
     check('A genuinely empty Plex library page is accepted', list(mm.read_items(plex, {'id': '1', 'type': 'tv'}, lambda: None)) == [])
 check('A trailing space in a server folder name is kept', mm._remote_path('/server/tv/Show ') == '/server/tv/Show '
       and mm._remote_path('/server/tv/Show') == '/server/tv/Show' and mm._remote_path('g:\\TV\\Show') == 'G:\\TV\\Show')
+local_paths = {exact: {'type': 'tv', 'ids': {}, 'conflict': False}}
+space_item = {'id': '99', 'type': 'tv', 'ids': {}, 'paths': ['/server/tv/Exact '], 'library': '1', 'conflict': False}
+check('A real trailing space cannot link the similarly named folder',
+      not mm.match_items(local_paths, [space_item], plex['library_mapping']['paths'])[0]
+      and mm.match_items(local_paths, [{**space_item, 'paths': ['/server/tv/Exact']}], plex['library_mapping']['paths'])[0].get(exact, (None,))[0] == '99'
+      and arr.to_local({'mappings': jelly['library_mapping']['paths']}, 'G:\\TV\\Exact ') == exact + ' ')
 gone = {**plex, 'library_mapping': {**plex['library_mapping'], 'paths': [{'remote': '/server/tv', 'local': str(work / 'removed-root')}]}}
 check('Mappings that only point at removed roots map nothing', mm._local_titles(app, gone, [{'type': 'tv'}]) == {}
       and len(mm._local_titles(app, {**plex, 'library_mapping': {'libraries': ['1']}}, [{'type': 'tv'}])) == 5)
@@ -184,6 +191,22 @@ with patch.object(ms, '_refresh_one', side_effect=lambda server, item: refreshed
         ms.after_install(app.CONFIG, by_id)  # refresh switched off before the worker ran
     ms.after_install(app.CONFIG, by_id)
     check('A refresh skipped before sending does not block the next install', refreshed == [('plex', '12')])
+    # A delayed worker that skips a request may only release its own reservation.
+    pending = []
+    class Delayed:
+        def __init__(self, target, **kw):
+            pending.append(target)
+        def start(self):
+            return None
+    ms._RECENT.clear()
+    with patch.object(ms.threading, 'Thread', Delayed):
+        ms.after_install(app.CONFIG, by_id)
+    reservation = next(iter(ms._RECENT))
+    newer = ms._RECENT[reservation] + 121
+    ms._RECENT[reservation] = newer
+    with patch.object(mm, 'connections', return_value=off(app.CONFIG)):
+        pending[0]()
+    check('A skipped old worker cannot remove a newer refresh reservation', ms._RECENT.get(reservation) == newer)
     overview = ms.connect_overview(app.CONFIG)
     check('Connect shows manual and automatic mapping counts separately', '1 manual · 3 automatic mappings' in overview)
 with app.db() as conn:

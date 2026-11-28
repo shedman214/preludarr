@@ -70,6 +70,25 @@ check('Two servers chosen: the main one is saved as the Plex connection (address
       and doc['plex']['url'] == f'http://127.0.0.1:{PORT}' and doc['plex']['api_key'] == 'plextoken' and doc['plex']['enabled'] is True, h.loc)
 check('…the main server is the same Plex server as before (server id), so its title links are kept', doc['plex'].get('mappings') == {'/x': '1'} and 'Title links kept: 1' in h.loc)
 check('…the second server is stored as an extra Plex server with its own token', doc.get('plex-2', {}).get('api_key') == 'plextoken2' and doc['plex-2']['name'] == 'Second Plex')
+# Signing in again must keep independent mapping settings for the same
+# machine even if another server replaces its slot later.
+saved_extra = {'mappings': {'/fixture-extra': '22'}, 'library_mapping': {'libraries': ['4'], 'paths': [], 'automatic': True}, 'mapping_refresh': True}
+original_doc = ms._read(app.CONFIG, 'servers')
+extra_doc = {**original_doc, 'plex-2': {**original_doc['plex-2'], **saved_extra}}
+ms._write(app.CONFIG, 'servers', extra_doc)
+def fixture_server(rec, machine=None):
+    return {'name': rec['name'], 'machine': machine or rec['machine'], 'token': rec['api_key'], 'connections': [{'uri': rec['url']}]}
+ps._PENDING['reconnect-fixture'] = {'servers': [fixture_server(extra_doc['plex']), fixture_server(extra_doc['plex-2'])]}
+ps.choose(app.CONFIG, 'reconnect-fixture', {'0': '0', '1': '0'}, '0', True)
+reconnected = ms._read(app.CONFIG, 'servers')['plex-2']
+check('Reconnecting the same extra Plex machine preserves its selection, mappings and refresh opt-in',
+      all(reconnected.get(k) == v for k, v in saved_extra.items()))
+ps._PENDING['different-fixture'] = {'servers': [fixture_server(extra_doc['plex']), fixture_server(extra_doc['plex-2'], 'other-machine')]}
+ps.choose(app.CONFIG, 'different-fixture', {'0': '0', '1': '0'}, '0', True)
+different = ms._read(app.CONFIG, 'servers')['plex-2']
+check('A different Plex machine reusing a slot never inherits the previous machine settings',
+      all(k not in different for k in saved_extra))
+ms._write(app.CONFIG, 'servers', original_doc)
 check('The account token is never stored', 'accounttoken' not in (work / 'config' / 'themearr_media_servers_v1.json').read_text())
 mc = __import__('movie_collections')
 srvs = mc._servers(app)

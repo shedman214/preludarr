@@ -203,5 +203,17 @@ policy(profile='balanced', priority_root=str(movies))
 mf = movies / 'Movie'; mf.mkdir()
 app.index_title('Anime Movies', movies, mf)
 check('Root priority can prefer an anime movie over other missing titles', app.auto_themes.to_install(app)[0] == str(mf))
+import path_moves
+old_root, new_root = str(work / 'empty-old'), str(work / 'empty-new')
+policy(priority_root=old_root, paused=True)
+real_move = path_moves._move_task_priority
+transactions = []
+def observe_move(conn, *args):
+    transactions.append(conn.in_transaction)
+    return real_move(conn, *args)
+with patch.object(path_moves, '_move_task_priority', side_effect=observe_move):
+    path_moves.remap(app, old_root, new_root, apply=True)
+check('Moving an empty root reads the resource policy under its write transaction',
+      transactions == [True] and tasks.settings(app)['priority_root'] == new_root and tasks.settings(app)['paused'])
 print(f'{sum(results)}/{len(results)} passed')
 sys.exit(0 if all(results) else 1)

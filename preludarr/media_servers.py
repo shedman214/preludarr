@@ -814,12 +814,12 @@ def after_install(config, anime_path):
                 token = (key, mm.signature(server), item)
                 if token not in _RECENT:
                     _RECENT[token] = now
-                    active.append((key, server, item))
+                    active.append((key, server, item, token, now))
         if not active:
             return
 
         def worker():
-            for key, server, item in active:
+            for key, server, item, token, reservation in active:
                 try:
                     live = mm.connections(config).get(key)
                     current_item = live and mm.refresh_enabled(key, live) and mm.signature(live) == mm.signature(server) and (
@@ -827,7 +827,8 @@ def after_install(config, anime_path):
                     if current_item != item:
                         # Nothing was sent, so a later install may refresh this item.
                         with _REFRESH_LOCK:
-                            _RECENT.pop((key, mm.signature(server), item), None)
+                            if _RECENT.get(token) == reservation:
+                                _RECENT.pop(token, None)
                         continue
                     _refresh_one(live, item)
                     print('Preludarr target item refresh queued: ' + key, flush=True)

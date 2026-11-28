@@ -139,10 +139,12 @@ def is_windows_path(path):
     return bool(_WINDOWS.match(str(path or '').strip()))
 
 
-def norm_remote(path):
+def norm_remote(path, *, preserve_spaces=False):
     """A Sonarr/Radarr path in its stored form. Linux: normpath. Windows: backslashes, '..' resolved, upper-case drive,
     no trailing backslash except on a drive root ('G:\\')."""
-    path = str(path or '').strip()
+    path = str(path or '')
+    if not preserve_spaces:
+        path = path.strip()
     if not path:
         return path
     if not is_windows_path(path):
@@ -163,15 +165,15 @@ def norm_remote(path):
     return parts[0].upper() + '\\' + '\\'.join(parts[1:])
 
 
-def _slashed(path):
+def _slashed(path, *, preserve_spaces=False):
     """Stored form with '/' separators and no trailing '/', for prefix matching."""
-    n = norm_remote(path)
+    n = norm_remote(path, preserve_spaces=preserve_spaces)
     return n.replace('\\', '/').rstrip('/') if is_windows_path(n) else n.rstrip('/')
 
 
-def _key(path):
+def _key(path, *, preserve_spaces=False):
     """Comparable form: Windows paths compare case-insensitively, like Windows does."""
-    s = _slashed(path)
+    s = _slashed(path, preserve_spaces=preserve_spaces)
     return s.lower() if is_windows_path(path) else s
 
 
@@ -180,7 +182,7 @@ def _under(key, root_key):
 
 
 def _parent_and_name(path):
-    n = norm_remote(path)
+    n = norm_remote(path, preserve_spaces=True)
     if is_windows_path(n):
         head, _, name = n.rstrip('\\').rpartition('\\')
         return (head + '\\' if head.endswith(':') else head), name
@@ -188,15 +190,24 @@ def _parent_and_name(path):
 
 
 def to_local(inst, remote):
-    """Translate a Sonarr/Radarr path with the instance's mappings (longest prefix wins). None if unmapped."""
-    key, best, length = _key(remote), None, -1
+    """Translate a server-supplied path exactly; longest configured prefix wins.
+
+    Whitespace in a media folder name is data, not form-input padding.
+    """
+    windows = is_windows_path(remote)
+    original = _slashed(remote, preserve_spaces=True)
+    key = original.lower() if windows else original
+    best, length, raw_length = None, -1, 0
     for m in inst.get('mappings', []):
-        r = _key(m['remote'])
+        if is_windows_path(m['remote']) != windows:
+            continue
+        root = _slashed(m['remote'])
+        r = root.lower() if windows else root
         if _under(key, r) and len(r) > length:
-            best, length = m, len(r)
+            best, length, raw_length = m, len(r), len(root)
     if not best:
         return None
-    rest = _slashed(remote)[length:].lstrip('/')
+    rest = original[raw_length:].lstrip('/')
     return str(Path(best['local']) / rest) if rest else best['local']
 
 
