@@ -1202,7 +1202,6 @@ def _manual_install_mp3_unlocked(folder, source_audio, replace=False, expected_f
      raise ValueError('A reviewed Studio preview is required')
     _copy_prepared_mp3(source_audio,source_size,folder_fd,staged_name,prepared_hash)
    else:
-    import sys
     ffmpeg_args=[
      'ffmpeg','-nostdin','-hide_banner','-loglevel','error','-y',
      '-i',str(source_audio),'-vn','-t','600',
