@@ -140,6 +140,12 @@ def remap(app, old, new, apply=True):
                 c.execute(f'UPDATE {table} SET path=? WHERE path=?', (np, p))
         if 'task_control' in tables:
             counts['task_priority'] = _move_task_priority(c, old, new, apply)
+        if 'theme_install_history' in tables:
+            history = c.execute("SELECT id,path FROM theme_install_history WHERE path=? OR path LIKE ? ESCAPE '\\'", (old, _like(old))).fetchall()
+            counts['theme_install_history'] = len(history)
+            if apply:
+                for row in history:
+                    c.execute('UPDATE theme_install_history SET path=? WHERE id=?', (_swap(row['path'], old, new), row['id']))
         if 'theme_queue' in tables:
             q = c.execute("SELECT id,path FROM theme_queue WHERE path=? OR path LIKE ? ESCAPE '\\'", (old, _like(old))).fetchall()
             counts['theme_queue'] = len(q)

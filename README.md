@@ -26,6 +26,7 @@
 
 **Available now**
 - **Anime TV and anime movies:** openings and endings from [AnimeThemes](https://animethemes.moe), matched by title and year through AniList and the AniDB title list. Smart Matching V6 honors remembered matches and verifies AniDB, AniList or MyAnimeList IDs in folder names (for example, `[anidbid-1234]`, `{anilist-1234}`, `[mal-1234]`); contradictory identities wait for review. Preview every version, then install the one you choose.
+- **Theme Studio:** Edit a current theme, a verified AnimeThemes track, or reviewed custom/YouTube audio. Trim, fade, normalize loudness, view a measured waveform and compare your rendered preview against the existing theme. Confirm explicitly to install the exact preview; the previous active theme goes into the recycle bin. Installation history records source, song, artist, OP/ED version and duration when known.
 - **Anime Theme Profiles:** Settings → Media Management defines global and root-folder defaults, and each anime's Theme Browser can override them. First opening remains the default; choose latest opening, first ending, stable random opening, prefer lossless source audio when identified, Review only, or exclude a title from automatic themes and the queue. Profiles never replace installed audio. Explicit manual selection is always available.
 - **TV shows and movies:** suggestions from Plex TV Themes and ThemerrDB. Optional YouTube search (your own API key and cookies; preview only until you install). For shows and movies it looks on the [MainThemeSoundtracks](https://www.youtube.com/@mainthemesoundtracks) channel first, which costs none of your daily searches, then searches all of YouTube.
 - **Library:** a tab per root folder, search and filters, a Theme Queue for reviewing many titles at once, automatic installs for anime (off by default), and Library Health (folders Preludarr cannot write to, extra theme files).
@@ -125,6 +126,12 @@ Then use `preludarr:local` as the image in the examples above.
 The setup code changes every time the container restarts, and it is only ever shown in the log.
 
 **Forgot your password?** On the sign-in page choose **Forgot password?** → **Send a reset code to the container log**, copy the code from the container log (same place as the setup code), and set a new password (16 characters or more). The code works once, for 15 minutes; your username stays the same and every signed-in browser is signed out. Codes can be requested at most 3 times per 15 minutes, and wrong codes are throttled.
+
+## Theme Studio and installation history
+
+From an individual title's Theme Browser, choose **Edit current theme in Studio** or **Edit in Theme Studio** next to a verified AnimeThemes track. Reviewed custom uploads and YouTube audio also have an Edit in Theme Studio button when manual audio installs are enabled. Set start/end times in seconds, fades and optional loudness normalization, then generate a preview. Listen to the current and replacement players and use the waveform to seek. Tick the replacement confirmation box if a theme is already installed.
+
+The rendered MP3 is private to the signed-in editor session and expires after 15 minutes without another edit. Only confirmed installation writes theme.mp3. The previous audio is kept in the existing recycle bin, not a second active-theme library. Theme Browser shows up to 30 recent history entries (up to 200 retained per title); history does not count as a second audio library.
 
 ## Optional import events and media-server mapping
 

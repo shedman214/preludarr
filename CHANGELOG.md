@@ -9,6 +9,27 @@ Versions follow [Semantic Versioning](https://semver.org/):
 
 Each release says what changed for users. Upgrades keep your data, settings and backups unless a release says otherwise.
 
+## [1.19.0] — 2026-11-28
+
+This update gives you a complete audio review and editing workspace before you commit a new theme to your library.
+
+### ✨ Highlights
+- Trim, fade, normalize and preview your theme audio using Theme Studio.
+- Compare the installed theme with the rendered replacement and seek through its real audio waveform.
+- See the source, song, artist, OP/ED track, version and duration recorded for successful installations.
+
+### ➕ Added
+- **Theme Studio.** Open it from the current theme, an AnimeThemes track, or an already reviewed custom upload or YouTube audio. Choose a clip, add fades, adjust song and artist labels and optionally normalize perceived loudness. Generate a temporary MP3 preview, listen and explicitly confirm installation.
+- **Installation history.** Theme Browser shows recent successful installations and restores with source information and track metadata when available. Metadata follows a moved root folder. Previously installed themes without a recorded history are left untouched.
+
+### 🔄 Changed
+- **Audio previews and replacement.** Studio previews support seeking and A/B playback. Confirmation installs the exact rendered MP3, not another conversion. An existing theme is kept in the recycle bin before replacement, and changing the installed theme or the preview invalidates the old confirmation. Editor sessions are private, bounded and temporary.
+- **Resource limits.** Theme Studio uses the shared one-conversion slot. Leaving or cancelling Studio never changes the library's theme files.
+
+### ⚠️ Upgrade notes
+- Studio is optional. Automatic Themes, Theme Queue and ordinary manual installs retain their existing rules. The manual-audio setting still applies to user uploads and YouTube audio.
+- History starts with this release; older installed themes are not assigned guessed track or artist information. Only one theme.mp3 is active for each title; recoverable prior audio follows your existing recycle-bin retention.
+
 ## [1.18.0] — 2026-11-27
 
 This update connects your media services more closely to Preludarr while giving you control over when background work runs.

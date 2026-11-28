@@ -301,7 +301,8 @@ def install(app, path, proposal, progress=None):
             audio.write_bytes(body)
             say('converting', 'Converting and checking the audio')
             return app.manual_install_mp3(folder, audio, replace=False, anime_slug='source_plex', video_id=None, progress=progress,
-                                          activity_label='Plex TV Themes · ' + proposal.get('note', ''))
+                                          activity_label='Plex TV Themes · ' + proposal.get('note', ''),
+                                          metadata={'source':'Plex TV Themes','song':proposal.get('track') or proposal.get('title') or ''})
         finally:
             shutil.rmtree(stage, ignore_errors=True)
     if proposal['source'] == 'themerrdb':
@@ -311,7 +312,8 @@ def install(app, path, proposal, progress=None):
         say('converting', 'Converting and checking the audio')
         try:
             return app.manual_install_mp3(folder, Path(details['audio']), replace=False, anime_slug='source_themerrdb', video_id=None, progress=progress,
-                                          activity_label='ThemerrDB · YouTube · ' + str(details.get('title') or '')[:80])
+                                          activity_label='ThemerrDB · YouTube · ' + str(details.get('title') or '')[:80],
+                                          metadata={'source':'ThemerrDB · YouTube','song':details.get('title'),'source_id':details.get('video_id')})
         finally:
             yt.cleanup_stage(details['stage'], app.CONFIG)
     raise ValueError('Unknown source')

@@ -135,6 +135,22 @@ def _expire(config):
    del _PENDING[key]
 
 
+def copy_for_studio(config, token, destination):
+ """Copy an already reviewed upload into a private editor session; not an install."""
+ if not _enabled():
+  raise ValueError('Manual audio installs are disabled.')
+ with _PENDING_LOCK:
+  _expire(Path(config))
+  item = _PENDING.get(token)
+  if not item:
+   raise ValueError('Upload review expired.')
+  stage = Path(item['stage'])
+  if stage.parent != Path(config) or not stage.name.startswith('themearr-custom-upload-') or stage.is_symlink():
+   raise ValueError('Invalid upload stage.')
+  __import__('theme_studio').copy_source(stage/'uploaded.audio', destination)
+  return item['folder'], {'source':'Custom upload','song':Path(item['filename'].replace(chr(92),'/')).name}
+
+
 def _destination(selected, roots, db):
  if not isinstance(selected, str) or len(selected) > 1024:
   raise ValueError('Invalid anime path')
@@ -282,6 +298,7 @@ def review(handler, config, roots, db, issue_confirmation, css=''):
     'This review expires in five minutes.</p>'
     '<form method="post" action="/confirm-custom-upload" style="display:inline">'+token_field+
     '<button type="submit">Confirm and Install</button></form> '
+    +__import__('theme_studio').pending_form(token,'upload')+
     '<form method="post" action="/cancel-custom-upload" style="display:inline">'+token_field+
     '<button type="submit" style="background:#52617c">Cancel and Delete Upload</button></form>'
    )

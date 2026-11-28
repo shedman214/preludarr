@@ -415,7 +415,7 @@ def review_action(handler, roots, db, css, safe_open, verify_identity, session, 
 
 
 def perform_action(handler, roots, db, safe_open, verify_identity,
-                   manual_lock, session, form, operation, redirect, event=None):
+                   manual_lock, session, form, operation, redirect, event=None, record_history=None):
     if operation not in ('remove', 'restore'):
         return handler.send(404, 'Not found', 'text/plain')
     selected = form.get('path', [''])[0]
@@ -492,6 +492,8 @@ def perform_action(handler, roots, db, safe_open, verify_identity,
                     _tm_os.unlink(archive, dir_fd=recovery_fd)
                 state, detail, label = ('installed', 'Theme restored from recovery', 'restored')
 
+        if operation == 'restore' and record_history:
+            record_history(folder)
         # File operation already succeeded. Recovery remains available even if indexing fails.
         try:
             with db() as connection:
