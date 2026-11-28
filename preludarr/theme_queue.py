@@ -142,7 +142,8 @@ def install(app, row, proposal):
         with app.stage_verified_theme_audio(track, app.CONFIG) as audio:
             check_profile()
             app.manual_install_mp3(folder, audio, replace=False, anime_slug=proposal['anime_slug'], video_id=str(proposal['video_id']),
-                                   activity_label='Bulk queue · ' + proposal['track'])
+                                   activity_label='Bulk queue · ' + proposal['track'],
+                                   metadata=__import__('theme_history').track_metadata(track, proposal['anime_slug']))
     else:
         import sources
         sources.install(app, row['path'], proposal, progress=lambda phase, message: check_profile())

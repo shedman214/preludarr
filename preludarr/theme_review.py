@@ -411,6 +411,9 @@ def save_replaced(app, folder, folder_fd):
     batch.mkdir(mode=0o700)
     manifest = {'folder': str(folder), 'name': Path(folder).name, 'at': int(time.time()), 'at_ns': time.time_ns(), 'kept': 'theme.mp3',
                 'converted': False, 'kind': 'replaced', 'items': [_copy_to_trash(folder_fd, 'theme.mp3', batch)], 'state': 'copying'}
+    previous = __import__('theme_history').current(app, folder)
+    if previous:
+        manifest['theme_metadata'] = {k: previous[k] for k in ('source', 'song', 'artist', 'track', 'version', 'source_id')}
     _write_json(batch / 'manifest.json', manifest)
     return batch, manifest
 
@@ -522,6 +525,9 @@ def undo(app, bid):
                         os.close(dst_dir)
         finally:
             os.close(fd)
+        metadata = dict(m.get('theme_metadata') or {})
+        metadata['source'] = 'Recycle bin' + (' · ' + metadata['source'] if metadata.get('source') else '')
+        __import__('theme_history').record(app, folder, metadata=metadata, slug='restore', label='Restored previous theme')
     finally:
         app._manual_install_lock.release()
     shutil.rmtree(d)

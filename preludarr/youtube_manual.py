@@ -77,6 +77,22 @@ def expire(config):
             del _PENDING[token]
 
 
+def copy_for_studio(config, token, destination):
+    """Copy reviewed user-selected YouTube audio without another download."""
+    if not enabled():
+        raise ValueError('Manual audio installs are disabled.')
+    with _LOCK:
+        expire(config)
+        item = _PENDING.get(token)
+        if not item:
+            raise ValueError('YouTube review expired.')
+        stage, audio = Path(item['stage']), Path(item['audio'])
+        if stage.parent != Path(config) or not stage.name.startswith('themearr-youtube-') or stage.is_symlink() or audio.parent != stage:
+            raise ValueError('Invalid YouTube stage.')
+        __import__('theme_studio').copy_source(audio, destination)
+        return item['folder'], {'source': 'YouTube', 'song': item.get('title'), 'source_id': item['video_id']}
+
+
 def review(handler, config, roots, db, issue_confirmation):
     if not enabled():
         return handler.send(
@@ -181,6 +197,7 @@ def review(handler, config, roots, db, issue_confirmation):
                 + escape(token, quote=True) + '">'
                 '<button type="submit">Confirm and Install</button>'
                 '</form>'
+                + __import__('theme_studio').pending_form(token, 'youtube') +
                 '<form method="post" action="/cancel-youtube-theme">'
                 '<input type="hidden" name="token" value="'
                 + escape(token, quote=True) + '">'

@@ -48,6 +48,8 @@ import theme_profiles
 import tasks
 import arr_events
 import media_mapping
+import theme_history
+import theme_studio
 
 CONFIG=Path(os.getenv('CONFIG_DIR','/config')); CONFIG.mkdir(parents=True,exist_ok=True)
 DB=CONFIG/'library.db'
@@ -66,6 +68,7 @@ from login import APP_VERSION, brand_html, full_sidebar
 import app_logs
 app_logs.install(CONFIG)
 custom_upload.sweep_stale(CONFIG)
+theme_studio.sweep_stale(CONFIG)
 POSTER_LOCK=threading.Lock()
 POSTER_BUSY=set()
 poster_manual.sweep_stale(CONFIG)
@@ -92,6 +95,7 @@ def db():
  c.execute('CREATE TABLE IF NOT EXISTS theme_profiles (path TEXT PRIMARY KEY, profile TEXT NOT NULL)')
  tasks.schema(c)
  media_mapping.schema(c)
+ theme_history.schema(c)
  c.commit();return c
 
 def now():return datetime.now(timezone.utc).isoformat(timespec='seconds')
@@ -890,6 +894,11 @@ def list_available_themes(show):
     }
     if not any(str(t['video_id'])==str(item['video_id']) for t in themes):
      themes.append(item)
+ versions={}
+ for item in themes:
+  slug=item['slug']
+  versions[slug]=versions.get(slug,0)+1
+  item['version']=versions[slug]
  return themes
 
 def pick_audio(show):
@@ -1130,7 +1139,33 @@ def theme_confirmation_fingerprint(folder, anime_slug, video_id):
  return hashlib.sha256(payload.encode('utf-8')).hexdigest()
 
 
-def _manual_install_mp3_unlocked(folder, source_audio, replace=False, expected_fingerprint=None, anime_slug=None, video_id=None, progress=None, backup=True):
+def _copy_prepared_mp3(source, source_size, folder_fd, staged_name, expected_hash):
+ """Copy an internally rendered, reviewed MP3; verify the exact bytes before publishing."""
+ import stat
+ fd=os.open(source,os.O_RDONLY|os.O_NOFOLLOW)
+ try:
+  start=os.fstat(fd)
+  if not stat.S_ISREG(start.st_mode) or not 1024<=start.st_size<=40*1024*1024 or start.st_size!=source_size:
+   raise ValueError('Invalid prepared preview')
+  dst=os.open(staged_name,os.O_WRONLY|os.O_NOFOLLOW,dir_fd=folder_fd)
+  with os.fdopen(dst,'wb') as out:
+   info=os.fstat(out.fileno())
+   if not stat.S_ISREG(info.st_mode) or info.st_size or info.st_nlink!=1:
+    raise ValueError('Unsafe staged destination')
+   digest=hashlib.sha256()
+   remaining=start.st_size
+   while remaining:
+    chunk=os.read(fd,min(262144,remaining))
+    if not chunk:raise ValueError('Prepared preview changed')
+    digest.update(chunk);out.write(chunk);remaining-=len(chunk)
+   end=os.fstat(fd)
+   if end.st_size!=start.st_size or end.st_mtime_ns!=start.st_mtime_ns or digest.hexdigest()!=expected_hash:
+    raise ValueError('Prepared preview changed')
+ finally:
+  os.close(fd)
+
+
+def _manual_install_mp3_unlocked(folder, source_audio, replace=False, expected_fingerprint=None, anime_slug=None, video_id=None, progress=None, backup=True, prepared_hash=None):
  """Convert and atomically install a theme through a verified directory."""
  import secrets
  import stat
@@ -1162,22 +1197,26 @@ def _manual_install_mp3_unlocked(folder, source_audio, replace=False, expected_f
   )
   os.close(staged_fd)
   try:
-   import sys
-   ffmpeg_args=[
-    'ffmpeg','-nostdin','-hide_banner','-loglevel','error','-y',
-    '-i',str(source_audio),'-vn','-t','600',
-    '-codec:a','libmp3lame','-q:a','4','-threads','1',
-    '-f','mp3','/proc/self/fd/'+str(folder_fd)+'/'+staged_name
-   ]
-   launcher=(
-    'import os,resource,sys;'
-    'resource.setrlimit(resource.RLIMIT_AS,(1073741824,1073741824));'
-    'os.execvp(sys.argv[1],sys.argv[1:])'
-   )
-   subprocess.run(
-    [sys.executable,'-c',launcher]+ffmpeg_args,
-    check=True,timeout=120,pass_fds=(folder_fd,)
-   )
+   if prepared_hash is not None:
+    if anime_slug!='studio' or expected_fingerprint is None or not re.fullmatch(r'[0-9a-f]{64}',prepared_hash):
+     raise ValueError('A reviewed Studio preview is required')
+    _copy_prepared_mp3(source_audio,source_size,folder_fd,staged_name,prepared_hash)
+   else:
+    ffmpeg_args=[
+     'ffmpeg','-nostdin','-hide_banner','-loglevel','error','-y',
+     '-i',str(source_audio),'-vn','-t','600',
+     '-codec:a','libmp3lame','-q:a','4','-threads','1',
+     '-f','mp3','/proc/self/fd/'+str(folder_fd)+'/'+staged_name
+    ]
+    launcher=(
+     'import os,resource,sys;'
+     'resource.setrlimit(resource.RLIMIT_AS,(1073741824,1073741824));'
+     'os.execvp(sys.argv[1],sys.argv[1:])'
+    )
+    subprocess.run(
+     [sys.executable,'-c',launcher]+ffmpeg_args,
+     check=True,timeout=120,pass_fds=(folder_fd,)
+    )
    if progress: progress("validating", "Validating converted MP3")
    staged_stat=os.stat(staged_name,dir_fd=folder_fd,follow_symlinks=False)
    if not stat.S_ISREG(staged_stat.st_mode) or not 1024<=staged_stat.st_size<=40*1024*1024:
@@ -1241,7 +1280,7 @@ _manual_install_lock=tasks.CONVERSION_LOCK
 
 def manual_install_mp3(folder, source_audio, replace=False,
                        expected_fingerprint=None, anime_slug=None, video_id=None, progress=None,
-                       activity_label=None, backup=True):
+                       activity_label=None, backup=True, prepared_hash=None, metadata=None, duration=None):
  """Allow one manual installation at a time."""
  if not _manual_install_lock.acquire(blocking=False):
   raise theme_retry.InstallBusy('Another manual installation is running')
@@ -1252,7 +1291,7 @@ def manual_install_mp3(folder, source_audio, replace=False,
     folder,source_audio,replace=replace,
     expected_fingerprint=expected_fingerprint,
     anime_slug=anime_slug,video_id=video_id,
-    progress=progress,backup=backup
+    progress=progress,backup=backup,prepared_hash=prepared_hash
    )
   except Exception as error:
    if isinstance(error,subprocess.CalledProcessError):reason='audio conversion failed (file is not valid audio); existing theme kept'
@@ -1262,6 +1301,7 @@ def manual_install_mp3(folder, source_audio, replace=False,
    raise
   permissions.apply_file(CONFIG,Path(folder)/'theme.mp3')  # V1.8.0: only if the user turned permissions on
   _record_install_activity(folder,anime_slug,video_id,'installed','',activity_label)
+  theme_history.record(sys.modules[__name__],folder,metadata=metadata,slug=anime_slug,video_id=video_id,label=activity_label,duration=duration)
   media_servers.after_install(CONFIG,str(folder))
   return result
  finally:
@@ -1275,6 +1315,7 @@ def _record_install_activity(folder,anime_slug,video_id,status,extra,label=None)
   name=row['name'] if row else Path(folder).name
   if anime_slug=='custom_upload':source='Custom upload'+(' · '+label if label else '')
   elif anime_slug=='youtube_manual':source='YouTube'+(' · '+label if label else '')
+  elif anime_slug=='studio':source='Theme Studio'+(' · '+label if label else '')
   elif label and label.startswith('Automatic Themes'):
    source=label
    if status=='installed':status='downloaded'
@@ -1435,7 +1476,7 @@ def process(path):
     save(path,root_label,name,'converting','Converting: '+song)
     STATUS.update(stage='converting',message='Converting: '+name)
     manual_install_mp3(path,source,replace=False,anime_slug=slug,video_id=video_id,
-                       activity_label='Automatic Themes · '+song)
+                       activity_label='Automatic Themes · '+song,metadata=theme_history.track_metadata(track,slug))
   except (urllib.error.URLError,TimeoutError,ConnectionError) as error:
    temporary=theme_retry.provider_error('AnimeThemes audio',error)
    if temporary:raise temporary from error
@@ -2329,6 +2370,8 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
      length-=len(chunk)
    return
 
+  if parsed.path=='/theme-studio':return theme_studio.page(sys.modules[__name__],self,auth.token(self))
+  if parsed.path=='/theme-studio/audio':return theme_studio.audio(sys.modules[__name__],self,auth.token(self))
   if parsed.path=='/themes':
    query=urllib.parse.parse_qs(parsed.query)
    selected=query.get('path',[''])[0]
@@ -2373,14 +2416,19 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
      info=target.stat()
      size=info.st_size
      changed=__import__('region').when(info.st_mtime)
+     meta=theme_history.current(sys.modules[__name__],selected) if not fragment_mode else None
      url='/current-theme?'+urllib.parse.urlencode({'path':selected})
      parts+=['<div class="panel" id="themearr-current-theme"><h3>Currently Installed Theme</h3>',
              '<p>Installed — theme.mp3 (',f'{size/1048576:.2f}',' MB, last changed ',changed,')</p>',
+             ('<p class="muted">'+esc(theme_history.summary(meta))+'</p>' if meta else ''),
              '<audio controls preload="none" style="width:100%" src="',
-             esc(url,quote=True),'"></audio></div>']
+             esc(url,quote=True),'"></audio>',theme_studio.entry_form(selected,label='Edit current theme in Studio'),'</div>']
     else:
      parts+=['<div class="panel" id="themearr-current-theme"><h3>Currently Installed Theme</h3>',
              '<p>No theme installed.</p></div>']
+    if not fragment_mode:
+     parts.append(theme_history.panel(sys.modules[__name__],selected))
+     parts.append('<p><a href="'+esc('/theme-studio?'+urllib.parse.urlencode({'path':selected}),quote=True)+'">Open Theme Studio</a> to edit and compare audio before installing.</p>')
     parts.append(library_health.title_box(CONFIG,selected))  # V1.9.3: warning from the last Library Health scan
     if not fragment_mode and kinds.is_anime(row['library']):
      parts.append(theme_profiles.title_html(sys.modules[__name__],selected,query.get('profile_msg',[''])[0][:220]))
@@ -2452,7 +2500,7 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
                   '<input type="hidden" name="anime_slug" value="',esc(str(chosen.get('slug') or ''),quote=True),'">',
                   '<input type="hidden" name="video_id" value="',esc(str(track['video_id']),quote=True),'">',
                   '<button type="submit">Install Theme</button>',
-                  '</form></div>']
+                  '</form>',theme_studio.entry_form(selected,str(chosen.get('slug') or ''),str(track['video_id'])),'</div>']
          if not tracks:
           parts+=['<p>No audio themes available for this entry.</p>']
         else:
@@ -2530,7 +2578,7 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
           for number,track in enumerate(variants,1):
            parts+=['<div class="smart-version">',
                    '<p><strong>Version ',str(number),'</strong> — ',
-                   esc(str(track.get('title') or key)),'</p>',
+                   esc(str(track.get('title') or key)),(' · '+esc(str(track['artist'])) if track.get('artist') else ''),'</p>',
                    '<audio controls preload="none" style="width:100%" data-src="',
                    esc(track['audio_url'],quote=True),'" aria-label="Preview ',
                    esc(key,quote=True),' version ',str(number),'"></audio>',
@@ -2541,7 +2589,7 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
                    esc(str(show.get('slug') or ''),quote=True),'">',
                    '<input type="hidden" name="video_id" value="',
                    esc(str(track['video_id']),quote=True),'">',
-                   '<button type="submit">Install Theme</button></form></div>']
+                   '<button type="submit">Install Theme</button></form>',theme_studio.entry_form(selected,str(show.get('slug') or ''),str(track['video_id'])),'</div>']
           parts+=['</details>']
         else:
          parts+=['<p>No audio themes available.</p>']
@@ -2846,6 +2894,8 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
    if auth.needs_setup():return self.send(403,'{"error":"First-run setup is not finished"}','application/json')
    return arr_events.receive(sys.modules[__name__],self)
   if not auth.post(self):return
+  if self.path in ('/theme-studio/start','/theme-studio/render','/theme-studio/install','/theme-studio/cancel'):
+   return theme_studio.post(sys.modules[__name__],self,auth.token(self),auth.redirect)
   if self.path=='/system/tasks':return tasks.post(sys.modules[__name__],self,auth.redirect)
   if self.path=='/system/arr-webhook':return arr_events.settings_post(sys.modules[__name__],self,auth.redirect)
   if self.path=='/media-servers/mapping':return media_mapping.post(sys.modules[__name__],self,auth.redirect)
@@ -2949,7 +2999,8 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
   form=urllib.parse.parse_qs(self.rfile.read(size).decode())
   if self.path in ('/confirm-remove-theme','/confirm-restore-theme'):
    operation='remove' if self.path=='/confirm-remove-theme' else 'restore'
-   return theme_management.perform_action(self,ROOTS,db,open_safe_theme_directory,verify_theme_directory_identity,_manual_install_lock,auth.token(self),form,operation,auth.redirect,event)
+   return theme_management.perform_action(self,ROOTS,db,open_safe_theme_directory,verify_theme_directory_identity,_manual_install_lock,auth.token(self),form,operation,auth.redirect,event,
+    record_history=lambda folder:theme_history.record(sys.modules[__name__],folder,slug='restore',label='Theme restored from recovery'))
   if self.path=='/install-theme':
    selected=form.get('path',[''])[0]
    anime_slug=form.get('anime_slug',[''])[0]
@@ -3045,7 +3096,8 @@ class Handler(app_logs.RequestTrace, httpserver.Hardened, BaseHTTPRequestHandler
       anime_slug=anime_slug,
       video_id=video_id,
       progress=report if stream_progress else None,
-      activity_label=' — '.join(str(x) for x in (track.get('slug'),track.get('title')) if x)
+      activity_label=' — '.join(str(x) for x in (track.get('slug'),track.get('title')) if x),
+      metadata=theme_history.track_metadata(track,anime_slug)
      )
    except (ValueError,OSError,TimeoutError,theme_retry.InstallBusy,subprocess.CalledProcessError,subprocess.TimeoutExpired) as error:
     if stream_progress:

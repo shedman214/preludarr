@@ -159,6 +159,17 @@ st, _, _ = req('POST', '/api/v1/webhook/arr/aabbccddeeff', b'{"eventType":"Test"
                 {'X-Api-Key': key, 'Content-Type': 'application/json'}, auth=False, origin=None)
 check('General API key cannot authorize Arr import receivers', st == 401)
 
+# ---- Theme Studio route uses the ordinary sign-in and origin guard
+if MODE == 'fresh':
+    studio_path = '/theme-studio?' + urllib.parse.urlencode({'path': '/media/shows/E2E Show (2020)'})
+    st, _, page = req('GET', studio_path)
+    check('Theme Studio opens for a registered title', st == 200 and b'Theme Studio' in page, st)
+    st, _, _ = req('GET', studio_path, auth=False)
+    check('Theme Studio requires sign-in', st == 303)
+    st, _, _ = req('POST', '/theme-studio/start', {'path': '/media/shows/E2E Show (2020)', 'source': 'current'},
+                    origin='http://evil.example')
+    check('Studio edits reject a foreign origin', st == 403)
+
 # ---- streaming install progress (title seeded by the script; no network → the download fails, but progress streams)
 if MODE == 'fresh':
     proposal = {'source': 'plex', 'url': 'https://tvthemes.plexapp.com/12345.mp3', 'title': 'E2E Show theme'}
